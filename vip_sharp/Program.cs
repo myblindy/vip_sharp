@@ -18,7 +18,7 @@ namespace vip_sharp
             var grammar = new VIPGrammar();
             var parser = new Parser(grammar);
             var ast = parser.Parse(File.ReadAllText("test.vip"));
-
+            
             var generator = new VIPGenerator();
             ((VIPProgramNode)ast.Root.AstNode).Accept(generator);
 
