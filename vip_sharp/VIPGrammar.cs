@@ -32,6 +32,10 @@ namespace vip_sharp
 
             var numberlist = new NonTerminal("numberlist", typeof(VIPNumberListNode));
 
+            var expr = new NonTerminal("Expr", typeof(VIPExpressionNode));
+            var binop = new NonTerminal("BinOp", typeof(VIPOperatorNode));
+            var unop = new NonTerminal("UnOp", typeof(VIPOperatorNode));
+
             var number = new NumberLiteral("number", NumberOptions.AllowSign | NumberOptions.AllowStartEndDot);
             number.AstConfig.NodeType = typeof(VIPNumberNode);
             var identifier = new IdentifierTerminal("identifier");
@@ -44,8 +48,8 @@ namespace vip_sharp
 
             commands.Rule = MakePlusRule(commands, null, command);
             command.Rule = translatecommand | scalecommand | fnvariabledefinition | polygoncommand;
-            translatecommand.Rule = ToTerm("translate") + "(" + number + "," + number + ")" + ";";
-            scalecommand.Rule = ToTerm("scale") + "(" + number + ")" + ";";
+            translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
+            scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
             fnvariabledefinition.Rule =
                 (identifier + identifier + "[" + number + "]" + "=" + "{" + numberlist + "}" + ";")
                 | (identifier + identifier + "[" + number + "]" + ";")
@@ -58,11 +62,23 @@ namespace vip_sharp
 
             numberlist.Rule = MakePlusRule(numberlist, ToTerm(","), number);
 
+            expr.Rule = number | expr + binop + expr | unop + expr | "(" + expr + ")";
+            binop.Rule = ToTerm("-") | "+" | "*" | "/" | "|" | "&" | "||" | "&&" | ".AND." | ".OR.";
+            unop.Rule = ToTerm("-") | "+" | "!" | "~";
+
             // grammar setup
             Root = program;
             MarkPunctuation("{", "}", "(", ")", ",", ";");
             //MarkTransient();
             LanguageFlags |= LanguageFlags.CreateAst;
+
+            // operator precedence
+            RegisterOperators(1, "+", "-");
+            RegisterOperators(2, "*", "/");
+            RegisterOperators(3, "|", "&");
+            RegisterOperators(4, "||", "&&", ".AND.", ".OR.");
+            RegisterOperators(5, "!");
+            RegisterOperators(6, "~");
         }
     }
 
@@ -83,7 +99,9 @@ namespace vip_sharp
         void Visit(VIPIdentifierNode node);
         void Visit(VIPFnVariableDefinitionNode node);
         void Visit(VIPNumberListNode node);
-        void Visit(VIPPolygonCommandNode vIPPolygonCommandNode);
+        void Visit(VIPPolygonCommandNode node);
+        void Visit(VIPExpressionNode node);
+        void Visit(VIPOperatorNode node);
     }
 
     public abstract class VIPNode : AstNode
@@ -230,6 +248,30 @@ namespace vip_sharp
         }
 
         public double Value { get; set; }
+    }
+
+    public class VIPExpressionNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void Init(AstContext context, ParseTreeNode treeNode)
+        {
+            base.Init(context, treeNode);
+            AddChild(treeNode.ChildNodes);
+        }
+    }
+
+    public class VIPOperatorNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void Init(AstContext context, ParseTreeNode treeNode)
+        {
+            base.Init(context, treeNode);
+            Operator = treeNode.ChildNodes[0].Token.ValueString;
+        }
+
+        public string Operator { get; set; }
     }
 
     public class VIPIdentifierNode : VIPNode

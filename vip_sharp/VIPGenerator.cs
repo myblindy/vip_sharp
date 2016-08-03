@@ -145,5 +145,13 @@ namespace vip_sharp
             if (node.Type == VIPPolygonType.WithArrays)
                 Code.AppendLine($"{VIPUtilsClass}.Polygon(__{node.VerticesIdentifier}, __{node.ColorsIdentifier});");
         }
+
+        public void Visit(VIPExpressionNode node)
+        {
+        }
+
+        public void Visit(VIPOperatorNode node)
+        {
+        }
     }
 }

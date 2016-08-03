@@ -21,6 +21,6 @@ Main
 							  0.0,   0.0, 100.0, 100.0 };
 
 	Translate(2.0, 0.0);
-	Scale(1.5);
+	Scale(1+.5);
 	Polygon{Vertices, Colors};
 }
