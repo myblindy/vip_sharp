@@ -30,6 +30,7 @@ namespace vip_sharp
 
         public void Visit(VIPNumberNode node)
         {
+            Code.Append(node.Value);
         }
 
         public void Visit(VIPTypedefsNode node)
@@ -117,12 +118,18 @@ namespace vip_sharp
 
         public void Visit(VIPTranslateCommandNode node)
         {
-            Code.AppendLine($"{VIPUtilsClass}.Translate({((VIPNumberNode)node.ChildNodes[0]).Value}, {((VIPNumberNode)node.ChildNodes[1]).Value});");
+            Code.Append($"{VIPUtilsClass}.Translate(");
+            ((VIPNode)node.ChildNodes[0]).Accept(this);
+            Code.Append(", ");
+            ((VIPNode)node.ChildNodes[1]).Accept(this);
+            Code.AppendLine(");");
         }
 
         public void Visit(VIPScaleCommandNode node)
         {
-            Code.AppendLine($"{VIPUtilsClass}.Scale({((VIPNumberNode)node.ChildNodes[0]).Value});");
+            Code.Append($"{VIPUtilsClass}.Scale(");
+            ((VIPNode)node.ChildNodes[0]).Accept(this);
+            Code.AppendLine(");");
         }
 
         public void Visit(VIPCommandNode node)
@@ -148,10 +155,24 @@ namespace vip_sharp
 
         public void Visit(VIPExpressionNode node)
         {
+            foreach (VIPNode subnode in node.ChildNodes)
+                subnode.Accept(this);
         }
 
         public void Visit(VIPOperatorNode node)
         {
+            switch (node.Operator)
+            {
+                case ".AND.":
+                    Code.Append("&&");
+                    break;
+                case ".OR.":
+                    Code.Append("||");
+                    break;
+                default:
+                    Code.Append(node.Operator);
+                    break;
+            }
         }
     }
 }

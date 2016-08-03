@@ -29,15 +29,12 @@ namespace vip_sharp
             // run it
             var cspath = Path.ChangeExtension(filepath, "cs");
             var csexepath = Path.ChangeExtension(cspath, "dll");
-            try
-            {
-                Console.WriteLine(generator.Code.ToString());
-                File.WriteAllText(cspath, generator.Code.ToString());
-                Process.Start(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"), $"/out:{csexepath} /reference:{compilerpath} /target:library /platform:x86 {cspath}").WaitForExit();
 
-                VIPUtils.RunGL(csexepath);
-            }
-            finally { File.Delete(cspath); }
+            Console.WriteLine(generator.Code.ToString());
+            File.WriteAllText(cspath, generator.Code.ToString());
+            Process.Start(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"), $"/out:{csexepath} /reference:{compilerpath} /target:library /platform:x86 {cspath}").WaitForExit();
+
+            VIPUtils.RunGL(csexepath);
         }
     }
 }
