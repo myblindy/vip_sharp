@@ -47,6 +47,8 @@ namespace vip_sharp
 
         public void Translate(double x, double y) => gl.Translated(x, y, 0);
 
+        public void Rotate(double angle) => gl.Rotated(angle, 0, 0, -1);
+
         unsafe public void Polygon<TVertex, TColor>(TVertex[] vertexes, TColor[] colors)
         {
             var cnt = vertexes.Length;

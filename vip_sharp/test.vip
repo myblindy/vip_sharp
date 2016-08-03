@@ -10,6 +10,8 @@ Typedef TColor4 {
 	double	dA;
 }
 
+double angle;
+
 Main
 {
 	TVertex	Vertices[3]	= {	-4.33, -5.0,
@@ -21,6 +23,8 @@ Main
 							  0.0,   0.0, 100.0, 100.0 };
 
 	Translate(2.0, 0.0);
-	Scale(1+.5);
+	Scale(1.5);
+	Rotate(angle);
+	angle = angle + 0.5;
 	Polygon{Vertices, Colors};
 }
