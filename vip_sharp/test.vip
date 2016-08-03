@@ -10,6 +10,32 @@ Typedef TColor4 {
 	double	dA;
 }
 
+Function TVertex DoIt()
+{
+	TVertex Res;
+	
+	Res.dX = 2.0;
+	Res.dY = 4.0;
+	
+	Return(Res);
+}
+
+Function double Add(double dA, double dB)
+{
+	double dRes;
+	
+	dRes = dA + dB;
+	
+	Return(dRes);
+}
+
+Function bool Test()
+{
+	bool bRes;
+	
+	Return(bRes);
+}
+
 double angle;
 
 Main
