@@ -13,6 +13,7 @@ namespace vip_sharp
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             var filepath = "test.vip";
@@ -27,16 +28,16 @@ namespace vip_sharp
 
             // run it
             var cspath = Path.ChangeExtension(filepath, "cs");
-            var csexepath = Path.ChangeExtension(cspath, "exe");
+            var csexepath = Path.ChangeExtension(cspath, "dll");
             try
             {
                 Console.WriteLine(generator.Code.ToString());
                 File.WriteAllText(cspath, generator.Code.ToString());
-                Process.Start(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"), $"/out:{csexepath} /reference:{compilerpath} {cspath}").WaitForExit();
-                Process.Start(csexepath).WaitForExit();
+                Process.Start(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"), $"/out:{csexepath} /reference:{compilerpath} /target:library /platform:x86 {cspath}").WaitForExit();
+
+                VIPUtils.RunGL(csexepath);
             }
-            finally { File.Delete(cspath); File.Delete(csexepath); }
-            Console.ReadKey();
+            finally { File.Delete(cspath); }
         }
     }
 }

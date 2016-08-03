@@ -109,7 +109,7 @@ namespace vip_sharp
 
         public void Visit(VIPMainNode node)
         {
-            Code.AppendLine("public static class __MainClass { public static void Main(string[] __args) {");
+            Code.AppendLine("public class __MainClass { public void Run() {");
             foreach (VIPNode command in node.ChildNodes)
                 command.Accept(this);
             Code.AppendLine("} }");
