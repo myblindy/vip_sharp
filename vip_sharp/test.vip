@@ -14,8 +14,8 @@ Function TVertex DoIt()
 {
 	TVertex Res;
 	
-	Res.dX = 2.0;
-	Res.dY = 4.0;
+	//Res.dX = 2.0;
+	//Res.dY = 4.0;
 	
 	Return(Res);
 }
@@ -51,6 +51,6 @@ Main
 	Translate(2.0, 0.0);
 	Scale(1.5);
 	Rotate(angle);
-	angle = angle + 0.5;
+	angle = Add(angle, 0.5);
 	Polygon{Vertices, Colors};
 }

@@ -19,6 +19,7 @@ namespace vip_sharp
             var filepath = "test.vip";
             var vipcompilerpath = AppDomain.CurrentDomain.FriendlyName;
 
+            // compile the grammar to C# code
             var grammar = new VIPGrammar();
             var parser = new Parser(grammar);
             var ast = parser.Parse(File.ReadAllText(filepath));
@@ -26,7 +27,7 @@ namespace vip_sharp
             var generator = new VIPGenerator();
             ((VIPProgramNode)ast.Root.AstNode).Accept(generator);
 
-            // run it
+            // compile the C# code
             var cspath = Path.ChangeExtension(filepath, "cs");
             var cslibpath = Path.ChangeExtension(cspath, "dll");
 
@@ -36,6 +37,7 @@ namespace vip_sharp
                 Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"),
                 $"/out:{cslibpath} /reference:{vipcompilerpath} /target:library /platform:x86 {cspath}").WaitForExit();
 
+            // run it
             VIPUtils.RunGL(cslibpath);
         }
     }
