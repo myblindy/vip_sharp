@@ -10,15 +10,22 @@ namespace vip_sharp
     {
         public StringBuilder Code = new StringBuilder();
 
-        private const string VIPUtilsClass = "vip_sharp.VIPUtils.Instance";
+        private const string VIPUtilsClass = "vip_sharp.VIPUtils";
+        private const string VIPUtilsInstance = VIPUtilsClass + ".Instance";
 
+        class VIPTypeComparer : IEqualityComparer<string[]>
+        {
+            public bool Equals(string[] x, string[] y) => x.SequenceEqual(y);
+            public int GetHashCode(string[] obj) => obj.Sum(o => o.GetHashCode());
+        }
         class TypedefDataClass
         {
-            internal string Name;
             internal string[] Fields;
         }
-        Dictionary<string, TypedefDataClass> Typedefs = new Dictionary<string, TypedefDataClass>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
         HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool" };
+
+        bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
 
         string PrefixForValueType(bool valuetype) => valuetype ? "" : "__typedef_";
 
@@ -43,26 +50,45 @@ namespace vip_sharp
 
         public void Visit(VIPVariableDefinitionNode node)
         {
-            var prefix = ValueTypes.Contains(node.Type) ? "" : "__typedef_";
-            Code.AppendLine($"public {prefix}{node.Type} __{node.Identifier};");
+            Code.Append("public ");
+            node.Type.Accept(this);
+            Code.AppendLine($" __{node.Identifier};");
         }
 
-        public void Visit(VIPIdentifierNode node)
+        public void Visit(VIPPlainIdentifierNode node)
         {
             Code.Append($"__{node.Name}");
         }
 
-        public void Visit(VIPNumberListNode node)
+        public void Visit(VIPQualifiedIdentifierNode node)
+        {
+            bool first = true;
+            foreach (var part in node.Parts)
+            {
+                if (first) first = false; else Code.Append('.');
+                var prefix = ValueTypes.Contains(part.Item1) ? "" : "__";
+                Code.Append($"{prefix}{part.Item1}");
+                if (part.Item2 != null)
+                {
+                    Code.Append('[');
+                    part.Item2.Accept(this);
+                    Code.Append(']');
+                }
+            }
+        }
+
+        public void Visit(VIPExpressionListNode node)
         {
         }
 
         public void Visit(VIPFullVariableDefinitionNode node)
         {
-            var valuetype = ValueTypes.Contains(node.Type);
-            var prefix = PrefixForValueType(valuetype);
             if (node.ArraySize != null)
             {
-                Code.Append($"{prefix}{node.Type}[] __{node.Name} = new {prefix}{node.Type}[");
+                node.Type.Accept(this);
+                Code.Append($"[] __{node.Name} = new ");
+                node.Type.Accept(this);
+                Code.Append("[");
                 node.ArraySize.Accept(this);
                 Code.Append("]");
 
@@ -70,12 +96,14 @@ namespace vip_sharp
                 {
                     Code.Append("{");
 
-                    var fields = Typedefs[node.Type].Fields;
+                    var fields = Typedefs[node.Type.Parts].Fields;
                     var itemsintype = fields.Length;
                     for (int idx = 0; idx < node.InitValues.Length; idx += itemsintype)
                     {
                         if (idx != 0) Code.Append(',');
-                        Code.Append($"new {prefix}{node.Type} {{ ");
+                        Code.Append("new ");
+                        node.Type.Accept(this);
+                        Code.Append('{');
 
                         for (int initvalidx = idx; initvalidx < idx + fields.Length; ++initvalidx)
                         {
@@ -84,18 +112,22 @@ namespace vip_sharp
                             node.InitValues[initvalidx].Accept(this);
                         }
 
-                        Code.Append("}");
+                        Code.Append('}');
                     }
-                    Code.Append("}");
+                    Code.Append('}');
                 }
                 Code.AppendLine(";");
             }
-            else if (!valuetype)
+            else if (!IsValueType(node.Type))
             {
                 if (node.InitValues != null)
                 {
-                    var fields = Typedefs[node.Type].Fields;
-                    Code.Append($"{prefix}{node.Type} __{node.Name} = new {prefix}{node.Type} {{ ");
+                    var fields = Typedefs[node.Type.Parts].Fields;
+                    node.Type.Accept(this);
+                    Code.Append($" __{node.Name} = new ");
+                    node.Type.Accept(this);
+                    Code.Append('{');
+
                     for (int initvalidx = 0; initvalidx < fields.Length; ++initvalidx)
                     {
                         if (initvalidx != 0) Code.Append(',');
@@ -106,20 +138,26 @@ namespace vip_sharp
                     Code.AppendLine("};");
                 }
                 else
-                    Code.AppendLine($"{prefix}{node.Type} __{node.Name} = new {prefix}{node.Type}();");
+                {
+                    node.Type.Accept(this);
+                    Code.Append($" __{node.Name} = new ");
+                    node.Type.Accept(this);
+                    Code.AppendLine("();");
+                }
             }
             else
             {
-                Code.Append($"{prefix}{node.Type} __{node.Name} = ");
+                node.Type.Accept(this);
+                Code.Append($" __{node.Name} = ");
                 if (node.InitValue != null)
                     node.InitValue.Accept(this);
                 else
                 {
                     // try to figure out what to initialize this thing with
-                    if (node.Type.EqualsI("double") || node.Type.EqualsI("int"))
-                        Code.Append('0');
-                    else
+                    if (node.Type.Parts[0].EqualsI("bool"))
                         Code.Append("false");
+                    else
+                        Code.Append('0');
                 }
                 Code.AppendLine(";");
             }
@@ -131,9 +169,8 @@ namespace vip_sharp
 
         public void Visit(VIPTypeDefinitionNode node)
         {
-            Typedefs.Add(node.Name, new TypedefDataClass
+            Typedefs.Add(new[] { node.Name }, new TypedefDataClass
             {
-                Name = node.Name,
                 Fields = node.ChildNodes.Cast<VIPVariableDefinitionNode>().Select(n => n.Identifier).ToArray()
             });
 
@@ -153,7 +190,7 @@ namespace vip_sharp
 
         public void Visit(VIPTranslateCommandNode node)
         {
-            Code.Append($"{VIPUtilsClass}.Translate(");
+            Code.Append($"{VIPUtilsInstance}.Translate(");
             node.X.Accept(this);
             Code.Append(", ");
             node.Y.Accept(this);
@@ -162,14 +199,14 @@ namespace vip_sharp
 
         public void Visit(VIPScaleCommandNode node)
         {
-            Code.Append($"{VIPUtilsClass}.Scale(");
+            Code.Append($"{VIPUtilsInstance}.Scale(");
             node.Scale.Accept(this);
             Code.AppendLine(");");
         }
 
         public void Visit(VIPRotateCommandNode node)
         {
-            Code.Append($"{VIPUtilsClass}.Rotate(");
+            Code.Append($"{VIPUtilsInstance}.Rotate(");
             node.Angle.Accept(this);
             Code.AppendLine(");");
         }
@@ -194,19 +231,26 @@ namespace vip_sharp
         public void Visit(VIPPolygonCommandNode node)
         {
             if (node.Type == VIPPolygonType.WithArrays)
-                Code.AppendLine($"{VIPUtilsClass}.Polygon(__{node.VerticesIdentifier}, __{node.ColorsIdentifier});");
+            {
+                Code.Append($"{VIPUtilsInstance}.Polygon(");
+                node.VerticesIdentifier.Accept(this);
+                Code.Append(",");
+                node.ColorsIdentifier.Accept(this);
+                Code.AppendLine(");");
+            }
         }
 
         public void Visit(VIPAssignmentCommandNode node)
         {
-            Code.Append($"__{node.Variable.Name} = ");
+            node.Variable.Accept(this);
+            Code.Append(" = ");
             node.Expression.Accept(this);
             Code.AppendLine(";");
         }
 
         public void Visit(VIPExpressionNode node)
         {
-            if (node.ChildNodes.Count == 2 && node.ChildNodes[0] is VIPIdentifierNode && node.ChildNodes[1] is VIPNumberListNode)
+            if (node.ChildNodes.Count == 2 && node.ChildNodes[0] is VIPQualifiedIdentifierNode && node.ChildNodes[1] is VIPExpressionListNode)
             {
                 // special case for functions
                 ((VIPNode)node.ChildNodes[0]).Accept(this);
@@ -247,10 +291,17 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionDefinitionNode node)
         {
-            var valuetyperet = ValueTypes.Contains(node.Type);
-            var prefixret = PrefixForValueType(valuetyperet);
-            Code.Append($"public {prefixret}{node.Type} __{node.Name} (");
-            Code.Append(string.Join(",", node.Arguments.Select(a => a.Item1 + " __" + a.Item2)));
+            Code.Append("public ");
+            node.Type.Accept(this);
+            Code.Append($" __{node.Name} (");
+
+            bool first = true;
+            foreach (var arg in node.Arguments)
+            {
+                if (first) first = false; else Code.Append(',');
+                arg.Item1.Accept(this);
+                Code.Append($" __{arg.Item2}");
+            }
             Code.AppendLine(") {");
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
@@ -272,6 +323,67 @@ namespace vip_sharp
             Code.Append("return ");
             node.Expression.Accept(this);
             Code.AppendLine(";");
+        }
+
+        public void Visit(VIPIdentifierNode node)
+        {
+            Code.Append($"__{node.Name}");
+            if (node.Index != null)
+            {
+                Code.Append('[');
+                node.Index.Accept(this);
+                Code.Append(']');
+            }
+        }
+
+        public void Visit(VIPTypeIdentifierNode node)
+        {
+            bool first = true;
+            if (IsValueType(node))
+                Code.Append($"{node.Parts[0]}");
+            else
+                foreach (var part in node.Parts)
+                {
+                    if (first) first = false; else Code.Append('.');
+                    Code.Append($"__typedef_{part}");
+                }
+        }
+
+        public void Visit(VIPBitmapResDefinitionNode node)
+        {
+            var type = node.Type.EqualsI("RGB") ? "RGB"
+                : node.Type.EqualsI("RGBA") ? "RGBA"
+                : node.Type.EqualsI("HARD_MASK") ? "HardMask"
+                : "SoftMask";
+            var filter = node.Filter.EqualsI("LINEAR") ? "Linear"
+                : node.Filter.EqualsI("NEAREST") ? "Nearest"
+                : "MipMap";
+            var clamp = node.ClampMode.EqualsI("CLAMP") ? "Clamp" : "Repeat";
+
+            Code.AppendLine($"{VIPUtilsClass}.BitmapRes __{node.Handle} = new {VIPUtilsClass}.BitmapRes(" +
+                $"{VIPUtilsClass}.BitmapType.{type}, {VIPUtilsClass}.BitmapFilter.{filter}, {VIPUtilsClass}.BitmapClamp.{clamp}, " +
+                "@\"" + node.Path + "\");");
+        }
+
+        public void Visit(VIPPathIdentifierNode node)
+        {
+        }
+
+        public void Visit(VIPBitmapCommandNode node)
+        {
+            var blend = node.Blend.EqualsI("BLEND") ? "Blend"
+                : node.Blend.EqualsI("MODULATE") ? "Modulate"
+                : node.Blend.EqualsI("DECAL") ? "Decal"
+                : "Replace";
+
+            Code.Append($"{VIPUtilsInstance}.Bitmap(");
+            node.Handle.Accept(this);
+            Code.Append($", {VIPUtilsClass}.BitmapBlend.{blend}, ");
+            node.X.Accept(this); Code.Append(','); node.Y.Accept(this); Code.Append(',');
+            node.W.Accept(this); Code.Append(','); node.H.Accept(this); Code.Append(',');
+            Code.Append($"{VIPUtilsClass}.PositionRef.{node.Ref},");
+            node.Vertices.Accept(this);
+            Code.AppendLine(");");
         }
     }
 }

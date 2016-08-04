@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
+using System.Drawing;
 
 namespace vip_sharp
 {
@@ -32,6 +33,51 @@ namespace vip_sharp
             AppDomain.Unload(libdomain);
         }
 
+        public enum BitmapType { RGB, RGBA, HardMask, SoftMask }
+        public enum BitmapFilter { Linear, Nearest, MipMap }
+        public enum BitmapClamp { Clamp, Repeat }
+        public enum BitmapBlend { Blend, Modulate, Decal, Replace }
+        public enum PositionRef { CTR, CC = CTR, CU, CL, LL, LC, LU, RU, RL, RC }
+
+        public class BitmapRes
+        {
+            public BitmapType Type;
+            public BitmapFilter Filter;
+            public BitmapClamp Clamp;
+            public string Path;
+
+            private uint ListID;
+
+            public BitmapRes(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
+            {
+                Type = type;
+                Filter = filter;
+                Clamp = clamp;
+                Path = path;
+
+                // load the bitmap
+                ListID = gl.GenLists(1);
+                gl.NewList(ListID, GL.COMPILE);
+
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, clamp == BitmapClamp.Clamp ? GL.CLAMP : GL.REPEAT);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, clamp == BitmapClamp.Clamp ? GL.CLAMP : GL.REPEAT);
+
+                gl.PixelStorei(GL.UNPACK_ALIGNMENT, 4);      // Force 4-byte alignment 
+                gl.PixelStorei(GL.UNPACK_ROW_LENGTH, 0);
+                gl.PixelStorei(GL.UNPACK_SKIP_ROWS, 0);
+                gl.PixelStorei(GL.UNPACK_SKIP_PIXELS, 0);
+
+                var bmp = Image.FromFile(path);
+                var w = bmp.Width;
+                var h = bmp.Height;
+
+                if (h == 1 || w == 1)
+                    throw new NotImplementedException();
+                else
+                    throw new NotImplementedException();
+            }
+        }
+
         private static IList<double> DoublesFromStructure<T>(T o)
         {
             var lst = new List<double>();
@@ -49,7 +95,7 @@ namespace vip_sharp
 
         public void Rotate(double angle) => gl.Rotated(angle, 0, 0, -1);
 
-        unsafe public void Polygon<TVertex, TColor>(TVertex[] vertexes, TColor[] colors)
+        public void Polygon<TVertex, TColor>(TVertex[] vertexes, TColor[] colors)
         {
             var cnt = vertexes.Length;
             gl.Begin(GL.POLYGON);
@@ -69,6 +115,11 @@ namespace vip_sharp
             }
 
             gl.End();
+        }
+
+        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, TVertex[] vertexes)
+        {
+
         }
     }
 }

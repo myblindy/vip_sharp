@@ -3,54 +3,27 @@
 	double	dY;
 }
 
-Typedef TColor4 {
-	double	dR;
-	double	dG;
-	double	dB;
-	double	dA;
-}
+TVertex	TextVertices2[4] = {	0.0,  0.0,
+								0.0,  3.0,
+								1.0,  3.0,
+								1.0,  0.0 };
 
-Function TVertex DoIt()
-{
-	TVertex Res;
-	
-	//Res.dX = 2.0;
-	//Res.dY = 4.0;
-	
-	Return(Res);
-}
+double dOffSet;
 
-Function double Add(double dA, double dB)
-{
-	double dRes;
-	
-	dRes = dA + dB;
-	
-	Return(dRes);
-}
-
-Function bool Test()
-{
-	bool bRes;
-	
-	Return(bRes);
-}
-
-double angle;
+Bitmap_Res(STRIPE, RGB, LINEAR, REPEAT, stripe.bmp);
 
 Main
 {
-	TVertex	Vertices[3]	= {	-4.33, -5.0,
-							-4.33,  5.0,
-							 4.33,  0.0 };
+	Scale(2.5);
 
-	TColor4	Colors[3]	= { 100.0,   0.0,   0.0, 100.0,
-							  0.0, 100.0,   0.0, 100.0,
-							  0.0,   0.0, 100.0, 100.0 };
+	TextVertices2[0].dY = 0.0 - dOffSet;
+	TextVertices2[1].dY = 6.0 - dOffSet;
+	TextVertices2[2].dY = 6.0 - dOffSet;
+	TextVertices2[3].dY = 0.0 - dOffSet;
 
-	Translate(2.0, 0.0);
-	Scale(1.5);
-	Rotate(angle);
-	angle = Add(angle, 0.5);
-	Polygon{Vertices, Colors};
+	Bitmap(STRIPE, MODULATE, 0.0, 0.0, 0.5, 8, CTR, TextVertices2);
+		
+	dOffSet = dOffSet + 0.01;
+		
+	//If (dOffSet > 1.0)  { dOffSet = 0.0; }
 }
