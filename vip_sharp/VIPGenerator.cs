@@ -444,5 +444,32 @@ namespace vip_sharp
             node.ObjectName.Accept(this);
             Code.AppendLine(");");
         }
+
+        public void Visit(VIPMacroDefinitionNode node)
+        {
+            Code.Append($"void __{node.Name}(");
+
+            bool first = true;
+            foreach (var argnode in node.Arguments)
+            {
+                if (first) first = false; else Code.Append(',');
+                Code.Append($"ref dynamic __{argnode.Token.ValueString}");
+            }
+
+            Code.AppendLine(") {");
+            foreach (VIPNode cmdnode in node.ChildNodes)
+                cmdnode.Accept(this);
+            Code.AppendLine("}");
+        }
+
+        public void Visit(VIPPlainIdentifierListNode vIPPlainIdentifierListNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPFunctionCallCommandNode node)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

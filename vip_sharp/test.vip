@@ -3,6 +3,11 @@
 	double	dY;
 }
 
+macro Toggle(Inp)
+{
+	Inp = 1 - Inp;
+}
+
 Object BarberPole
 {
 	TVertex	TextVertices2[4] = {	0.0,  0.0,
@@ -33,7 +38,10 @@ Instance BarberPole Pole2{X= 4.0, Y=0.0};
 
 Main
 {
-	Scale(2.5);
+	int x = -1;
+	Toggle(x);
+
+	Scale(x);
 
 	Draw(Pole1);
 	Draw(Pole2);
