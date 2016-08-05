@@ -33,6 +33,13 @@ namespace vip_sharp
             AppDomain.Unload(libdomain);
         }
 
+        public interface IVIPObject
+        {
+            double GetX();
+            double GetY();
+            void Run();
+        }
+
         public enum BitmapType { RGB, RGBA, HardMask, SoftMask }
         public enum BitmapFilter { Linear, Nearest, MipMap }
         public enum BitmapClamp { Clamp, Repeat }
@@ -46,7 +53,8 @@ namespace vip_sharp
             public BitmapClamp Clamp;
             public string Path;
 
-            private uint ListID;
+            private bool Initialized = false;
+            public uint TextureID;
 
             public BitmapRes(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
             {
@@ -54,27 +62,28 @@ namespace vip_sharp
                 Filter = filter;
                 Clamp = clamp;
                 Path = path;
+            }
+
+            public void EnsureInitialized()
+            {
+                if (Initialized) return;
 
                 // load the bitmap
-                ListID = gl.GenLists(1);
-                gl.NewList(ListID, GL.COMPILE);
+                TextureID = gl.GenTexture();
+                gl.BindTexture(GL.TEXTURE_2D, TextureID);
 
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, clamp == BitmapClamp.Clamp ? GL.CLAMP : GL.REPEAT);
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, clamp == BitmapClamp.Clamp ? GL.CLAMP : GL.REPEAT);
+                gl.TexImage2D(GL.TEXTURE_2D, 0, Path);
+                if (Filter == BitmapFilter.MipMap)
+                    gl.GenerateMipmap(GL.TEXTURE_2D);
 
-                gl.PixelStorei(GL.UNPACK_ALIGNMENT, 4);      // Force 4-byte alignment 
-                gl.PixelStorei(GL.UNPACK_ROW_LENGTH, 0);
-                gl.PixelStorei(GL.UNPACK_SKIP_ROWS, 0);
-                gl.PixelStorei(GL.UNPACK_SKIP_PIXELS, 0);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, Clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, Clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, Filter == BitmapFilter.MipMap || Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, Filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
 
-                var bmp = Image.FromFile(path);
-                var w = bmp.Width;
-                var h = bmp.Height;
+                gl.BindTexture(GL.TEXTURE_2D, 0);
 
-                if (h == 1 || w == 1)
-                    throw new NotImplementedException();
-                else
-                    throw new NotImplementedException();
+                Initialized = true;
             }
         }
 
@@ -119,7 +128,43 @@ namespace vip_sharp
 
         public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, TVertex[] vertexes)
         {
+            handle.EnsureInitialized();
 
+            gl.Enable(GL.TEXTURE_2D);
+            gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
+            gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
+                blend == BitmapBlend.Modulate ? GL.MODULATE :
+                blend == BitmapBlend.Decal ? GL.DECAL :
+                blend == BitmapBlend.Blend ? GL.BLEND :
+                GL.REPLACE);
+
+            gl.Begin(GL.QUADS);
+
+            var texvals = DoublesFromStructure(vertexes[0]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x - w / 2, y - h / 2);
+
+            texvals = DoublesFromStructure(vertexes[1]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x - w / 2, y + h / 2);
+
+            texvals = DoublesFromStructure(vertexes[2]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x + w / 2, y + h / 2);
+
+            texvals = DoublesFromStructure(vertexes[3]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x + w / 2, y - h / 2);
+
+            gl.End();
+        }
+
+        public void Draw(IVIPObject obj)
+        {
+            gl.PushMatrix();
+            gl.Translated(obj.GetX(), obj.GetY(), 0);
+            obj.Run();
+            gl.PopMatrix();
         }
     }
 }

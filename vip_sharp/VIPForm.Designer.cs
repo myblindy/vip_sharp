@@ -29,20 +29,21 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.RenderTimer = new System.Windows.Forms.Timer(this.components);
+            this.UIUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
-            // RenderTimer
+            // UIUpdateTimer
             // 
-            this.RenderTimer.Enabled = true;
-            this.RenderTimer.Interval = 20;
-            this.RenderTimer.Tick += new System.EventHandler(this.RenderTimer_Tick);
+            this.UIUpdateTimer.Enabled = true;
+            this.UIUpdateTimer.Interval = 1500;
+            this.UIUpdateTimer.Tick += new System.EventHandler(this.UIUpdate_Tick);
             // 
             // VIPForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(820, 477);
+            this.ClientSize = new System.Drawing.Size(615, 388);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "VIPForm";
             this.Text = "VIP";
             this.Load += new System.EventHandler(this.VIPForm_Load);
@@ -52,6 +53,6 @@
 
         #endregion
 
-        private System.Windows.Forms.Timer RenderTimer;
+        private System.Windows.Forms.Timer UIUpdateTimer;
     }
 }
