@@ -29,6 +29,8 @@ namespace vip_sharp
 
         string PrefixForValueType(bool valuetype) => valuetype ? "" : "__";
 
+        string LastObjectName;
+
         public VIPGenerator()
         {
         }
@@ -266,7 +268,11 @@ namespace vip_sharp
             }
             else
                 foreach (VIPNode subnode in node.ChildNodes)
+                {
+                    if(subnode.ChildNodes.Count>1) Code.Append('(');
                     subnode.Accept(this);
+                    if (subnode.ChildNodes.Count > 1) Code.Append(')');
+                }
         }
 
         public void Visit(VIPOperatorNode node)
@@ -315,7 +321,9 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionDefinitionArgument node)
         {
-            throw new NotImplementedException();
+            ((VIPTypeIdentifierNode)node.ChildNodes[0]).Accept(this);
+            Code.Append(' ');
+            ((VIPPlainIdentifierNode)node.ChildNodes[1]).Accept(this);
         }
 
         public void Visit(VIPReturnCommandNode node)
@@ -398,16 +406,15 @@ namespace vip_sharp
 
         public void Visit(VIPObjectDefinitionNode node)
         {
+            LastObjectName = node.Name;
+
             Code.AppendLine($"public class __{node.Name} : {VIPUtilsClass}.IVIPObject {{");
             Code.AppendLine("public double X=0, Y=0;");
             Code.AppendLine("public double GetX() { return X; }");
             Code.AppendLine("public double GetY() { return Y; }");
             foreach (var defnode in node.Definitions)
                 ((VIPNode)defnode.ChildNodes[0].AstNode).Accept(this);
-            Code.AppendLine("public void Run() {");
-            foreach (VIPNode cmdnode in node.ChildNodes)
-                cmdnode.Accept(this);
-            Code.AppendLine("} }");
+            Code.AppendLine("}");
         }
 
         public void Visit(VIPInstanceDefinitionNode node)
@@ -447,19 +454,7 @@ namespace vip_sharp
 
         public void Visit(VIPMacroDefinitionNode node)
         {
-            Code.Append($"void __{node.Name}(");
-
-            bool first = true;
-            foreach (var argnode in node.Arguments)
-            {
-                if (first) first = false; else Code.Append(',');
-                Code.Append($"ref dynamic __{argnode.Token.ValueString}");
-            }
-
-            Code.AppendLine(") {");
-            foreach (VIPNode cmdnode in node.ChildNodes)
-                cmdnode.Accept(this);
-            Code.AppendLine("}");
+            throw new NotImplementedException();
         }
 
         public void Visit(VIPPlainIdentifierListNode vIPPlainIdentifierListNode)
@@ -470,6 +465,71 @@ namespace vip_sharp
         public void Visit(VIPFunctionCallCommandNode node)
         {
             throw new NotImplementedException();
+        }
+
+        public void Visit(VIPStructDefinitionNode node)
+        {
+            Code.Append($"public class __struct_{node.Name} {{");
+            foreach (VIPNode varnode in node.ChildNodes)
+                varnode.Accept(this);
+            Code.AppendLine($"}} public __struct_{node.Name} __{node.Name}=new __struct_{node.Name}();");
+        }
+
+        public void Visit(VIPObjectDefsNode vIPObjectDefsNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPObjectDefNode vIPObjectDefNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPObjectInitDefinition node)
+        {
+            Code.Append($"public __{LastObjectName}(");
+
+            bool first = true;
+            foreach (var argnode in node.Arguments)
+            {
+                if (first) first = false; else Code.Append(',');
+                ((VIPNode)argnode.AstNode).Accept(this);
+            }
+
+            Code.AppendLine(") {");
+
+            foreach (VIPNode cmdnode in node.ChildNodes)
+                cmdnode.Accept(this);
+
+            Code.AppendLine("}");
+        }
+
+        public void Visit(VIPObjectEntryDefinition node)
+        {
+            Code.AppendLine("public void Run() {");
+            foreach (VIPNode cmdnode in node.ChildNodes)
+                cmdnode.Accept(this);
+            Code.AppendLine("} }");
+        }
+
+        public void Visit(VIPColorCommandNode node)
+        {
+            Code.Append($"{VIPUtilsInstance}.Color(");
+            node.ArrayName.Accept(this);
+            Code.AppendLine(");");
+        }
+
+        public void Visit(VIPCircleCommandNode node)
+        {
+            Code.Append($"{VIPUtilsInstance}.Color(");
+            node.X.Accept(this);
+            Code.Append(',');
+            node.Y.Accept(this);
+            Code.Append(',');
+            node.Radius.Accept(this);
+            Code.Append(',');
+            node.Steps.Accept(this);
+            Code.Append($"{node.Filled});");
         }
     }
 }

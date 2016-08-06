@@ -1,48 +1,63 @@
-﻿Typedef TVertex {
-	double	dX;
-	double	dY;
+﻿Typedef TColor3 {
+	double	dR;
+	double	dG;
+	double	dB;
 }
 
-macro Toggle(Inp)
+Object Blinker
 {
-	Inp = 1 - Inp;
-}
+	double	m_dBlinkTime;						// This is the time (s) that the light is on and off.
+	double	m_dCurrTime;						// The current elapsed time (s).
+	TColor3	m_Color;							// The color of this light
 
-Object BarberPole
-{
-	TVertex	TextVertices2[4] = {	0.0,  0.0,
-									0.0,  3.0,
-									1.0,  3.0,
-									1.0,  0.0 };
-	double dOffSet;
+	Struct cIn
+	{
+		bool	bStat;							// Status of the light
+	}
 
-	Bitmap_Res(STRIPE, RGB, LINEAR, REPEAT, stripe.bmp);
+	// The BlinkFreq (Hz) of the light.
+
+	Init(double dBlinkFreq, double dR, double dG, double dB )
+	{
+		// Remember the color.
+		m_Color.dR = dR;
+		m_Color.dG = dG;
+		m_Color.dB = dB;
+
+		// Check for devide by zero...
+		If(dBlinkFreq > 0.0)
+		{
+			m_dBlinkTime = 1.0 / dBlinkFreq / 2.0;
+		}
+	}
 	
 	Entry
 	{
-		TextVertices2[0].dY = 0.0 - dOffSet;
-		TextVertices2[1].dY = 6.0 - dOffSet;
-		TextVertices2[2].dY = 6.0 - dOffSet;
-		TextVertices2[3].dY = 0.0 - dOffSet;
+		If(cIn.bStat.AND.(m_dCurrTime < m_dBlinkTime))
+		{
+			Color(m_Color);
+			Circle(0.0, 0.0, 2.0, 40, FILL);
+		}
 
-		Bitmap(STRIPE, MODULATE, 0.0, 0.0, 0.5, 8, CTR, TextVertices2);
-		
-		dOffSet = dOffSet + 0.01;
-		
-		If (dOffSet > 1.0)  { dOffSet = 0.0; }
+		// Update the Timer
+		m_dCurrTime = m_dCurrTime + System.dDT;
+
+		// When we exceed twice the blink tim then reset the timer
+		If (m_dCurrTime > (m_dBlinkTime * 2.0))
+		{
+			m_dCurrTime = m_dCurrTime - (m_dBlinkTime * 2.0);
+		}
 	}
 }
 
-Instance BarberPole Pole1{X=-4.0, Y=0.0};
-Instance BarberPole Pole2{X= 4.0, Y=0.0};
+//Instance Blinker BL1{X=-5.0, Y=0.0}:{1.0, 100.0,   0.0, 0.0};
+//Instance Blinker BL2{X=5.0,  Y=0.0}:{0.5,   0.0, 100.0, 0.0};
 
 Main
 {
-	int x = -1;
-	Toggle(x);
+	BL1.cIn.bStat = true;
+	BL2.cIn.bStat = true;
 
-	Scale(x);
-
-	Draw(Pole1);
-	Draw(Pole2);
+	Draw(BL1);
+	Draw(BL2);
 }
