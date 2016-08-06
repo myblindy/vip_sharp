@@ -3,24 +3,46 @@
 	double	dY;
 }
 
-Typedef TColor4 {
-	double	dR;
-	double	dG;
-	double	dB;
-	double	dA;
+macro Toggle(Inp)
+{
+	Inp = 1 - Inp;
 }
+
+Object BarberPole
+{
+	TVertex	TextVertices2[4] = {	0.0,  0.0,
+									0.0,  3.0,
+									1.0,  3.0,
+									1.0,  0.0 };
+	double dOffSet;
+
+	Bitmap_Res(STRIPE, RGB, LINEAR, REPEAT, stripe.bmp);
+	
+	Entry
+	{
+		TextVertices2[0].dY = 0.0 - dOffSet;
+		TextVertices2[1].dY = 6.0 - dOffSet;
+		TextVertices2[2].dY = 6.0 - dOffSet;
+		TextVertices2[3].dY = 0.0 - dOffSet;
+
+		Bitmap(STRIPE, MODULATE, 0.0, 0.0, 0.5, 8, CTR, TextVertices2);
+		
+		dOffSet = dOffSet + 0.01;
+		
+		If (dOffSet > 1.0)  { dOffSet = 0.0; }
+	}
+}
+
+Instance BarberPole Pole1{X=-4.0, Y=0.0};
+Instance BarberPole Pole2{X= 4.0, Y=0.0};
 
 Main
 {
-	TVertex	Vertices[3]	= {	-4.33, -5.0,
-							-4.33,  5.0,
-							 4.33,  0.0 };
+	int x = -1;
+	Toggle(x);
 
-	TColor4	Colors[3]	= { 100.0,   0.0,   0.0, 100.0,
-							  0.0, 100.0,   0.0, 100.0,
-							  0.0,   0.0, 100.0, 100.0 };
+	Scale(x);
 
-	Translate(2.0, 0.0);
-	Scale(1+.5);
-	Polygon{Vertices, Colors};
+	Draw(Pole1);
+	Draw(Pole2);
 }
