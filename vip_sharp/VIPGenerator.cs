@@ -23,7 +23,7 @@ namespace vip_sharp
             internal string[] Fields;
         }
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
-        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool" };
+        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool", "true", "false" };
 
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
 
@@ -69,7 +69,8 @@ namespace vip_sharp
             {
                 if (first) first = false; else Code.Append('.');
                 var prefix = ValueTypes.Contains(part.Item1) ? "" : "__";
-                Code.Append($"{prefix}{part.Item1}");
+                var name = part.Item1.EqualsI("system") ? $"{VIPUtilsInstance}.VIPSystemClass" : prefix + part.Item1;
+                Code.Append(name);
                 if (part.Item2 != null)
                 {
                     Code.Append('[');
@@ -269,7 +270,7 @@ namespace vip_sharp
             else
                 foreach (VIPNode subnode in node.ChildNodes)
                 {
-                    if(subnode.ChildNodes.Count>1) Code.Append('(');
+                    if (subnode.ChildNodes.Count > 1) Code.Append('(');
                     subnode.Accept(this);
                     if (subnode.ChildNodes.Count > 1) Code.Append(')');
                 }
@@ -279,10 +280,10 @@ namespace vip_sharp
         {
             switch (node.Operator)
             {
-                case ".AND.":
+                case ".and.":
                     Code.Append("&&");
                     break;
-                case ".OR.":
+                case ".or.":
                     Code.Append("||");
                     break;
                 default:
@@ -422,10 +423,21 @@ namespace vip_sharp
             node.Object.Accept(this);
             Code.Append($" __{node.Name} = new ");
             node.Object.Accept(this);
-            Code.Append(" { ");
+
+            Code.Append('(');
 
             bool first = true;
-            foreach (var argnode in node.Arguments)
+            if (node.ConstructorArguments != null)
+                foreach (var constrarg in node.ConstructorArguments)
+                {
+                    if (first) first = false; else Code.Append(',');
+                    ((VIPNode)constrarg.AstNode).Accept(this);
+                }
+
+            Code.Append(") { ");
+
+            first = true;
+            foreach (var argnode in node.SpecialArguments)
             {
                 if (first) first = false; else Code.Append(',');
                 ((VIPNode)argnode.AstNode).Accept(this);
@@ -509,7 +521,7 @@ namespace vip_sharp
             Code.AppendLine("public void Run() {");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
-            Code.AppendLine("} }");
+            Code.AppendLine("}");
         }
 
         public void Visit(VIPColorCommandNode node)
@@ -521,7 +533,7 @@ namespace vip_sharp
 
         public void Visit(VIPCircleCommandNode node)
         {
-            Code.Append($"{VIPUtilsInstance}.Color(");
+            Code.Append($"{VIPUtilsInstance}.Circle(");
             node.X.Accept(this);
             Code.Append(',');
             node.Y.Accept(this);
@@ -529,7 +541,7 @@ namespace vip_sharp
             node.Radius.Accept(this);
             Code.Append(',');
             node.Steps.Accept(this);
-            Code.Append($"{node.Filled});");
+            Code.Append($",{node.Filled.ToString().ToLower()});");
         }
     }
 }

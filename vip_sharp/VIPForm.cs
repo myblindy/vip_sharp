@@ -18,6 +18,7 @@ namespace vip_sharp
         bool Initialized = false;
         int Frames = 0;
         DateTime LastFPSCountedAt = DateTime.Now;
+        DateTime LastRenderedAt = DateTime.Now;
 
         public VIPForm(dynamic libmainclass)
         {
@@ -77,7 +78,10 @@ namespace vip_sharp
             gl.MatrixMode(GL.MODELVIEW);
             gl.LoadIdentity();
 
+            var now = DateTime.Now;
+            VIPUtils.Instance.VIPSystemClass.__dDT = (now - LastRenderedAt).TotalSeconds;
             LibMainClass.Run();
+            LastRenderedAt = now;
 
             VIPUtils.rc.SwapBuffers();
 

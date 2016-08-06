@@ -50,8 +50,8 @@ Object Blinker
 	}
 }
 
-//Instance Blinker BL1{X=-5.0, Y=0.0}:{1.0, 100.0,   0.0, 0.0};
-//Instance Blinker BL2{X=5.0,  Y=0.0}:{0.5,   0.0, 100.0, 0.0};
+Instance Blinker BL1{X=-5.0, Y=0.0}:{1.0, 100.0,   0.0, 0.0};
+Instance Blinker BL2{X=5.0,  Y=0.0}:{0.5,   0.0, 100.0, 0.0};
 
 Main
 {

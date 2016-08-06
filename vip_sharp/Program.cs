@@ -22,7 +22,7 @@ namespace vip_sharp
             // compile the grammar to C# code
             var grammar = new VIPGrammar();
             var parser = new Parser(grammar);
-            var ast = parser.Parse(File.ReadAllText(filepath));
+            var ast = parser.Parse(VIPPreprocessor.Preprocess(filepath));
 
             var generator = new VIPGenerator();
             ((VIPProgramNode)ast.Root.AstNode).Accept(generator);

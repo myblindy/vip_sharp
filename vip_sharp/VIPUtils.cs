@@ -13,7 +13,7 @@ namespace vip_sharp
 {
     public class VIPUtils
     {
-        public static VIPUtils Instance => new VIPUtils();
+        public static VIPUtils Instance { get; } = new VIPUtils();
         private VIPUtils() { }
 
         internal static RenderingContext rc;
@@ -39,6 +39,12 @@ namespace vip_sharp
             double GetY();
             void Run();
         }
+
+        public class VIPSystemClassType
+        {
+            public double __dDT;
+        }
+        public VIPSystemClassType VIPSystemClass = new VIPSystemClassType();
 
         public enum BitmapType { RGB, RGBA, HardMask, SoftMask }
         public enum BitmapFilter { Linear, Nearest, MipMap }
@@ -104,6 +110,15 @@ namespace vip_sharp
 
         public void Rotate(double angle) => gl.Rotated(angle, 0, 0, -1);
 
+        public void Color<TColor>(TColor color)
+        {
+            var colorvals = DoublesFromStructure(color);
+            if (colorvals.Count == 3)
+                gl.Color3d(colorvals[0], colorvals[1], colorvals[2]);
+            else
+                gl.Color4d(colorvals[0], colorvals[1], colorvals[2], colorvals[3]);
+        }
+
         public void Polygon<TVertex, TColor>(TVertex[] vertexes, TColor[] colors)
         {
             var cnt = vertexes.Length;
@@ -112,11 +127,7 @@ namespace vip_sharp
             for (int idx = 0; idx < cnt; ++idx)
             {
                 // colors
-                var colorvals = DoublesFromStructure(colors[idx]);
-                if (colorvals.Count == 3)
-                    gl.Color3d(colorvals[0], colorvals[1], colorvals[2]);
-                else
-                    gl.Color4d(colorvals[0], colorvals[1], colorvals[2], colorvals[3]);
+                Color(colors[idx]);
 
                 // vertexes
                 var vertexvals = DoublesFromStructure(vertexes[idx]);
@@ -165,6 +176,24 @@ namespace vip_sharp
             gl.Translated(obj.GetX(), obj.GetY(), 0);
             obj.Run();
             gl.PopMatrix();
+        }
+
+        public void Circle(double x, double y, double r, double steps, bool filled)
+        {
+            if (filled)
+            {
+                gl.Begin(GL.TRIANGLE_FAN);
+                gl.Vertex2d(x, y);
+            }
+            else
+                gl.Begin(GL.LINE_LOOP);
+
+            for (int idx = 0; idx <= steps; ++idx)
+                gl.Vertex2d(
+                    x + r * Math.Cos(idx * Math.PI * 2 / steps),
+                    y + r * Math.Sin(idx * Math.PI * 2 / steps));
+
+            gl.End();
         }
     }
 }

@@ -124,7 +124,9 @@ namespace vip_sharp
                 + plainidentifier + ","                           // clamp
                 + pathidentifier + ")" + ";";                     // path
             objectdefinition.Rule = "object" + plainidentifier + "{" + objectdefs + "}";
-            instancedefinition.Rule = "instance" + qualifiedidentifier + plainidentifier + "{" + namedargumentlist + "}" + ";";
+            instancedefinition.Rule =
+                "instance" + qualifiedidentifier + plainidentifier + "{" + namedargumentlist + "}" + ";"
+                | "instance" + qualifiedidentifier + plainidentifier + "{" + namedargumentlist + "}" + ":" + "{" + expressionlist + "}" + ";";
             macrodefinition.Rule = ToTerm("macro") + plainidentifier + "(" + plainidentifierlist + ")" + "{" + commands + "}";
             structdefinition.Rule = "struct" + plainidentifier + "{" + variabledefinitions + "}";
             objectentrydefinition.Rule = ToTerm("entry") + "{" + commands + "}";
@@ -150,7 +152,7 @@ namespace vip_sharp
 
             // grammar setup
             Root = program;
-            MarkPunctuation("{", "}", "(", ")", ",", ";");
+            MarkPunctuation("{", "}", "(", ")", ",", ";", ":");
             //MarkTransient();
             LanguageFlags |= LanguageFlags.CreateAst;
             NonGrammarTerminals.Add(
@@ -401,12 +403,15 @@ namespace vip_sharp
         {
             Object = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
             Name = nodes[2].Token.ValueString;
-            Arguments = nodes[3].ChildNodes;
+            SpecialArguments = nodes[3].ChildNodes;
+            if (nodes.Count >= 5)
+                ConstructorArguments = nodes[4].ChildNodes;
         }
 
         public VIPQualifiedIdentifierNode Object;
         public string Name;
-        public ParseTreeNodeList Arguments;
+        public ParseTreeNodeList SpecialArguments;
+        public ParseTreeNodeList ConstructorArguments;
     }
 
     public class VIPMacroDefinitionNode : VIPNode

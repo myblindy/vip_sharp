@@ -72,7 +72,7 @@
     </Compile>
     <Compile Include="VIPGenerator.cs" />
     <Compile Include="VIPGrammar.cs" />
-    <Compile Include="VIPParser.cs" />
+    <Compile Include="VIPPreprocessor.cs" />
     <Compile Include="VIPUtils.cs" />
   </ItemGroup>
   <ItemGroup>
