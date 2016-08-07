@@ -4,51 +4,7 @@
 	double	dB;
 }
 
-Object Blinker
-{
-	double	m_dBlinkTime;						// This is the time (s) that the light is on and off.
-	double	m_dCurrTime;						// The current elapsed time (s).
-	TColor3	m_Color;							// The color of this light
-
-	Struct cIn
-	{
-		bool	bStat;							// Status of the light
-	}
-
-	// The BlinkFreq (Hz) of the light.
-
-	Init(double dBlinkFreq, double dR, double dG, double dB )
-	{
-		// Remember the color.
-		m_Color.dR = dR;
-		m_Color.dG = dG;
-		m_Color.dB = dB;
-
-		// Check for devide by zero...
-		If(dBlinkFreq > 0.0)
-		{
-			m_dBlinkTime = 1.0 / dBlinkFreq / 2.0;
-		}
-	}
-	
-	Entry
-	{
-		If(cIn.bStat.AND.(m_dCurrTime < m_dBlinkTime))
-		{
-			Color(m_Color);
-			Circle(0.0, 0.0, 2.0, 40, FILL);
-		}
-
-		// Update the Timer
-		m_dCurrTime = m_dCurrTime + System.dDT;
-
-		// When we exceed twice the blink tim then reset the timer
-		If (m_dCurrTime > (m_dBlinkTime * 2.0))
-		{
-			m_dCurrTime = m_dCurrTime - (m_dBlinkTime * 2.0);
-		}
-	}
-}
+use Blinker.odf
 
 Instance Blinker BL1{X=-5.0, Y=0.0}:{1.0, 100.0,   0.0, 0.0};
 Instance Blinker BL2{X=5.0,  Y=0.0}:{0.5,   0.0, 100.0, 0.0};

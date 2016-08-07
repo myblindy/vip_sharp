@@ -35,15 +35,15 @@
             // UIUpdateTimer
             // 
             this.UIUpdateTimer.Enabled = true;
-            this.UIUpdateTimer.Interval = 1500;
+            this.UIUpdateTimer.Interval = 1000;
             this.UIUpdateTimer.Tick += new System.EventHandler(this.UIUpdate_Tick);
             // 
             // VIPForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(615, 388);
-            this.Margin = new System.Windows.Forms.Padding(2);
+            this.ClientSize = new System.Drawing.Size(686, 661);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "VIPForm";
             this.Text = "VIP";
             this.Load += new System.EventHandler(this.VIPForm_Load);
