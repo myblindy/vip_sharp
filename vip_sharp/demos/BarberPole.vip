@@ -1,0 +1,41 @@
+Typedef TVertex {
+	double	dX;
+	double	dY;
+}
+
+Object BarberPole
+{
+	TVertex	TextVertices2[4] = {	0.0,  0.0,
+									0.0,  3.0,
+									1.0,  3.0,
+									1.0,  0.0 };
+	double dOffSet;
+
+	Bitmap_Res(STRIPE, RGB, LINEAR, REPEAT, stripe.bmp);
+	
+	Entry
+	{
+		TextVertices2[0].dY = 0.0 - dOffSet;
+		TextVertices2[1].dY = 6.0 - dOffSet;
+		TextVertices2[2].dY = 6.0 - dOffSet;
+		TextVertices2[3].dY = 0.0 - dOffSet;
+
+		Bitmap(STRIPE, MODULATE, 0.0, 0.0, 0.5, 8, CTR, TextVertices2);
+		
+		dOffSet = dOffSet + 0.01;
+		
+		If (dOffSet > 1.0)  { dOffSet = 0.0; }
+	}
+}
+
+
+Instance BarberPole Pole1{X=-4.0, Y=0.0};
+Instance BarberPole Pole2{X= 4.0, Y=0.0};
+
+Main
+{
+	Scale(2.5);
+
+	Draw(Pole1);
+	Draw(Pole2);
+}

@@ -20,17 +20,15 @@ namespace vip_sharp
         internal static void RunGL(string libpath)
         {
             if (!Path.IsPathRooted(libpath))
-                libpath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), libpath);
+                libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
-            var libdomain = AppDomain.CreateDomain("LibDomain");
-            var libassembly = libdomain.Load(AssemblyName.GetAssemblyName(libpath));
+            //AppDomain.CurrentDomain.AssemblyResolve += Domain_AssemblyResolve;
+            var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
             dynamic libmainclass = Activator.CreateInstance(libassembly.GetType("__MainClass"));
 
             var frm = new VIPForm(libmainclass);
             rc = RenderingContext.CreateContext(frm);
             Application.Run(frm);
-
-            AppDomain.Unload(libdomain);
         }
 
         public interface IVIPObject
