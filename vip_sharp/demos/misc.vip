@@ -1,0 +1,6 @@
+main
+{
+	char	sData2[15]	= "Werkt Het ?";
+	char	sData[]		= "Ja, het Werkt";
+
+}

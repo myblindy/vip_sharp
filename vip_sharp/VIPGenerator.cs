@@ -12,6 +12,7 @@ namespace vip_sharp
 
         private const string VIPUtilsClass = "vip_sharp.VIPUtils";
         private const string VIPUtilsInstance = VIPUtilsClass + ".Instance";
+        private const string VIPArrayClass = "vip_sharp.BipolarArray";
 
         class VIPTypeComparer : IEqualityComparer<string[]>
         {
@@ -23,7 +24,7 @@ namespace vip_sharp
             internal string[] Fields;
         }
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
-        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool", "true", "false" };
+        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool", "true", "false", "char" };
 
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
 
@@ -86,18 +87,18 @@ namespace vip_sharp
 
         public void Visit(VIPFullVariableDefinitionNode node)
         {
-            if (node.ArraySize != null)
+            if (node.ArraySize != null || node.ArraySizeAuto)
             {
+                Code.Append($"{VIPArrayClass}<");
                 node.Type.Accept(this);
-                Code.Append($"[] __{node.Name} = new ");
+                Code.Append($"> __{node.Name} = new {VIPArrayClass}<");
                 node.Type.Accept(this);
-                Code.Append("[");
-                node.ArraySize.Accept(this);
-                Code.Append("]");
+                Code.Append(">(");
+                node.ArraySize?.Accept(this);
 
                 if (node.InitValues != null)
                 {
-                    Code.Append("{");
+                    Code.Append(") {");
 
                     var fields = Typedefs[node.Type.Parts].Fields;
                     var itemsintype = fields.Length;
@@ -118,6 +119,12 @@ namespace vip_sharp
                         Code.Append('}');
                     }
                     Code.Append('}');
+                }
+                else if (node.InitValue != null)
+                {
+                    if (node.ArraySize != null) Code.Append(',');
+                    node.InitValue.Accept(this);
+                    Code.Append(')');
                 }
                 Code.AppendLine(";");
             }
@@ -542,6 +549,11 @@ namespace vip_sharp
             Code.Append(',');
             node.Steps.Accept(this);
             Code.Append($",{node.Filled.ToString().ToLower()});");
+        }
+
+        public void Visit(VIPStringLiteralNode node)
+        {
+            Code.Append($"\"{node.Value}\"");
         }
     }
 }
