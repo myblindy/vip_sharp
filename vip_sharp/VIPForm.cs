@@ -93,7 +93,7 @@ namespace vip_sharp
         private void UIUpdate_Tick(object sender, EventArgs e)
         {
             var now = DateTime.Now;
-            Text = "VIP - " + (Frames / (now - LastFPSCountedAt).TotalSeconds).ToString("0") + " fps";
+            Text = "VIP - " + Math.Round(Frames / (now - LastFPSCountedAt).TotalSeconds).ToString("0") + " fps";
             LastFPSCountedAt = now;
             Frames = 0;
         }

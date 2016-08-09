@@ -117,9 +117,9 @@ namespace vip_sharp
                 gl.Color4d(colorvals[0], colorvals[1], colorvals[2], colorvals[3]);
         }
 
-        public void Polygon<TVertex, TColor>(TVertex[] vertexes, TColor[] colors)
+        public void Polygon<TVertex, TColor>(BipolarArray<TVertex> vertexes, BipolarArray<TColor> colors)
         {
-            var cnt = vertexes.Length;
+            var cnt = vertexes.N1;
             gl.Begin(GL.POLYGON);
 
             for (int idx = 0; idx < cnt; ++idx)
@@ -135,7 +135,7 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, TVertex[] vertexes)
+        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> vertexes)
         {
             handle.EnsureInitialized();
 

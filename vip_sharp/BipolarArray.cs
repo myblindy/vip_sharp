@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace vip_sharp
 {
-    public class BipolarArray<T>
+    public class BipolarArray<T> : IEnumerable<T>
     {
         private T[] Array;
-        private int N1, N2, N3;
+        public int N1 { get; private set; }
+        public int N2 { get; private set; }
+        public int N3 { get; private set; }
+
+        private int InitIdx = 0;
 
         public BipolarArray(string init)
         {
@@ -45,5 +50,15 @@ namespace vip_sharp
             get { return Array[n1 * N1 + n2 * N2 + n3]; }
             set { Array[n1 * N1 + n2 * N2 + n3] = value; }
         }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var val in Array)
+                yield return val;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Add(T val) => Array[InitIdx++] = val;
     }
 }
