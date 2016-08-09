@@ -39,6 +39,7 @@ namespace vip_sharp
             var functioncallcommand = new NonTerminal("functioncallcommand", typeof(VIPFunctionCallCommandNode));
             var colorcommand = new NonTerminal("colorcommand", typeof(VIPColorCommandNode));
             var circlecommand = new NonTerminal("circlecommand", typeof(VIPCircleCommandNode));
+            var matrixcommand = new NonTerminal("matrixcommand", typeof(VIPMatrixCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -89,7 +90,7 @@ namespace vip_sharp
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
 
             commands.Rule = MakePlusRule(commands, null, command);
-            command.Rule = circlecommand | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand
+            command.Rule = circlecommand | matrixcommand | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand
                 | fullvariabledefinition | polygoncommand | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
@@ -118,6 +119,7 @@ namespace vip_sharp
             colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";";
             circlecommand.Rule = ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + "fill" + ")" + ";"
                 | ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
+            matrixcommand.Rule = ToTerm("matrix") + "(" + (ToTerm("save") | "load" | "identity") + ")" + ";";
 
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
@@ -226,6 +228,7 @@ namespace vip_sharp
         void Visit(VIPColorCommandNode vIPColorCommandNode);
         void Visit(VIPCircleCommandNode vIPCircleCommandNode);
         void Visit(VIPStringLiteralNode vIPStringLiteralNode);
+        void Visit(VIPMatrixCommandNode vIPMatrixCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -734,6 +737,16 @@ namespace vip_sharp
             Expression = (VIPExpressionNode)nodes[1].AstNode;
 
         public VIPExpressionNode Expression;
+    }
+
+    public class VIPMatrixCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes) =>
+            Type = nodes[1].Token.ValueString;
+
+        public string Type;
     }
 
     public class VIPBitmapCommandNode : VIPNode

@@ -555,5 +555,15 @@ namespace vip_sharp
         {
             Code.Append($"\"{node.Value}\"");
         }
+
+        public void Visit(VIPMatrixCommandNode node)
+        {
+            if (node.Type.EqualsI("save"))
+                Code.AppendLine($"{VIPUtilsInstance}.MatrixSave();");
+            else if (node.Type.EqualsI("load"))
+                Code.AppendLine($"{VIPUtilsInstance}.MatrixLoad();");
+            else if (node.Type.EqualsI("identity"))
+                Code.AppendLine($"{VIPUtilsInstance}.MatrixIdentity();");
+        }
     }
 }

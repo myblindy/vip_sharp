@@ -193,5 +193,9 @@ namespace vip_sharp
 
             gl.End();
         }
+
+        public void MatrixSave() => gl.PushMatrix();
+        public void MatrixLoad() => gl.PopMatrix();
+        public void MatrixIdentity() => gl.LoadIdentity();
     }
 }
