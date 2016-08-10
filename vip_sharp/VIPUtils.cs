@@ -23,11 +23,14 @@ namespace vip_sharp
                 libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
             //AppDomain.CurrentDomain.AssemblyResolve += Domain_AssemblyResolve;
+
+            var frm = new VIPForm();
+            rc = RenderingContext.CreateContext(frm);
+
             var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
             dynamic libmainclass = Activator.CreateInstance(libassembly.GetType("__MainClass"));
+            frm.LibMainClass = libmainclass;
 
-            var frm = new VIPForm(libmainclass);
-            rc = RenderingContext.CreateContext(frm);
             Application.Run(frm);
         }
 
@@ -52,12 +55,11 @@ namespace vip_sharp
 
         public class BitmapRes
         {
-            public BitmapType Type;
-            public BitmapFilter Filter;
-            public BitmapClamp Clamp;
-            public string Path;
+            private BitmapType Type;
+            private BitmapFilter Filter;
+            private BitmapClamp Clamp;
+            private string Path;
 
-            private bool Initialized = false;
             public uint TextureID;
 
             public BitmapRes(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
@@ -66,11 +68,6 @@ namespace vip_sharp
                 Filter = filter;
                 Clamp = clamp;
                 Path = path;
-            }
-
-            public void EnsureInitialized()
-            {
-                if (Initialized) return;
 
                 // load the bitmap
                 TextureID = gl.GenTexture();
@@ -86,8 +83,19 @@ namespace vip_sharp
                 gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, Filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
 
                 gl.BindTexture(GL.TEXTURE_2D, 0);
+            }
+        }
 
-                Initialized = true;
+        public class DisplayList
+        {
+            public uint ListID;
+
+            public DisplayList(Action init)
+            {
+                ListID = gl.GenLists(1);
+                gl.NewList(ListID, GL.COMPILE);
+                init();
+                gl.EndList();
             }
         }
 
@@ -137,8 +145,6 @@ namespace vip_sharp
 
         public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> vertexes)
         {
-            handle.EnsureInitialized();
-
             gl.Enable(GL.TEXTURE_2D);
             gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
             gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
@@ -194,8 +200,73 @@ namespace vip_sharp
             gl.End();
         }
 
+        public void Line(params double[] vals)
+        {
+            gl.Begin(GL.LINE_STRIP);
+            for (int i = 0; i < vals.Length; i += 2)
+                gl.Vertex2d(vals[i], vals[i + 1]);
+            gl.End();
+        }
+
+        public void LineStrip(params double[] vals)
+        {
+            gl.Begin(GL.LINE_STRIP);
+            for (int i = 0; i < vals.Length; i += 2)
+                gl.Vertex2d(vals[i], vals[i + 1]);
+            gl.End();
+        }
+
+        public void Polygon(params double[] vals)
+        {
+            gl.Begin(GL.POLYGON);
+            for (int i = 0; i < vals.Length; i += 2)
+                gl.Vertex2d(vals[i], vals[i + 1]);
+            gl.End();
+        }
+
+        public void ClosedLine(params double[] vals)
+        {
+            gl.Begin(GL.LINE_LOOP);
+            for (int i = 0; i < vals.Length; i += 2)
+                gl.Vertex2d(vals[i], vals[i + 1]);
+            gl.End();
+        }
+
+        public void Triangle(double x1, double y1, double x2, double y2, double x3, double y3)
+        {
+            gl.Begin(GL.LINE_LOOP);
+            gl.Vertex2d(x1, y1);
+            gl.Vertex2d(x2, y2);
+            gl.Vertex2d(x3, y3);
+            gl.End();
+        }
+
+        public void Quad(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+        {
+            gl.Begin(GL.QUADS);
+            gl.Vertex2d(x1, y1);
+            gl.Vertex2d(x2, y2);
+            gl.Vertex2d(x3, y3);
+            gl.Vertex2d(x4, y4);
+            gl.End();
+        }
+
+        public void LineWidth(double width)
+        {
+            gl.LineWidth((float)width);
+        }
+
+        public void ArcLine(double x, double y, double r, double start, double end, double steps)
+        {
+        }
+
+        public void Color(double r, double g, double b) => gl.Color3d(r, g, b);
+        public void Color(double r, double g, double b, double a) => gl.Color4d(r, g, b, a);
+
         public void MatrixSave() => gl.PushMatrix();
-        public void MatrixLoad() => gl.PopMatrix();
+        public void MatrixRestore() => gl.PopMatrix();
         public void MatrixIdentity() => gl.LoadIdentity();
+        public void ColorSave() => gl.PushAttrib(GL.CURRENT_BIT);
+        public void ColorRestore() => gl.PopAttrib();
     }
 }

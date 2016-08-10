@@ -30,9 +30,10 @@ namespace vip_sharp
             var cslibpath = Path.ChangeExtension(cspath, "dll");
 
             File.WriteAllText(cspath, generator.Code.ToString());
-            Process.Start(
-                Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe"),
-                $"/out:{cslibpath} /reference:{vipcompilerpath} /target:library /platform:x86 {cspath}").WaitForExit();
+
+            var csc = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe");
+            var cscargs = $"/out:{cslibpath} /reference:{vipcompilerpath} /target:library /platform:x86 {cspath}";
+            Process.Start(csc, cscargs).WaitForExit();
 
             return cslibpath;
         }

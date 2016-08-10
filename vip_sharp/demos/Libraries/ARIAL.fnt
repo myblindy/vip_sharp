@@ -1,0 +1,628 @@
+// *********************************
+// ** [ MECHTRONIX SYSTEMS INC. ] **
+// ################################################################################
+// ## FILENAME     : VIP.fnt                                                     ##
+// ## PROJECT      : VIP Standard Font File                                      ##
+// ##----------------------------------------------------------------------------##
+// ## DESCRIPTION  : Vector Fonts with a dimension of 1.0 x 1.0 units            ##
+// ##                                                                            ##
+// ##----------------------------------------------------------------------------##
+// ## AUTHOR: Sjoerd.Volkert                                                     ##
+// ## DATE CREATED: 23/06/10                 LAST REVISION: 23/06/10             ##
+// ################################################################################
+
+
+// Hex (00), Dec  (0), Null
+List ARIAL_Null {
+	Line_Width(10);
+}
+// Hex (01), Dec  (1), Smiley
+List ARIAL_Smiley {
+	Circle(0.5,0.5 , 0.5 , 16);
+	Circle(0.3,0.7 , 0.05 , 6);
+	Circle(0.7,0.7 , 0.05 , 6);
+	Arc_Line(0.5,0.5 , 0.3 , 90.0 , 270.0 , 4 );
+}
+// Hex (02), Dec  (2), Degree Sign
+List ARIAL_Smiley_Filled {
+	Color(SAVE);
+	Color(0.0, 0.0, 0.0);
+	Circle(0.5,0.5 , 0.5 , 16);
+	Color(100.0, 100.0, 100.0);
+	Circle(0.3,0.7 , 0.05 , 6);
+	Circle(0.7,0.7 , 0.05 , 6);
+	Arc_Line(0.5,0.5 , 0.3 , 90.0 , 270.0 , 4 );
+	Color(RESTORE);
+}
+// Hex (03), Dec  (3), Heart
+List ARIAL_Heart {
+	Polygon{ 0.5,0.0 , 0.1,0.4 , 0.0,0.6 , 0.0,0.8 , 0.2,1.0 , 0.3,1.0 , 0.4,0.9 , 0.5,0.7 };
+	Polygon{ 0.5,0.7 , 0.4,0.9 , 0.3,1.0 , 0.2,1.0 , 0.0,0.8 , 0.0,0.6 , 0.1,0.4 , 0.5,0.0 };
+}
+// Hex (04), Dec  (4), Diamond
+List ARIAL_Diamond {
+	Quad{ 0.5,1.0 , 1.0,0.5 , 0.5,0.0 , 0.0,0.5 };
+}
+// Hex (05), Dec  (5), Clover
+List ARIAL_Clover {
+	Polygon{ 0.5,0.5 , 0.3,0.8 , 0.4,1.0 , 0.6,1.0 , 0.7,0.8 };
+	Polygon{ 0.5,0.5 , 0.4,0.3 , 0.3,0.2 , 0.1,0.2 , 0.0,0.3 , 0.0,0.4 , 0.2,0.5 };
+	Polygon{ 0.2,0.5 , 0.0,0.4 , 0.0,0.3 , 0.1,0.2 , 0.3,0.2 , 0.4,0.3 , 0.5,0.5 };
+	Triangle{ 0.4,0.0 , 0.5,0.3 , 0.6,0.0 };
+}
+// Hex (06), Dec  (6), Ace
+List ARIAL_Ace {
+	Polygon{ 0.5,1.0 , 0.5,0.5 , 0.4,0.3 , 0.3,0.2 , 0.2,0.2 , 0.0,0.4 , 0.0,0.6 };
+	Polygon{ 0.0,0.6 , 0.0,0.4 , 0.2,0.2 , 0.3,0.2 , 0.4,0.3 , 0.5,0.5 , 0.5,1.0 };
+	Triangle{ 0.4,0.0 , 0.5,0.3 , 0.6,0.0 };
+}
+// Hex (07), Dec  (7), Big Dot
+List ARIAL_Big_Dot {
+}
+// Hex (08), Dec  (8), Quad with Big Dot
+List ARIAL_Quad_Big_Dot {
+}
+// Hex (09), Dec  (9), Circle
+List ARIAL_Open_Circle {
+}
+// Hex (0A), Dec (10), Circle Filled
+List ARIAL_Circle_Filled {
+}
+// Hex (0B), Dec (11), Male_Sign
+List ARIAL_Male_Sign {
+	Circle(0.3,0.3 , 0.3 , 12);
+	Line{0.627,0.627 , 1.0,1.0};
+	Line_Strip{0.7,1.0 , 1.0,1.0 , 1.0,0.7};
+}
+// Hex (0C), Dec (12), Female_Sign
+List ARIAL_Female_Sign {
+	Circle(0.5,0.7 , 0.3 , 12);
+	Line{0.5,0.0 , 0.5,0.4};
+}
+// Hex (0D), Dec (13), Note
+List ARIAL_Note {
+	Circle(0.4,0.1 , 0.1 , 6);
+    Line_Strip{ 0.5,1.0 , 0.5,1.0 , 0.7,0.8 , 0.7,0.6 , 0.6,0.4 };
+}
+// Hex (0E), Dec (14), Double Note
+List ARIAL_Double_Note {
+	Circle( 0.3,0.2 , 0.1 , 6 );
+	Circle( 0.8,0.1 , 0.1 , 6 );
+	Line{ 0.3,0.3 , 0.3,1.0 , 0.9,0.1 , 0.9,0.8 };
+	Quad{ 0.3,0.9 , 0.3,1.0 , 0.9,0.8 , 0.9,0.7 };
+}
+// Hex (0F), Dec (15), Sun
+List ARIAL_Sun {
+	Circle( 0.5,0.5,0.3,12 );
+    Matrix(SAVE);
+		Translate(0.5,0.5);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5}; Rotate(45.0);
+		Line{0.0,0.3 , 0.0,0.5};
+	Matrix(RESTORE);
+}
+// Hex (10), Dec (16), Triangle_Right
+List ARIAL_Triangle_Right {
+	Triangle{0.9,0.5 , 0.1,0.9 , 0.1,0.1};
+}
+// Hex (11), Dec (17), Triangle_Left
+List ARIAL_Triangle_Left {
+	Triangle{0.1,0.5 , 0.9,0.9 , 0.9,0.1};
+}
+// Hex (12), Dec (18), Arrow_Up_Down
+List ARIAL_Arrow_Up_Down {
+}
+// Hex (13), Dec (19), Double Exclamation
+List ARIAL_Double_Exclamation {
+}
+// Hex (14), Dec (20), Pi_Sign
+List ARIAL_Pi_Sign {
+}
+// Hex (15), Dec (21), Double_S
+List ARIAL_Double_S {
+}
+// Hex (16), Dec (22), Fat Stripe
+List ARIAL_Fat_Stripe {
+}
+// Hex (17), Dec (23), Arrow_Up_Down_Bottom
+List ARIAL_Arrow_Up_Down_Bottom {
+	Triangle{0.4,0.7 , 0.5,1.0 , 0.6,0.7};
+	Triangle{0.5,0.0 , 0.4,0.3 , 0.6,0.3};
+	Line{0.3,0.0 , 0.7,0.0 , 0.5,0.4 , 0.5,0.7};
+}
+// Hex (18), Dec (24), Up Arrow
+List ARIAL_Up_Arrow {
+	Triangle{0.4,0.7 , 0.5,1.0 , 0.6,0.7};
+	Line{0.5,0.0 , 0.5,0.7};
+}
+// Hex (19), Dec (25), Down Arrow
+List ARIAL_Down_Arrow {
+	Triangle{0.5,0.0 , 0.4,0.3 , 0.6,0.3};
+	Line{0.5,1.0 , 0.5,0.3};
+}
+// Hex (1A), Dec (26), Right Arrow
+List ARIAL_Right_Arrow {
+	Triangle{1.0,0.5 , 0.7,0.4 , 0.7,0.6};
+    line{0.0,0.5 , 0.7,0.5};
+}
+// Hex (1B), Dec (27), Left Arrow
+List ARIAL_Left_Arrow {
+	Triangle{0.0,0.5 , 0.3,0.6 , 0.3,0.4};
+    line{0.3,0.5 , 1.0,0.5};
+}
+// Hex (1C), Dec (28), ???
+List ARIAL_FS {
+}
+// Hex (1D), Dec (29), Double Arrow
+List ARIAL_Double_Arrow {
+}
+// Hex (1E), Dec (30), Triangle Up
+List ARIAL_Triangle_Up {
+	Triangle{ 0.5,0.9 , 0.9,0.1 , 0.1,0.1 };
+}
+// Hex (1F), Dec (31), Triangle Down
+List ARIAL_Triangle_Down {
+	Triangle{ 0.1,0.9 , 0.9,0.9 , 0.5,0.1 };
+}
+// Hex (20), Dec (32), Space
+List ARIAL_Space {
+}
+// Hex (21), Dec (33), Exclamation Point
+List ARIAL_Exlamation_Point {
+	Triangle{ 0.5,0.3 , 0.4,1.0 , 0.6,1.0 };
+	Circle(0.5,0.1 , 0.1 , 6 , FILL);
+}
+// Hex (22), Dec (34), Double Quote
+List ARIAL_Double_Quote {
+	Line_Strip{0.3,0.9 , 0.4,0.9 , 0.4,0.8 , 0.3,0.8 , 0.3,0.9 , 0.4,1.0 };
+	Line_Strip{0.6,0.9 , 0.7,0.9 , 0.7,0.8 , 0.6,0.8 , 0.6,0.9 , 0.7,1.0 };
+}
+// Hex (23), Dec (35), Number Sign
+List ARIAL_Number_Sign {
+	Line{0.25,0.0 , 0.35,1.0 , 0.65,0.0 , 0.75,1.0 , 0.0,0.3 , 0.95,0.3 , 0.05,0.7 , 1.0,0.7};
+}
+// Hex (24), Dec (36), Dollar Sign
+List ARIAL_Dollar_Sign {
+	Line_Strip { 0.1,0.2 , 0.2,0.1 , 0.8,0.1 , 0.9,0.2 , 0.9,0.4 , 0.8,0.5 , 0.2,0.5 , 0.1,0.6 , 0.1,0.8 , 0.2,0.9 , 0.8,0.9 , 0.9,0.8 };
+    line { 0.5,0.0 , 0.5,1.0 };
+}
+// Hex (25), Dec (37), Percent
+List ARIAL_Percent {
+	Circle(0.3,0.7 , 0.1 , 6);
+	Circle(0.7,0.3 , 0.1 , 6);
+	Line{0.2,0.1 , 0.8,0.9};
+}
+// Hex (26), Dec (38), Ampersand
+List ARIAL_Ampersand {
+	Line_Strip{ 0.7,0.0,0.2,0.6,0.2,0.7,0.3,0.8,0.5,0.8,0.6,0.7,0.6,0.6,0.1,0.3,0.1,0.1,0.2,0.0,0.5,0.0,0.7,0.3 };
+}
+// Hex (27), Dec (39), Apostrophe
+List ARIAL_Apostrophe {
+	Line_Strip{0.4,0.9 , 0.5,0.9 , 0.5,0.8 , 0.4,0.8 , 0.4,0.9 , 0.5,1.0 };
+}
+// Hex (28), Dec (40), Left parenthesis
+List ARIAL_Left_Parenthesis {
+	Line_Strip{0.6,0.0 , 0.5,0.0 , 0.4,0.2 , 0.4,0.8 , 0.5,1.0 , 0.6,1.0};
+}
+// Hex (29), Dec (41), Right parenthesis
+List ARIAL_Right_Parenthesis {
+	Line_Strip{0.4,0.0 , 0.5,0.0 , 0.6,0.2 , 0.6,0.8 , 0.5,1.0 , 0.4,1.0};
+}
+// Hex (2A), Dec (42), Asterisk
+List ARIAL_Asterisk {
+	Matrix(SAVE);
+		Translate(0.5,0.7);
+		Line{0.0,0.0 , 0.0,0.3}; Rotate{72.0};
+		Line{0.0,0.0 , 0.0,0.3}; Rotate{72.0};
+		Line{0.0,0.0 , 0.0,0.3}; Rotate{72.0};
+		Line{0.0,0.0 , 0.0,0.3}; Rotate{72.0};
+		Line{0.0,0.0 , 0.0,0.3};
+	Matrix(RESTORE);
+}
+// Hex (2B), Dec (43), Plus Sign
+List ARIAL_Plus_Sign {
+	line{ 0.0,0.4,0.8,0.4 };
+    line{ 0.4,0.1,0.4,0.7 };
+}
+// Hex (2C), Dec (44), Comma
+List ARIAL_Comma {
+	Line_Strip{0.3,0.0 , 0.2,0.0 , 0.2,0.1 , 0.3,0.1 , 0.3,0.0 , 0.2,-0.1};
+}
+// Hex (2D), Dec (45), Minus Sign
+List ARIAL_minus {
+	line{ 0.2,0.5 , 0.8,0.5 };
+}
+// Hex (2E), Dec (46), Period
+List ARIAL_Period {
+	Closed_Line{ 0.2,0.1, 0.3,0.1 , 0.3,0.0 , 0.2,0.0 };
+
+}
+// Hex (2F), Dec (47), Right or Front Slash
+List ARIAL_Slash {
+	line { 0.2,0.0 , 0.8,1.0 };
+}
+// Hex (30), Dec (48), Zero
+List ARIAL_nr_0 {
+	Closed_Line{ 0.0,0.0 , 0.0,1.0 , 1.0,1.0 , 1.0,0.0 };
+}
+// Hex (31), Dec (49), One
+List ARIAL_nr_1 {
+	Line_Strip{ 0.3,1.0 , 0.5,1.0 , 0.5,0.0 };
+}
+// Hex (32), Dec (50), Two
+List ARIAL_nr_2 {
+	Line_Strip{ 0.0,1.0 , 1.0,1.0 , 1.0,0.5 , 0.0,0.5 , 0.0,0.0 , 1.0,0.0 };
+}
+// Hex (33), Dec (51), Three
+List ARIAL_nr_3 {
+	Line_Strip{ 0.0,1.0 , 1.0,1.0 , 1.0,0.0 , 0.0,0.0 };
+	Line{0.3,0.5 , 1.0,0.5};
+}
+// Hex (34), Dec (52), Four
+List ARIAL_nr_4 {
+	Line_Strip{ 0.0,1.0 , 0.0,0.5 , 1.0,0.5 };
+    line{1.0,0.0 , 1.0,1.0};
+}
+// Hex (35), Dec (53), Five
+List ARIAL_nr_5 {
+	Line_Strip{0.0,0.0 , 1.0,0.0 , 1.0,0.5 , 0.0,0.5 , 0.0,1.0 , 1.0,1.0};
+}
+// Hex (36), Dec (54), Six
+List ARIAL_nr_6 {
+	Line_Strip{ 0.0,0.5 , 1.0,0.5 , 1.0,0.0 , 0.0,0.0 , 0.0,1.0 , 1.0,1.0 };
+}
+// Hex (37), Dec (55), Seven
+List ARIAL_nr_7 {
+	Line_Strip{0.0,1.0 , 1.0,1.0 , 1.0,0.0};
+}
+// Hex (38), Dec (56), Eight
+List ARIAL_nr_8 {
+	Closed_Line{0.0,0.0 , 0.0,1.0 , 1.0,1.0 , 1.0,0.0};
+	Line{0.0,0.5 , 1.0,0.5};
+}
+// Hex (39), Dec (57), Nine
+List ARIAL_nr_9 {
+	Line_Strip{1.0,0.5 , 0.0,0.5 , 0.0,1.0 , 1.0,1.0 , 1.0,0.0 , 0.0,0.0};
+}
+// Hex (3A), Dec (58), Colon
+List ARIAL_Colon {
+	Closed_Line{0.4,0.7 , 0.4,0.8 , 0.5,0.8 , 0.5,0.7};
+	Closed_Line{0.4,0.2 , 0.4,0.3 , 0.5,0.3 , 0.5,0.2};
+}
+// Hex (3B), Dec (59), Semicolon
+List ARIAL_Semicolon {
+	Closed_Line{0.4,0.7 , 0.4,0.8 , 0.5,0.8 , 0.5,0.7};
+	Closed_Line{0.4,0.2 , 0.4,0.3 , 0.5,0.3 , 0.5,0.2};
+	Line{0.5,0.2 , 0.4,0.1};
+}
+// Hex (3C), Dec (60), Less than
+List ARIAL_Less_Than {
+	Line_Strip{0.9,0.1 , 0.1,0.5 , 0.9,0.9};
+}
+// Hex (3D), Dec (61), Equal Sign
+List ARIAL_Equal_Sign {
+	line{0.1,0.4 , 0.9,0.4 , 0.1,0.6 , 0.9,0.6};
+}
+// Hex (3E), Dec (62), Greater than
+List ARIAL_Greater_Than {
+	Line_Strip{0.1,0.1 , 0.9,0.5 , 0.1,0.9};
+}
+// Hex (3F), Dec (63), Question mark
+List ARIAL_Question_Mark {
+	Line_Strip{0.0,0.8 , 0.0,1.0 , 1.0,1.0 , 1.0,0.6 , 0.5,0.6 , 0.5,0.3};
+	Circle(0.5,0.1 , 0.1 , 6);
+}
+// Hex (40), Dec (64), "at" symbol
+List ARIAL_AT_Symbol {
+	Line_Strip{0.7,0.4 , 0.6,0.3 , 0.3,0.3 , 0.3,0.6 , 0.4,0.7 , 0.7,0.7};
+	Line_Strip{0.7,0.8 , 0.7,0.3 , 0.8,0.3 , 1.0,0.5 , 1.0,0.8 , 0.8,1.0 , 0.2,1.0 , 0.0,0.8 , 0.0,0.2 , 0.2,0.0 , 0.8,0.0 , 1.0,0.2};
+}
+// Hex (41), Dec (65), Uppercase A
+List ARIAL_lt_A {
+	Line_Strip{0.0,0.0 , 0.5,1.0 , 1.0,0.0};
+    line{0.15,0.3 , 0.85,0.3};
+}
+// Hex (42), Dec (66), Uppercase B
+List ARIAL_lt_B {
+	Closed_Line{0.0,0.0 , 0.0,1.0 , 0.7,1.0 , 0.9,0.9 , 0.9,0.6 , 0.7,0.5 , 1.0,0.3 , 1.0,0.1 , 0.8,0.0};
+	Line{0.0,0.5 , 0.7,0.5};
+}
+// Hex (43), Dec (67), Uppercase C
+List ARIAL_lt_C {
+	Line_Strip{1.0,0.2 , 0.8,0.0 , 0.2,0.0 , 0.0,0.2 , 0.0,0.8 , 0.2,1.0 , 0.8,1.0 , 1.0,0.8};
+}
+// Hex (44), Dec (68), Uppercase D
+List ARIAL_lt_D {
+	Closed_Line{0.0,0.0 , 0.0,1.0 , 0.7,1.0 , 1.0,0.7 , 1.0,0.2 , 0.8,0.0};
+}
+// Hex (45), Dec (69), Uppercase E
+List ARIAL_lt_E {
+	Line_Strip{1.0,0.0 , 0.0,0.0 , 0.0,1.0 , 1.0,1.0};
+    line{0.0,0.5 , 1.0,0.5};
+}
+// Hex (46), Dec (70), Uppercase F
+List ARIAL_lt_F {
+	Line_Strip{0.0,0.0 , 0.0,1.0 , 1.0,1.0};
+    line{0.0,0.5 , 0.9,0.5};
+}
+// Hex (47), Dec (71), Uppercase G
+List ARIAL_lt_G {
+	Line_Strip{0.5,0.5 , 1.0,0.5 , 1.0,0.2 , 0.8,0.0 , 0.2,0.0 , 0.0,0.2 , 0.0,0.8 , 0.2,1.0 , 0.8,1.0 , 1.0,0.8};
+}
+// Hex (48), Dec (72), Uppercase H
+List ARIAL_lt_H {
+	line{0.0,0.0 , 0.0,1.0};
+    line{0.0,0.5 , 1.0,0.5};
+    line{1.0,0.0 , 1.0,1.0};
+}
+// Hex (49), Dec (73), Uppercase I
+List ARIAL_lt_I {
+    line{0.5,0.0 , 0.5,1.0};
+}
+// Hex (4A), Dec (74), Uppercase J
+List ARIAL_lt_J {
+	Line_strip { 1.0 ,1.0 , 1.0, 0.25 , 0.875, 0.125 , 0.625, 0.0 , 0.375, 0.0 , 0.125, 0.125 , 0.0 ,0.25 , 0.0 ,0.375 };
+}
+// Hex (4B), Dec (75), Uppercase K
+List ARIAL_lt_K {
+	line{0.0,0.0 , 0.0,1.0};
+    line{0.2,0.5 , 1.0,0.0};
+    line_Strip{0.0,0.5 , 0.2,0.5 , 1.0,1.0};
+}
+// Hex (4C), Dec (76), Uppercase L
+List ARIAL_lt_L {
+	Line_Strip{0.0,1.0 , 0.0,0.0 , 1.0,0.0};
+}
+// Hex (4D), Dec (77), Uppercase M
+List ARIAL_lt_M {
+	Line_Strip{0.0,0.0 , 0.0,1.0 , 0.5,0.5 , 1.0,1.0 , 1.0,0.0};
+}
+// Hex (4E), Dec (78), Uppercase N
+List ARIAL_lt_N {
+	Line_Strip{0.0,0.0 , 0.0,1.0 , 1.0,0.0 , 1.0,1.0};
+}
+// Hex (4F), Dec (79), Uppercase O
+List ARIAL_lt_O {
+	Closed_Line{0.2,0.0 , 0.0,0.2 , 0.0,0.8 , 0.2,1.0 , 0.8,1.0 , 1.0,0.8 , 1.0,0.2 , 0.8,0.0 };
+}
+// Hex (50), Dec (80), Uppercase P
+List ARIAL_lt_P {
+	Line_Strip{0.0,0.0 , 0.0,1.0 , 0.8,1.0 , 1.0,0.8 , 1.0,0.6 , 0.8,0.4 , 0.0,0.4};
+}
+// Hex (51), Dec (81), Uppercase Q
+List ARIAL_lt_Q {
+	Closed_Line{0.2,0.0 , 0.0,0.2 , 0.0,0.8 , 0.2,1.0 , 0.8,1.0 , 1.0,0.8 , 1.0,0.2 , 0.8,0.0 };
+    line{0.7,0.3 , 1.0,0.0};
+}
+// Hex (52), Dec (82), Uppercase R
+List ARIAL_lt_R {
+	Line_Strip{0.0,0.0 , 0.0,1.0 , 0.8,1.0 , 1.0,0.8 , 1.0,0.6 , 0.8,0.4 , 0.0,0.4};
+    line{0.8,0.4 , 1.0,0.0};
+}
+// Hex (53), Dec (83), Uppercase S
+List ARIAL_lt_S {
+	Line_Strip{0.0,0.1 , 0.2,0.0 , 0.8,0.0 , 1.0,0.2 , 1.0,0.4 , 0.9,0.5 , 0.1,0.5 , 0.0,0.6 , 0.0,0.8 , 0.2,1.0 , 0.8,1.0 , 1.0,0.9};
+}
+// Hex (54), Dec (84), Uppercase T
+List ARIAL_lt_T {
+	line{0.0,1.0, 1.0,1.0};
+    line{0.5,1.0, 0.5,0.0};
+}
+// Hex (55), Dec (85), Uppercase U
+List ARIAL_lt_U {
+	Line_Strip{0.0,1.0 , 0.0,0.2 , 0.2,0.0 , 0.8,0.0 , 1.0,0.2 , 1.0,1.0};
+}
+// Hex (56), Dec (86), Uppercase V
+List ARIAL_lt_V {
+	Line_Strip{0.0,1.0 , 0.5,0.0 , 1.0,1.0};
+}
+// Hex (57), Dec (87), Uppercase W
+List ARIAL_lt_W {
+	Line_Strip{0.0,1.0 , 0.2,0.0 , 0.5,1.0 , 0.8,0.0 , 1.0,1.0};
+}
+// Hex (58), Dec (88), Uppercase X
+List ARIAL_lt_X {
+	line{0.0,0.0 , 1.0,1.0};
+    line{0.0,1.0 , 1.0,0.0};
+}
+// Hex (59), Dec (89), Uppercase Y
+List ARIAL_lt_Y {
+	Line_strip { 0.0, 1.0 , 0.5, 0.5 , 1.0, 1.0 };
+	Line { 0.5, 0.0 , 0.5, 0.5 };
+}
+// Hex (5A), Dec (90), Uppercase Z
+List ARIAL_lt_Z {
+	Line_Strip{1.0,0.0 , 0.0,0.0 , 1.0,1.0 , 0.0,1.0};
+}
+// Hex (5B}, Dec (91), Left Square Bracket
+List ARIAL_Left_Square_Bracket {
+	Line_Strip{0.8,0.0 , 0.3,0.0 , 0.3,1.0 , 0.8,1.0};
+}
+// Hex (5C), Dec (92), Back Slash
+List ARIAL_Back_Slash {
+	line{0.2,1.0 , 0.8,0.0};
+}
+// Hex (5D), Dec (93), Right Square Bracket
+List ARIAL_Right_Square_Bracket {
+	Line_Strip{0.2,1.0 , 0.7,1.0 , 0.7,0.0 , 0.2,0.0};
+}
+// Hex (5E), Dec (94), Caret
+List ARIAL_Caret {
+	Line_Strip{0.3,0.8 , 0.5,1.0 , 0.7,0.8};
+}
+// Hex (5F), Dec (95), Underline
+List ARIAL_Underline {
+	line{0.0,0.0 , 1.0,0.0};
+}
+// Hex (60), Dec (96), Accent
+List ARIAL_Accent {
+	Line_Strip{0.4,0.9 , 0.5,0.9 , 0.5,0.8 , 0.4,0.8 , 0.4,0.9 , 0.5,1.0};
+}
+// Hex (61), Dec (97), Lowercase a
+List ARIAL_lt_la {
+	Line_Strip{0.0,0.4 , 0.2,0.6 , 0.8,0.6 , 1.0,0.4 , 1.0,0.0};
+    Line_Strip{1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.2,0.0 , 0.0,0.1 , 0.0,0.2 , 0.2,0.3 , 0.8,0.3 , 1.0,0.2};
+}
+// Hex (62), Dec (98), Lowercase b
+List ARIAL_lt_lb {
+	Line_Strip{0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1};
+    line{0.0,0.0 , 0.0,1.0};
+}
+// Hex (63), Dec (99), Lowercase c
+List ARIAL_lt_lc {
+	Line_Strip{1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5};
+}
+// Hex (64), Dec (100), Lowercase d
+List ARIAL_lt_ld {
+	Line_Strip{1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5};
+    line{1.0,0.0 , 1.0,1.0};
+}
+// Hex (65), Dec (101), Lowercase e
+List ARIAL_lt_le {
+	Line_Strip{1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.3 , 0.0,0.3};
+}
+// Hex (66), Dec (102), Lowercase f
+List ARIAL_lt_lf {
+	Line_Strip{0.4,0.0 , 0.4,0.8 , 0.6,1.0 , 0.8,1.0};
+    line{0.2,0.5 , 0.6,0.5}; 
+}
+// Hex (67), Dec (103), Lowercase g
+List ARIAL_lt_lg {
+	Line_Strip{1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 };
+	Line_Strip{1.0,0.6 , 1.0,-0.2 , 0.8,-0.4 , 0.2,-0.4 , 0.0,-0.3};
+}
+// Hex (68), Dec (104), Lowercase h
+List ARIAL_lt_lh {
+	Line{0.0,0.0 , 0.0,1.0};
+	Line_Strip{0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.0};
+}
+// Hex (69), Dec (105), Lowercase i
+List ARIAL_lt_li {
+    Line{0.5,0.0 , 0.5,0.6 , 0.5,0.7 , 0.5,0.8};
+}
+// Hex (6A), Dec (106), Lowercase j
+List ARIAL_lt_lj {
+	Line_Strip{0.3,-0.4 , 0.5,-0.4 , 0.7,-0.3 , 0.7,0.6};
+    Line{0.7,0.7 , 0.7,0.8};
+}
+// Hex (6B), Dec (107), Lowercase k
+List ARIAL_lt_lk {
+    Line{0.0,0.0 , 0.0,1.0};
+    Line{0.0,0.3 , 1.0,0.6};
+    Line{0.2,0.35 , 1.0,0.0};
+}
+// Hex (6C), Dec (108), Lowercase l
+List ARIAL_lt_ll {
+    Line{0.5,0.0 , 0.5,1.0};
+}
+// Hex (6D), Dec (109), Lowercase m
+List ARIAL_lt_lm {
+	Line_Strip{0.0,0.5 , 0.1,0.6 , 0.4,0.6 , 0.5,0.5 , 0.6,0.6 , 0.9,0.6 , 1.0,0.5 , 1.0,0.0};
+    Line{0.0,0.0 , 0.0,0.6};
+    Line{0.5,0.0 , 0.5,0.5};
+}
+// Hex (6E), Dec (110), Lowercase n
+List ARIAL_lt_ln {
+	Line_Strip{0.0,0.5 , 0.2,0.6 , 0.9,0.6 , 1.0,0.5 , 1.0,0.0};
+    Line{0.0,0.0 , 0.0,0.6};
+}
+// Hex (6F), Dec (111), Lowercase o
+List ARIAL_lt_lo {
+	Closed_Line{0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.1 , 0.8,0.0 , 0.2,0.0};
+}
+// Hex (70), Dec (112), Lowercase p
+List ARIAL_lt_lp {
+	Line_Strip{0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.1 , 0.8,0.0 , 0.2,0.0 , 0.0,0.1};
+    Line{0.0,0.6 , 0.0,-0.4};
+}
+// Hex (71), Dec (113), Lowercase q
+List ARIAL_lt_lq {
+	Closed_Line{0.0,0.1 , 0.0,0.5 , 0.2,0.6 , 0.8,0.6 , 1.0,0.5 , 1.0,0.1 , 0.8,0.0 , 0.2,0.0};
+    Line{0.7,0.2 , 1.0,0.0};
+}
+// Hex (72), Dec (114), Lowercase r
+List ARIAL_lt_lr {
+	Line_Strip{0.0,0.5 , 0.2,0.6 , 0.9,0.6 , 1.0,0.5};
+    Line{0.0,0.0 , 0.0,0.6};
+}
+// Hex (73), Dec (115), Lowercase s
+List ARIAL_lt_ls {
+	Line_Strip{0.0,0.1 , 0.2,0.0 , 0.9,0.0 , 1.0,0.1 , 1.0,0.2 , 0.8,0.3 , 0.2,0.3 , 0.0,0.4 , 0.0,0.5 , 0.1,0.6 , 0.8,0.6 , 1.0,0.5};
+}
+// Hex (74), Dec (116), Lowercase t
+List ARIAL_lt_lt {
+	Line_Strip{0.4,1.0 , 0.4,0.1 , 0.5,0.0 , 0.6,0.0};
+    Line{0.2,0.7 , 0.6,0.7};
+}
+// Hex (75), Dec (117), Lowercase u
+List ARIAL_lt_lu {
+	Line_Strip{0.0,0.6 , 0.0,0.1 , 0.2,0.0 , 0.8,0.0 , 1.0,0.1};
+    Line{1.0,0.6 , 1.0,0.0};
+}
+// Hex (76), Dec (118), Lowercase v
+List ARIAL_lt_lv {
+	Line_Strip{0.0,0.6 , 0.5,0.0 , 1.0,0.6};
+}
+// Hex (77), Dec (119), Lowercase w
+List ARIAL_lt_lw {
+	Line_Strip{0.0,0.6 , 0.2,0.0 , 0.5,0.3 , 0.8,0.0 , 1.0,0.6};
+}
+// Hex (78), Dec (120), Lowercase x
+List ARIAL_lt_lx {
+	Line{0.0,0.0 , 1.0,1.0 , 0.0,1.0 , 1.0,0.0};
+}
+// Hex (79), Dec (121), Lowercase y
+List ARIAL_lt_ly {
+	Line_Strip{0.0,-0.4 , 0.5,0.0 , 1.0,0.6};
+	Line{0.0,0.6 , 0.5,0.0};
+}
+// Hex (7A), Dec (122), Lowercase z
+List ARIAL_lt_lz {
+	Line_Strip{0.0,0.6 , 1.0,0.6 , 0.0,0.0 , 1.0,0.0};
+}
+// Hex (7B), Dec (123), Left Bracket {
+List ARIAL_Left_Bracket_2 {
+	Line_Strip{0.7,0.0 , 0.5,0.0 , 0.4,0.1 , 0.4,0.4 , 0.3,0.5 , 0.4,0.6 , 0.4,0.9 , 0.5,1.0 , 0.7,1.0};
+}
+// Hex (7C), Dec (124), Vertical line
+List ARIAL_Vertical_Line {
+	Line{0.5,0.0 , 0.5,1.0};
+}
+// Hex (7D), Dec (125), Right Bracket );
+List ARIAL_Right_Bracket_2 {
+	Line_Strip{0.3,1.0 , 0.5,1.0 , 0.6,0.9 , 0.6,0.6 , 0.7,0.5 , 0.6,0.4 , 0.6,0.1 , 0.5,0.0 , 0.3,0.0};
+}
+// Hex (7E), Dec (126), Tilde
+List ARIAL_Tilde {
+	Line_Strip{0.2,0.5 , 0.4,0.6 , 0.7,0.4 , 0.9,0.5};
+}
+
+// Hex (7F), Dec (127), Delete
+List ARIAL_Delete { 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

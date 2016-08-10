@@ -14,15 +14,14 @@ namespace vip_sharp
 {
     public partial class VIPForm : Form
     {
-        dynamic LibMainClass;
+        public dynamic LibMainClass;
         bool Initialized = false;
         int Frames = 0;
         DateTime LastFPSCountedAt = DateTime.Now;
         DateTime LastRenderedAt = DateTime.Now;
 
-        public VIPForm(dynamic libmainclass)
+        public VIPForm()
         {
-            LibMainClass = libmainclass;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             InitializeComponent();
 

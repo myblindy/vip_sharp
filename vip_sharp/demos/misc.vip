@@ -1,6 +1,10 @@
+use "libraries\vip.fnt"
+
 main
 {
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "Ja, het Werkt";
+	
+	line{-1,-1, -2,-2, 0,2};
 
 }

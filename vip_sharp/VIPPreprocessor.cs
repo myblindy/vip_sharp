@@ -11,7 +11,7 @@ namespace vip_sharp
 {
     public static class VIPPreprocessor
     {
-        private static Regex UseRegex = new Regex(@"^\s*use\s+(.*)\s*$");
+        private static Regex UseRegex = new Regex(@"^\s*use\s+(.*)\s*$", RegexOptions.IgnoreCase);
 
         public static string Preprocess(string filename)
         {
@@ -23,7 +23,10 @@ namespace vip_sharp
                 if (m.Success)
                 {
                     // include the file instead of the line
-                    sb.AppendLine(Preprocess(m.Groups[1].Value));
+                    var f = m.Groups[1].Value;
+                    if (f.StartsWith("\"") && f.EndsWith("\""))
+                        f = f.Substring(1, f.Length - 2);
+                    sb.AppendLine(Preprocess(f));
                 }
                 else
                     sb.AppendLine(line.Replace(".AND.", " .AND. ").Replace(".OR.", " .OR. "));

@@ -1,0 +1,2855 @@
+// **************************
+// ** [ TRU SYSTEMS INC. ] **
+// ########################################################################################
+// ## FILENAME     : xxxxxxxx.xxx                                                        ##
+// ## PROJECT/PART :  VIP++ Extended Switch Classes                                      ##
+// ##------------------------------------------------------------------------------------##
+// ## DESCRIPTION  :  Extend this existing switches library for particular case		     ##
+// ##                                                                                    ##
+// ##------------------------------------------------------------------------------------##
+// ## AUTHOR: First.Last                                                                 ##
+// ## DATE CREATED: 14/08/15                 LAST REVISION: dd/mm/yy                     ##
+// ########################################################################################
+
+// Used to determine if the switch has a base
+Define N_BASE   0
+Define Y_BASE   1
+
+// Used to determine if the switch has a base
+Define Two	   0
+Define Three   1
+
+// Used to determine the guard on the switch
+Define BLACK_GUARD		 0
+Define SMALL_BLACK_GUARD 1
+Define RED_GUARD		 2
+Define SMALL_RED_GUARD	 3
+Define STABTRIM			 4
+
+// Set the minimum brightness
+double dMin_Int = 0.5;
+
+// ########################################################################################
+// Annunciator (Black Text over MATRIXed background, Single or dual section)
+//
+// example:
+// Instance oAnnun 	pbAAAAA		{X=0.0, Y=0.0, S=1.0}:{1, 1, 0.1, 0.15, 1.35, false}:{NFONT=VIP_NULL, CMATRIXTOP="WHITE", CMATRIXBOT="AMBER", CFONTTOPMATRIX="BLACK", CFONTBOTMATRIX="BLACK", LGUARDBMP_CLOSE=0, LGUARDBMP_OPEN=0};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width (scaling)
+// 1st param: number of section (currently support 1 or 2 sections of text)
+// 2nd param: number of text line per section
+// 3rd param: scaling of the character in X direction
+// 4th param: scaling of the character in Y direction
+// 5th param: delta spacing between the characters in X direction.
+// 6th param: Flag to define switch as per Airbus (Box around bottom text)
+// NFONT:	  FONT list name
+// CMATRIXTOP: MATRIX of entire/top section
+// CMATRIXBOT: MATRIX of bottom section
+// CFONTTOPMATRIX: MATRIX of top font
+// CFONTBOTMATRIX: MATRIX of bottom font
+//
+// ########################################################################################
+
+Object oAnnun
+{	
+	int m_nSection;
+	int m_nLineText;
+	double	m_dX;
+	double	m_dY;
+	double	m_dSpacing;
+	int		m_nSpringload;
+	bool	m_bBox;
+	
+	Struct cIn
+	{
+		float fBklt_Top;	
+		float fBklt_Bot;	
+		float fFont_Top_Int;	
+		float fFont_Bot_Int;	
+	
+		// Characters Row
+		char	cFirst[10];	
+		char	cSecond[10];
+		char	cThird[10];	
+		char	cFourth[10];	
+		
+		double	dLineWidth;
+	}
+	
+	Struct cOut
+	{
+		
+	}
+
+	Init(int nSection, int nLineText, double dX, double dY, double dSpacing, bool bIsBoxPresent)
+	{		
+		m_nSection 	= nSection;
+		m_nLineText = nLineText;
+		m_dX		= dX;
+		m_dY		= dY;
+		m_dSpacing	= dSpacing;
+		
+		cIn.fBklt_Top		= 100.0;
+		cIn.fBklt_Bot		= 100.0;
+		cIn.fFont_Top_Int	= 100.0;
+		cIn.fFont_Bot_Int	= 100.0;
+		
+		m_bBox	=	bIsBoxPresent;
+	}
+		
+	Entry
+	{
+		double dDynSpace;
+		TMATRIX cMATRIX;
+		
+		MATRIX(SAVE);
+			Line_Width(3.0);
+			MATRIX(YELLOW);
+		
+			Line_Width(1.0);
+			MATRIX(0.0, 0.0, 0.0);
+			QUAD{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5};	
+			
+			if (m_nSection == 1)	{
+				MATRIX(CMATRIXTOP, cIn.fBklt_Top);
+				QUAD{-0.45, -0.45, -0.45, 0.45, 0.45, 0.45, 0.45, -0.45};	
+				
+				if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+				Line_Width(cIn.dLineWidth);
+				GetMATRIXRGB(CFONTTOPMATRIX, cIn.fFont_Top_Int, cMATRIX);
+				MATRIX(cMATRIX);
+				if (m_nLineText == 1)	{	String(0.0, 0.0, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.625;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				if (m_nLineText == 3)	{	dDynSpace = m_dY * 1.5;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											String(0.0,  0.0, 		  CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);  }	
+				if (m_nLineText == 4)	{	dDynSpace = m_dY * 0.750;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											dDynSpace = m_dY * 2.250;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); 
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+			}
+			
+			if (m_nSection == 2)	{
+				MATRIX(CMATRIXTOP, cIn.fBklt_Top);
+				QUAD{-0.45, 0.025, -0.45, 0.45, 0.45, 0.45, 0.45, 0.025};	
+				
+				if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+				Line_Width(cIn.dLineWidth);
+				GetMATRIXRGB(CFONTTOPMATRIX, cIn.fFont_Top_Int, cMATRIX);
+				MATRIX(cMATRIX);
+				if (m_nLineText == 1)	{	String(0.0, 0.25, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 + 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											dDynSpace = -m_dY * 0.750 + 0.25 ;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				Line_Width(1.0);		
+				MATRIX(CMATRIXBOT, cIn.fBklt_Bot);
+				QUAD{-0.45, -0.45, -0.45, -0.025, 0.45, -0.025, 0.45, -0.45};
+				
+				Line_Width(cIn.dLineWidth);
+				GetMATRIXRGB(CFONTBOTMATRIX, cIn.fFont_Bot_Int, cMATRIX);
+				MATRIX(cMATRIX);
+				if (m_nLineText == 1)	{	String(0.0, -0.25, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 - 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											dDynSpace = -m_dY * 0.750 - 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+											
+				if (m_bBox)				{	
+						Line_Width(cIn.dLineWidth * 1.5);
+						BOX(0.0, -0.25, 0.9, 0.35, CTR);	}
+			}
+			
+		MATRIX(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Custom Pushbutton switch (with optional springloading )
+//
+// example:
+// Instance oCPushBtn 		pbAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{ dWidth, dHeight, SW_DN,  SPNGLOAD_UP}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation
+// 1st param: Width of Bitmap
+// 2nd param: Height of Bitmap
+// 3rd param: initial position of switch at init
+// 4th param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oCPushBtn
+{
+	double	m_dWidth;
+	double	m_dHeight;
+	int		m_nSpringload;
+
+	Struct cIn
+	{
+		int nHotspot_Alpha;
+	}
+	
+	Struct cOut
+	{
+		bool bPushed_In;
+	}
+
+	Init( double dWidth, double dHeight, bool bInitState, int nSpringload)
+	{
+		m_dWidth	=	dWidth;
+		
+		m_dHeight	=	dHeight;
+	
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+		
+		cIn.nHotspot_Alpha	= 100.0;
+	}
+
+	Entry
+	{
+		bool m_bClick;
+		
+		Matrix(SAVE);
+			m_bClick = false;
+	
+			if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed_In = false; }
+	
+			Color(SAVE);
+				Color(YELLOW, cIn.nHotspot_Alpha);
+	
+				if (m_nSpringload > SPNGLOAD_NO)	{
+					Hotspot(0.0, 0.0, m_dWidth, m_dHeight, CTR, m_bClick, 	SELECTED, MOMENTARY, true, false, HOVER);
+					cOut.bPushed_In = m_bClick;
+				}
+				else	{
+					Hotspot(0.0, 0.0, m_dWidth, m_dHeight, CTR, m_bClick, 	RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+					if (m_bClick)	{ cOut.bPushed_In = !cOut.bPushed_In; }
+				}
+	
+				if (cOut.bPushed_In == true)	{ Scale(0.9); }
+	
+				Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, m_dWidth, m_dHeight, CTR);
+			Color(RESTORE);
+		Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Bitmap Annuciators
+//
+// example:
+// Instance oBAnn 	baAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: height of bitmap
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oBAnn
+{		
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	double	m_dAnnInt;
+
+	Struct cIn
+	{
+		double	dAnn_Int;
+	}
+	Init(double dBitmapWidth, double dBitmapHeight)
+	{
+		m_dBitmapWidth 	=	dBitmapWidth;
+		m_dBitmapHeight	=	dBitmapHeight;
+	}
+
+	Entry
+	{		
+		m_dAnnInt	=	(cIn.dAnn_Int)/100.0;
+	
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			
+			if (m_dAnnInt > 0.0)
+			{
+				LIGHT(ON);
+				LIGHT(m_dAnnInt);
+				Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+				LIGHT(OFF);
+			}
+			else
+			{
+				Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2);
+			}
+		MATRIX(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Bitmap Pushbutton
+//
+// example:
+// Instance oBPb 	bpbAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0, 1}:{ BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: height of bitmap
+// 3rd param: Shape of Bitmap (CIRCLE = 0, SQUARE=1)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oBPb
+{		
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	int		m_nShape;
+	
+	Struct cOut
+	{
+		bool	bPushed;
+	}
+
+	Struct cIn
+	{
+		bool	bPushed;
+		bool	bSPRNGLOAD;
+		bool	bSpecialCase[2];
+		double	dCustomX;
+		double	dCustomY;
+		double	dCustomW;
+		double	dCustomH;
+	}
+	
+	Init(double dBitmapWidth, double dBitmapHeight, int nShape)
+	{
+		m_dBitmapWidth 		=	dBitmapWidth;
+		m_dBitmapHeight		=	dBitmapHeight;
+		m_nShape			=	nShape;
+		cOut.bPushed		=	false;
+	}
+
+	Entry
+	{	
+		bool	m_bClick;
+	
+		cOut.bPushed	=	cIn.bPushed;
+		Color(SAVE);
+		MATRIX(SAVE);
+			Line_Width(1.0);
+		
+			Color(Black);
+			if( m_nShape == 0)
+			{CIRCLE( 0.0, 0.0, m_dBitmapWidth/2, 32, FILL);}
+			if( m_nShape == 1)
+			{BOX( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, FILL);}
+			else{ m_nShape = 2;}
+			
+			COLOR(WHITE);
+			
+			if(cIn.bSpecialCase[0])
+			{
+				if(cOut.bPushed)
+				{
+					Bitmap( RGB, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2);
+				}
+				else
+				{
+					Bitmap( RGB, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+				}
+			
+			}
+			else
+			{
+				if(cOut.bPushed){SCALE(0.85);}
+				Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR);
+			}
+			MATRIX(RESTORE);
+			
+			Color(Yellow);
+			
+			if(cIn.bSpecialCase[1])
+			{
+				if(cIn.bSPRNGLOAD)
+				{
+					Hotspot( cIn.dCustomX, cIn.dCustomY, cIn.dCustomW, cIn.dCustomH, CTR, m_bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+					if(m_bClick){cOut.bPushed = !cOut.bPushed;}
+				}
+				else
+				{
+					Hotspot( cIn.dCustomX, cIn.dCustomY, cIn.dCustomW, cIn.dCustomH, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+			}
+			else
+			{
+				if(cIn.bSPRNGLOAD)
+				{
+					Hotspot( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, m_bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+					if(m_bClick){cOut.bPushed = !cOut.bPushed;}
+				}
+				else
+				{
+					Hotspot( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+			}
+		Color(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Bitmap Annuciator Pushbutton
+//
+// example:
+// Instance oBAnnPb 	bapAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{ 2, 1.0, 1.0, 0}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Number of States
+// 2nd param: height of bitmap
+// 3rd param: height of bitmap
+// 4th param: Shape of Bitmap (CIRCLE = 0, SQUARE=1)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+Object oBAnnPb
+{		
+	double	m_nStates;
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	int		m_nShape;
+	double	m_dAnnInt;
+	double	m_dMultiAnn_Int[2];
+	
+	bool	m_bAnn;
+	bool	m_bAnnTop;
+	bool	m_bAnnBot;
+
+	Struct cIn
+	{
+		bool	bAnn;
+		bool	bAnnTop;
+		bool	bAnnBot;
+		double	dAnn_Int;
+		double	dMultiAnn_Int[2];
+		bool	bPushed;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+	}
+
+	Init(int nStates, double dBitmapWidth, double dBitmapHeight, int nShape)
+	{
+		m_nStates 		=	nStates;
+		
+		if( m_nStates == 2){ m_dBitmapWidth =	dBitmapWidth/2;}
+		if( m_nStates == 3){ m_dBitmapWidth =	dBitmapWidth/3;}
+		if( m_nStates == 4){ m_dBitmapWidth =	dBitmapWidth/4;}		
+		
+		m_dBitmapHeight	=	dBitmapHeight;
+		m_nShape		=	nShape;
+		
+		cOut.bPushed	=	false;
+	}
+
+	Entry
+	{		
+		m_bAnnTop	=	cIn.bAnnTop;
+		m_bAnnBot	=	cIn.bAnnBot;
+		m_dAnnInt	=	(cIn.dAnn_Int)/100.0;
+		
+		FOR( System.nTemp = 0; System.nTemp < 2; System.nTemp++)
+		{
+			m_dMultiAnn_Int[System.nTemp]	=	cIn.dMultiAnn_Int[System.nTemp];
+		}
+	
+		cOut.bPushed	=	cIn.bPushed;
+		
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			
+			Color(Black);
+			if( m_nShape == 0)
+			{CIRCLE( 0.0, 0.0, m_dBitmapWidth/2, 32, FILL);}
+			if( m_nShape == 1)
+			{BOX( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, FILL);}
+			
+			
+			Color(Yellow);
+			Hotspot( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+			
+			COLOR(WHITE);
+			
+			if(cOut.bPushed){SCALE(0.85);}
+				
+			if( m_nStates == 2)
+			{
+				if (m_dAnnInt == 0.0)
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);		
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+					LIGHT(OFF);
+				}
+				else
+				{
+					if (m_dAnnInt	<	dMin_Int)	{	m_dAnnInt	=	dMin_Int;	}
+					
+					LIGHT(ON);										
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+					LIGHT(OFF);
+				}
+			}	
+			
+			if( m_nStates == 3)
+			{
+				if ((m_dMultiAnn_Int[0] == 0.0) & (m_dMultiAnn_Int[1] == 0.0))
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);		
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap3_3);
+					LIGHT(OFF);
+				}
+				else
+				{
+					if(m_dMultiAnn_Int[0] > 0.0)
+					{
+						LIGHT(ON);										
+						LIGHT(m_dMultiAnn_Int[0]);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap3_2);
+						LIGHT(OFF);
+					}
+					
+					if (m_dMultiAnn_Int[1] > 0.0)
+					{
+						LIGHT(ON);										
+						LIGHT(m_dMultiAnn_Int[1]);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap3_1);
+						LIGHT(OFF);
+					}
+				}
+			}
+			
+			if( m_nStates == 4)
+			{
+				if (m_dAnnInt	<	dMin_Int)	{	m_dAnnInt	=	dMin_Int;	}
+				if (m_bAnnTop)
+				{
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_3);
+					LIGHT(OFF);
+				}
+				
+				if (m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+					LIGHT(OFF);
+				}
+
+				if (m_bAnnTop & m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+					LIGHT(OFF);
+				}		
+				
+				if (!m_bAnnTop & !m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT(dMin_Int);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_4);
+					LIGHT(OFF);
+				}
+			}
+			
+		MATRIX(RESTORE);
+	}
+}
+
+// ########################################################################################
+// 2/3 position switch (with optional springloading )
+//
+// example:
+// Instance oSwPos 		swAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{3, 1.0, 1.0, SW_UP,  SPNGLOAD_NO, Y_BASE}:{N= Three, BASE_LIST=lCircleRing, BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Switch Positions
+// 2nd param: width of bitmap
+// 3rd param: height of bitmap
+// 4th param: initial position of switch at init
+// 5th param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// 6th param: Base (N_BASE, Y_BASE)
+// N = Number of States in the bitmap
+// BASE_LIST = path of bitmap base file
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oSwPos
+{
+	bool m_bClick_Up;
+	bool m_bClick_Ctr;
+	bool m_bClick_Down;
+
+	int m_nSpringload;
+	int m_nStates;
+	int m_nBase;
+
+	int		m_nSwitch_Type;
+	double	m_dBitmapWidth;
+	double	dWidth;
+	double	m_dBitmapHeight;
+	
+	bool 	m_bPos_Up;
+	bool 	m_bPos_Down;
+	
+	double 	m_dRotate;
+	bool 	m_bRotate;
+	
+	bool 	m_bSpecialCase;
+	
+	double	m_dR;
+	double	m_dRotateX;
+	double	m_dRotateY;
+	
+	Struct cIn
+	{
+		bool 	bPos_Up;
+		bool 	bPos_Down;
+		int	 	nSPRNGLOAD;
+		double	dRotate;
+		bool 	bSpecialCase;
+		double 	dCustomW;
+		double 	dCustomH;
+	}
+
+	Struct cOut
+	{
+		bool bPos_Up;
+		bool bPos_Down;
+	}
+
+	Init(int nSwitch_Type, double dBitmapWidth, double dBitmapHeight, int nSpringload, int nBase, int nStates)
+	{
+		m_nStates		=	nStates;
+		m_nSwitch_Type	=	nSwitch_Type;
+		m_dBitmapWidth	=	dBitmapWidth;
+		m_dBitmapHeight	=	dBitmapHeight;
+		if(m_nStates == 2){dWidth = m_dBitmapWidth/2;}else{dWidth = m_dBitmapWidth/3;}	
+		
+		m_bPos_Up		=	cIn.bPos_Up;
+		m_bPos_Down 	=	cIn.bPos_Down;
+
+		m_nSpringload	=	nSpringload;
+		cIn.nSPRNGLOAD	=	nSpringload;
+		m_nBase			=	nBase;
+		m_dRotate		=	0.0;
+		m_dRotate		=	cIn.dRotate;
+		if(m_dRotate > 0.0){m_bRotate = true;}else{m_bRotate = false;}
+		
+		m_bSpecialCase	=	cIn.bSpecialCase;
+	}
+
+	Entry
+	{
+	
+	if((m_bPos_Up != cIn.bPos_Up) | (m_bPos_Down != cIn.bPos_Down))
+	{
+		m_bPos_Up		=	cIn.bPos_Up;
+		m_bPos_Down 	=	cIn.bPos_Down;
+		cOut.bPos_Up	=	cIn.bPos_Up;
+		cOut.bPos_Down	=	cIn.bPos_Down;
+	}
+	
+	Color(White);
+	if(m_nBase > N_BASE)
+	{
+		DISPLAY( 0.0, 0.0, BASE_LIST);
+	}
+	
+	Matrix(SAVE);
+		Color(SAVE);
+		
+			m_bClick_Up 	= false;
+			m_bClick_Ctr	= false;
+			m_bClick_Down 	= false;
+	
+			if ((cIn.nSPRNGLOAD	==	SPNGLOAD_DN)  | (m_nSpringload == SPNGLOAD_DN)) 	{ cOut.bPos_Up	= false;}
+			if ((cIn.nSPRNGLOAD	==	SPNGLOAD_UP)  | (m_nSpringload == SPNGLOAD_UP))		{ cOut.bPos_Down  = false; }
+			if ((cIn.nSPRNGLOAD	==	SPNGLOAD_BOTH)| (m_nSpringload == SPNGLOAD_BOTH))	{ cOut.bPos_Up	= false; cOut.bPos_Down= false; }
+		
+			Line_Width(1.0);
+			Color(YELLOW);
+					
+			if( m_nSwitch_Type == 2)
+			{
+				m_dRotateX	=	3 * dWidth/2;
+				m_dRotateY	=	m_dBitmapHeight;
+				
+				if(m_bRotate)
+				{
+					m_dR		=	((m_dRotateX^2) + (m_dRotateY^2))^(1/2);
+					m_dRotateX	=	ABS((m_dRotateX * COS(m_dRotate)) - (m_dRotateY * SIN(m_dRotate)));
+					m_dRotateY	=	ABS((m_dRotateX * SIN(m_dRotate)) + (m_dRotateY * COS(m_dRotate)));
+				}
+				
+				if(m_bSpecialCase)
+				{
+					m_dRotateX	=	cIn.dCustomW;
+					m_dRotateY	=	cIn.dCustomH;
+					Hotspot( 0.0, m_dRotateY/2, m_dRotateX, m_dRotateY, CL, m_bClick_Up,   SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot( 0.0,-m_dRotateY/2, m_dRotateX, m_dRotateY, CU, m_bClick_Down, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+				else
+				{
+					Hotspot( 0.0, m_dBitmapHeight/2, m_dRotateX, m_dRotateY, CTR, m_bClick_Up,   SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot( 0.0,-m_dBitmapHeight/2, m_dRotateX, m_dRotateY, CTR, m_bClick_Down, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+				
+				if (m_bClick_Up){	cOut.bPos_Up	= true;}
+				if (m_bClick_Down){	cOut.bPos_Up 	= false;}
+
+				Color(White);
+				if(m_nBase > N_BASE)
+				{
+					if(m_nStates == 3)
+					{
+						if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+						if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+					}
+					if(m_nStates == 2)
+					{
+						if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2); }
+						if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1); }
+					}
+					
+				}
+				else
+				{
+					if(m_nStates == 3)
+					{
+						if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+						if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+					}
+					if(m_nStates == 2)
+					{
+						if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2); }
+						if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1); }
+					}
+				}
+				cOut.bPos_Down	=	!cOut.bPos_Up;
+			}
+			
+			if( m_nSwitch_Type == 3)
+			{
+				m_dRotateX	=	3 * dWidth/2;
+				m_dRotateY	=	3 * m_dBitmapHeight/4;
+					
+				if(m_bRotate)
+				{
+					m_dRotateX	=	ABS((m_dRotateX * COS(m_dRotate)) - (m_dRotateY * SIN(m_dRotate)));
+					m_dRotateY	=	ABS((m_dRotateX * SIN(m_dRotate)) + (m_dRotateY * COS(m_dRotate)));
+				}
+
+				if(m_bSpecialCase)
+				{
+					m_dRotateX	=	cIn.dCustomW;
+					m_dRotateY	=	cIn.dCustomH;
+					Hotspot(0.0, m_dRotateY, m_dRotateX, m_dRotateY, CL,  m_bClick_Up,   SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot(0.0, 0.0,	  	 m_dRotateX, m_dRotateY, CTR, m_bClick_Ctr,  SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot(0.0,-m_dRotateY, m_dRotateX, m_dRotateY, CU,  m_bClick_Down, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+				else
+				{
+					Hotspot(0.0, 3 * m_dBitmapHeight/4, m_dRotateX, m_dRotateY, CTR, m_bClick_Up, 	SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot(0.0, 0.0, 					m_dRotateX, m_dRotateY, CTR, m_bClick_Ctr,  SELECTED, MOMENTARY, true, false, HOVER);
+					Hotspot(0.0,-3 * m_dBitmapHeight/4, m_dRotateX, m_dRotateY, CTR, m_bClick_Down, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+				
+				if (m_bClick_Up){	cOut.bPos_Up	= true;		cOut.bPos_Down 	= false;}
+				if (m_bClick_Ctr){	cOut.bPos_Up	= false;	cOut.bPos_Down 	= false;}
+				if (m_bClick_Down){	cOut.bPos_Up	= false;	cOut.bPos_Down 	= true;	}
+				
+				Color(White);
+				if(m_nBase > N_BASE)
+				{
+					if((cOut.bPos_Up)  & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+					if(!(cOut.bPos_Up) & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.000,			  m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_2); }
+					if(!(cOut.bPos_Up) &  (cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+				}
+				else
+				{
+					if((cOut.bPos_Up)  & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+					if(!(cOut.bPos_Up) & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_2); }
+					if(!(cOut.bPos_Up) &  (cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+				}
+			}
+		
+		Color(RESTORE);
+	Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// 2/3 Guarded Switch (with optional springloading )
+//
+// example:
+// Instance oGSwPos 		swAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0, 1.0, SW_UP,  SPNGLOAD_NO, GUARD_BLACK, Y_BASE}:{BASE_LIST=lCircleRing, BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Switch Positions
+// 2nd param: width of bitmap
+// 3rd param: height of bitmap
+// 4th param: initial position of switch at init
+// 5th param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// 6th param: Guard (BLACK_GUARD, RED_GUARD)
+// 7th param: Base  (N_BASE, Y_BASE)
+// BASE_LIST = path of bitmap base file
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oGSwPos
+{
+	bool m_bClick_Up;
+	bool m_bClick_Ctr;
+	bool m_bClick_Down;
+
+	int 	m_nSpringload;
+	int 	m_nGuard;
+	int 	m_nBase;
+	bool 	m_bBGuard;
+	bool 	m_bSBGuard;
+	bool 	m_bRGuard;
+	bool 	m_bSRGuard;
+	bool 	m_bStabTrim;
+	bool 	m_bText;
+
+	int		m_nStates;
+	int		m_nSwitch_Type;
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	
+	double	dGuardWidth;
+	double	dGuardHeight;
+	
+	bool	bDoor_Closed;
+	bool	bDoor_Open;
+	
+	bool 	m_bPos_Up;
+	bool 	m_bPos_Down;
+	bool 	m_bDoorOpen;
+	
+	bool	m_bRotate;
+	int		m_nRotate;
+	
+	double	m_dRotateX;
+	double	m_dRotateY;
+	
+	double	m_dUnRotate;
+	double	m_dUnRotateX;
+	double	m_dUnRotateY;
+	double	m_dUnRotateW;
+	double	m_dUnRotateH;
+	
+	double	m_dLineWidth;
+	
+	Struct cIn
+	{
+		bool 	bSpecialCase[2];
+		double 	dX;
+		double 	dY;
+		double 	dSideLength;
+		double 	dHeight;
+		int  	nRotate;
+		bool 	bPos_Up;
+		bool 	bPos_Down;
+		bool 	bCPos_Up;
+		bool 	bCPos_Down;
+		double 	dLineWidth;
+		bool	bDoorOpen;
+	}
+	
+	Struct cOut
+	{
+		bool bPos_Up;
+		bool bPos_Down;
+		bool bDoorOpen;
+	}
+
+	Init(int nSwitch_Type, double dBitmapWidth, double dBitmapHeight, int nSpringload, int nGuard, int nBase, int nStates)
+	{
+		m_nStates		=	nStates;
+		m_nSwitch_Type	=	nSwitch_Type;
+		m_dBitmapWidth	=	dBitmapWidth;
+		m_dBitmapHeight	=	dBitmapHeight;
+		
+		m_bPos_Up		=	cIn.bPos_Up;
+		m_bPos_Down 	=	cIn.bPos_Down;
+		m_bDoorOpen 	=	cIn.bDoorOpen;
+		
+		dGuardWidth		=	3.00;
+		dGuardHeight	=	3.00;
+		
+		bDoor_Closed 	= 	true;
+
+		m_nSpringload	=	nSpringload;
+		m_nGuard		=	nGuard;
+		m_nBase			=	nBase;
+		
+		m_nRotate		=	cIn.nRotate;
+		
+		// This will be used to switch the x & y of the hotspots
+		if((ABS(m_nRotate) == 90) | (ABS(m_nRotate) == 270)){ m_bRotate = true;}else{ m_bRotate = false;}
+		
+		m_dLineWidth	=	5.0;
+	}
+
+	Entry
+	{
+	// Backdrive for the Switch Positions
+	if((m_bPos_Up != cIn.bPos_Up) | (m_bPos_Down != cIn.bPos_Down) | (m_bDoorOpen != cIn.bDoorOpen))
+	{
+		m_bPos_Up		=	cIn.bPos_Up;
+		m_bPos_Down 	=	cIn.bPos_Down;
+		cOut.bPos_Up	=	cIn.bPos_Up;
+		cOut.bPos_Down	=	cIn.bPos_Down;
+		
+		if(m_bDoorOpen != cIn.bDoorOpen)
+		{
+			m_bDoorOpen 	=	cIn.bDoorOpen;
+			cOut.bDoorOpen	=	cIn.bDoorOpen;
+			bDoor_Open	 	=	cOut.bDoorOpen;
+			bDoor_Closed	=	!bDoor_Open;
+		}
+	}
+	
+	double	dWidth;
+	// Since the Initial Bitmap contains two images
+	dWidth	= m_dBitmapWidth/3;
+	
+	// Creating a Bitmap_Res for the guard that is defined in the Instance
+	if( m_nGuard == BLACK_GUARD)
+	{
+		m_bBGuard = true;
+		Bitmap_Res( BGUARD_BMP, HARD_MASK, LINEAR, CLAMP, "Parts/Switches/Guard_Grey_Switch.bmp");
+	}
+	if( m_nGuard == SMALL_BLACK_GUARD)
+	{
+		m_bSBGuard = true;
+		Bitmap_Res( SBGUARD_BMP, HARD_MASK, LINEAR, CLAMP, "Parts/Switches/SGuard_Grey_Switch.bmp");
+	}
+	if( m_nGuard == RED_GUARD)
+	{
+		m_bRGuard = true;
+		Bitmap_Res( RGUARD_BMP, HARD_MASK, LINEAR, CLAMP, "Parts/Switches/Guard_Red_Switch.bmp");
+	}
+	if( m_nGuard == SMALL_RED_GUARD)
+	{
+		m_bSRGuard = true;
+		Bitmap_Res( SRGUARD_BMP, HARD_MASK, LINEAR, CLAMP, "Parts/Switches/SGuard_Red_Switch.bmp");
+	}
+	
+	if( m_nGuard == STABTRIM)
+	{
+		m_bStabTrim = true;
+		dGuardWidth		=	2.35;
+		dGuardHeight	=	0.64;
+		Bitmap_Res( STGUARD_BMP, HARD_MASK, LINEAR, CLAMP, "Parts/Switches/CS_Stab_Trim_Hdl.bmp");
+	}
+	
+	
+	Matrix(SAVE);
+		Color(SAVE);
+	
+	if(bDoor_Open)
+	{
+		Color(White);
+		// Depending on the guard used, this displays the open position
+		if(m_bBGuard)
+		{
+			Bitmap( BGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/2, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_2);
+		}
+		if(m_bRGuard)
+		{
+			Bitmap( RGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/2, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_2);
+		}
+		
+		if(m_bSBGuard)
+		{
+			Bitmap( SBGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/2, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_2);
+		}
+		if(m_bSRGuard)
+		{
+			Bitmap( SRGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/2, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_2);
+		}
+		if(m_bStabTrim)
+		{
+			Bitmap( STGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_2);
+		}
+		// Since the Stab_Trim guard does not follow the usual template, it requires a special case
+		if(m_bStabTrim)
+		{
+			// In VIP++, there is an issue where the hotspot does not rotate correctly
+			// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+			if(m_bRotate)
+			{
+				// Rotated
+				m_dRotateX = dGuardHeight;
+				m_dRotateY = dGuardWidth/2;
+			}
+			else
+			{
+				// Not Rotated
+				m_dRotateX = dGuardWidth/2;
+				m_dRotateY = dGuardHeight;
+			}
+
+			Color(Yellow);
+			// Depending on the size of the Bitmap that has been defined, this function automatically adjust the locations of the hotspots
+			System.dTemp[0] = (dGuardHeight/2);
+			System.dTemp[1] = (m_dBitmapHeight * (m_nSwitch_Type/2));
+			System.dTemp[2] = -1 * (System.dTemp[1] + System.dTemp[0]);
+			
+			LINE_WIDTH(SAVE);
+			MATRIX(SAVE);
+				TRANSLATE( 0.0, System.dTemp[2]);
+			//	HOTSPOT( 0.0, 0.0, m_dRotateX, m_dRotateY, CTR, m_bText, HOVER, MOMENTARY, true, false, NEVER);
+				if(m_nRotate == 180.0){ROTATE(180.0);}
+			//	if(m_bText){
+				LINE_WIDTH(m_dLineWidth);
+				STRING( 0.0, 0.0, CTR, NONE, "CL", 0, VIP_Null, 0.150, 0.180, 1.40);
+			//	}
+			MATRIX(RESTORE);
+			LINE_WIDTH(RESTORE);
+			
+			HOTSPOT( 0.0, System.dTemp[2], m_dRotateX, m_dRotateY, CTR, bDoor_Closed, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+		
+		}
+		else
+		{
+			// In VIP++, there is an issue where the hotspot does not rotate correctly
+			// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+			if(m_bRotate)
+			{
+				// Rotated
+				m_dRotateX = dGuardHeight/5;
+				m_dRotateY = dGuardWidth/4;
+				// This Special Case refers to the case, where you can customize the location of the "CL" hotspot and text
+				if(cIn.bSpecialCase[0])
+				{
+					m_dRotateX = cIn.dSideLength;
+					m_dRotateY = cIn.dSideLength;
+				}
+			}
+			else
+			{
+				// Not Rotated
+				m_dRotateX = dGuardWidth/4;
+				m_dRotateY = dGuardHeight/5;
+				// This Special Case refers to the case, where you can customize the location of the "CL" hotspot and text
+				if(cIn.bSpecialCase[0])
+				{
+					m_dRotateX = cIn.dSideLength;
+					m_dRotateY = cIn.dSideLength;
+				}
+			}
+
+			Color(Yellow);
+			// Depending on the size of the Bitmap that has been defined, this function automatically adjust the locations of the hotspots
+			System.dTemp[0] = (dGuardHeight/10);
+			System.dTemp[1] = (m_dBitmapHeight * (m_nSwitch_Type/2));
+			System.dTemp[2] = -1 * (System.dTemp[1] + System.dTemp[0]);
+			
+			// This Special Case refers to the case, where you can customize the location of the "CL" hotspot and text
+			if(cIn.bSpecialCase[0])
+			{
+				MATRIX(SAVE);
+					m_dUnRotate 	=	m_bRotate * (-1);
+					ROTATE(m_dUnRotate);
+					
+					MATRIX(SAVE);
+						TRANSLATE( cIn.dX, cIn.dY);
+						ROTATE(-90.0);
+					LINE_WIDTH(SAVE);
+						LINE_WIDTH(m_dLineWidth);
+						COLOR(BLACK);
+						BOX( 0.0, ((cIn.dX)/ABS(cIn.dX)) * cIn.dY, 0.420, 0.190, CTR, FILL);
+						COLOR(YELLOW);
+						STRING( 0.0, ((cIn.dX)/ABS(cIn.dX)) * cIn.dY, CTR, NONE, "CL", 0, VIP_Null, 0.150, 0.180, 1.40);
+					LINE_WIDTH(RESTORE);
+					MATRIX(RESTORE);
+					
+					HOTSPOT( cIn.dX, cIn.dY, m_dRotateX, m_dRotateY, CTR, bDoor_Closed, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+				MATRIX(RESTORE);
+			}
+			else
+			{
+				MATRIX(SAVE);
+						TRANSLATE( 0.0, System.dTemp[2]);
+						if(m_nRotate == 180.0){ROTATE(180.0);}
+					LINE_WIDTH(SAVE);
+						LINE_WIDTH(m_dLineWidth);
+						COLOR(BLACK);
+						BOX( 0.0, 0.0, 0.420, 0.190, CTR, FILL);
+						COLOR(YELLOW);
+						STRING( 0.0, 0.0, CTR, NONE, "CL", 0, VIP_Null, 0.150, 0.180, 1.40);
+					LINE_WIDTH(RESTORE);
+				MATRIX(RESTORE);
+				
+				HOTSPOT( 0.0, System.dTemp[2], m_dRotateX, m_dRotateY, CTR, bDoor_Closed, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+			}
+		}
+		
+		if(bDoor_Closed)
+		{
+			cOut.bDoorOpen	= false;
+			bDoor_Open 		= false;
+		}
+	}
+	
+	Color(White);
+	
+	if(m_nBase > N_BASE)
+	{
+		DISPLAY( 0.0, 0.0, BASE_LIST);
+	}
+	
+	m_bClick_Up 	= false;
+	m_bClick_Ctr	= false;
+	m_bClick_Down 	= false;
+	
+	if (m_nSpringload > SPNGLOAD_NO) { cOut.bPos_Up	  = false; }
+	if (m_nSpringload > SPNGLOAD_UP) { cOut.bPos_Down = false; }
+	
+	Color(YELLOW);
+	// If the switch is a two position switch
+	if( m_nSwitch_Type == 2)
+	{
+		// In VIP++, there is an issue where the hotspot does not rotate correctly
+		// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+		if(m_bRotate)
+		{
+			// Rotated
+			m_dRotateX = m_dBitmapHeight;
+			m_dRotateY = dGuardWidth/4;
+		}
+		else
+		{
+			// Not Rotated
+			m_dRotateX = dGuardWidth/4;
+			m_dRotateY = m_dBitmapHeight;
+		}
+		// If the Guard is open, this will display the hotspots that are present
+		if(bDoor_Open)
+		{
+			Hotspot( 0.0, m_dBitmapHeight/2, m_dRotateX, m_dRotateY, CTR, m_bClick_Up, 	 RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+			Hotspot( 0.0,-m_dBitmapHeight/2, m_dRotateX, m_dRotateY, CTR, m_bClick_Down, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+		}
+		
+		// Depending on the hotspot that has been selected, this will send the output to the model
+		if (m_bClick_Up){
+			cOut.bPos_Up	= true;
+		}
+		if (m_bClick_Down){
+			cOut.bPos_Up	= false;
+		}
+		
+		// Depending on the output to the model, the correct bitmap position of the switch will be displayed
+		Color(White);
+		if(m_nBase > N_BASE)
+		{
+			// In the case where the bitmap used has three switch positions, this statement is used
+			if(m_nStates == 3)
+			{
+				if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+				if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+			}
+			// In the case where the bitmap used has two switch positions, this statement is used
+			if(m_nStates == 2)
+			{
+				if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap2_1); }
+				if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap2_2); }
+			}
+		}
+		else
+		{
+			// In the case where the bitmap used has three switch positions, this statement is used
+			if(m_nStates == 3)
+			{
+				if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+				if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+			}
+			// In the case where the bitmap used has two switch positions, this statement is used
+			if(m_nStates == 2)
+			{
+				if (cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap2_1); }
+				if (!cOut.bPos_Up)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap2_2); }
+			}
+		}
+		cOut.bPos_Down	=	!cOut.bPos_Up;
+	}
+		
+	// If the switch is a three position switch
+	if( m_nSwitch_Type == 3)
+	{
+		// In VIP++, there is an issue where the hotspot does not rotate correctly
+		// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+		if(m_bRotate)
+		{
+			// Rotated
+			m_dRotateX = m_dBitmapHeight;
+			m_dRotateY = dGuardWidth/4;
+		}
+		else
+		{
+			// Not Rotated
+			m_dRotateX = dGuardWidth/4;
+			m_dRotateY = m_dBitmapHeight;
+		}
+		
+		Color(Yellow);
+		// If the Guard is open, this will display the hotspots that are present
+		if(bDoor_Open)
+		{
+			Hotspot( 0.0, m_dBitmapHeight,  m_dRotateX, m_dRotateY, CL,  m_bClick_Up, 	RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+			Hotspot( 0.0, 0.0, 				m_dRotateX, m_dRotateY, CTR, m_bClick_Ctr, 	RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+			Hotspot( 0.0,-m_dBitmapHeight,  m_dRotateX, m_dRotateY, CU,  m_bClick_Down, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+		}
+		
+		// Depending on the hotspot that has been selected, this will send the output to the model
+		if (m_bClick_Up){
+			cOut.bPos_Up	= true;
+			cOut.bPos_Down 	= false;
+		}
+		if (m_bClick_Ctr){
+			cOut.bPos_Up	= false;
+			cOut.bPos_Down 	= false;
+		}
+		if (m_bClick_Down){
+			cOut.bPos_Up	= false;
+			cOut.bPos_Down 	= true;
+		}
+		
+		// Depending on the output to the model, the correct bitmap position of the switch will be displayed
+		Color(White);
+		if(m_nBase > N_BASE)
+		{
+			if ((cOut.bPos_Up)  & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+			if (!(cOut.bPos_Up) & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.000, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_2); }
+			if (!(cOut.bPos_Up) &  (cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0,-m_dBitmapHeight/2, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+		}
+		else
+		{
+			if ((cOut.bPos_Up)  & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_3); }
+			if (!(cOut.bPos_Up) & !(cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_2); }
+			if (!(cOut.bPos_Up) &  (cOut.bPos_Down))	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapHeight, CTR, Bitmap3_1); }
+		}
+	}
+	
+	if(bDoor_Closed)
+	{
+		// Depending on the guard used, this displays the closed position
+		Color(White);
+		if(m_bBGuard)
+		{
+			Bitmap( BGUARD_BMP, MODULATE, 0.0, m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_1);
+		}
+		if(m_bRGuard)
+		{
+			Bitmap( RGUARD_BMP, MODULATE, 0.0, m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_1);
+		}
+		if(m_bSBGuard)
+		{
+			Bitmap( SBGUARD_BMP, MODULATE, 0.0, m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_1);
+		}
+		if(m_bSRGuard)
+		{
+			Bitmap( SRGUARD_BMP, MODULATE, 0.0, m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_1);
+		}
+		if(m_bStabTrim)
+		{
+			Bitmap( STGUARD_BMP, MODULATE, 0.0,-m_dBitmapHeight/4, dGuardWidth/2, dGuardHeight, CTR, Bitmap2_1);
+		}
+		
+		if(m_bStabTrim)
+		{
+			// In VIP++, there is an issue where the hotspot does not rotate correctly
+			// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+			if(m_bRotate)
+			{
+				// Rotated
+				m_dRotateX = dGuardHeight;
+				m_dRotateY = dGuardWidth/2;
+			}
+			else
+			{
+				// Not Rotated
+				m_dRotateX = dGuardWidth/2;
+				m_dRotateY = dGuardHeight;
+			}
+		
+			Color(Yellow);
+			System.dTemp[0] = (m_dBitmapHeight/4);
+			System.dTemp[1] = -1 * System.dTemp[0];
+			HOTSPOT( 0.0, System.dTemp[1], m_dRotateX, m_dRotateY, CTR, bDoor_Open, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+		}
+		else
+		{
+			// In VIP++, there is an issue where the hotspot does not rotate correctly
+			// Visually it is rotated but mechanism does not, so I have used this if/else statement to fix that issue
+			if(m_bRotate)
+			{
+				// Rotated
+				m_dRotateX = 3*dGuardHeight/10;
+				m_dRotateY = dGuardWidth/4;
+			}
+			else
+			{
+				// Not Rotated
+				m_dRotateX = dGuardWidth/4;
+				m_dRotateY = 3*dGuardHeight/10;
+			}
+			
+			// This displays the hotspot needed to open the Guard
+			Color(Yellow);
+			System.dTemp[0] =	dGuardHeight/4;
+			HOTSPOT( 0.0, System.dTemp[0], m_dRotateX, m_dRotateY, CTR, bDoor_Open, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+		}
+		
+		// When the Guard ia closed, in most cases, the switch is set to a specific position
+		// In this special case, you can customize that specific position
+		if(cIn.bSpecialCase[1])
+		{
+			cOut.bPos_Up 	= cIn.bCPos_Up;
+			cOut.bPos_Down	= cIn.bCPos_Down;
+		}
+		else
+		{
+			cOut.bPos_Up 	= true;
+			cOut.bPos_Down	= false;
+		}
+		
+		
+		if(bDoor_Open)
+		{
+			cOut.bDoorOpen	= true;
+			bDoor_Closed 	= false;
+		}
+	}
+		
+		Color(RESTORE);
+	Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Bitmap Push/Pull button Knob
+//
+// example:
+// Instance oBPPK 	bppkAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: height of bitmap
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oBPPK
+{		
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	double	m_dAnnInt;
+	bool	m_bAnn;
+	
+	bool	bClick;
+	bool	m_bLock[5];
+	int 	m_nSpringload;
+	double	m_dAngleMin;
+	double	m_dAngleMax;
+	double	m_dValueMin;
+	double	m_dValueMax;
+	bool	m_bIsInteger;
+	int		m_nValue;
+	int		m_nShape;
+	double  m_dHoverTimer;
+
+	Struct cIn
+	{
+		bool	bAnn;
+		double	dAnn_Int;
+		bool	bPushed;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+		double	dValue;
+	}
+
+	Init(double dBitmapWidth, double dBitmapHeight, int nShape, bool bInitState, int nSpringload, double dAngleMin, double dAngleMax, double dValueMin, double dValueMax, bool bInteger)
+	{
+		m_dBitmapWidth 	=	dBitmapWidth;
+		m_dBitmapHeight	=	dBitmapHeight;
+		m_nShape 		=	nShape;
+		m_nSpringload	=	nSpringload;
+	
+		m_dAngleMin		=	dAngleMin;
+		m_dAngleMax		=	dAngleMax;
+		m_dValueMin		=	dValueMin;
+		m_dValueMax		=	dValueMax;
+		
+		m_bIsInteger	=	bInteger;
+		
+		cOut.bPushed	=	bInitState;
+	}
+
+	Entry
+	{		
+		double dInc;
+		
+		m_bAnn		=	cIn.bAnn;
+		m_dAnnInt	=	(cIn.dAnn_Int)/100.0;
+		
+		cOut.bPushed	=	cIn.bPushed;
+		
+		MATRIX(SAVE);
+			COLOR(SAVE);
+			LINE_WIDTH(SAVE);
+		
+			Color(Yellow);
+		
+			if (m_nSpringload > SPNGLOAD_NO)	
+			{
+				HOTSPOT( 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapWidth/3, CU, bClick, SELECTED, MOMENTARY, true, false, ALWAYS);
+			}
+			else
+			{
+				HOTSPOT( 0.0, 0.0, m_dBitmapWidth/3, m_dBitmapWidth/3, CU, bClick, SELECT_EDGE, MOMENTARY, true, false, ALWAYS);
+			}
+			if (bClick){cOut.bPushed = !cOut.bPushed; bClick = false;}
+		
+			Color(White);
+		
+			Line_Width(1.0);
+
+			if (m_bIsInteger)
+			{
+				COLOR(YELLOW);
+				ROTARY_KNOB(0.0, 0.0, 2 * m_dBitmapWidth/5, m_nValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+				Rotate(m_dAngleMin);
+				dInc = (m_dAngleMax-m_dAngleMin)/m_dValueMax*m_nValue;
+				Rotate(dInc);
+				
+				COLOR(WHITE);
+				if (cOut.bPushed)
+				{
+					SCALE( 0.85);
+					BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+				}
+				else
+				{
+					SCALE( 1.10);
+					if(m_dAnnInt > 0.0)
+					{
+						LIGHT(ON);
+						LIGHT(m_dAnnInt);
+						BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2);
+						LIGHT(OFF); 	
+					}
+					else
+					{
+						BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+					}
+				}
+				cOut.dValue = m_nValue;
+			}
+			else
+			{
+				COLOR(YELLOW);
+				ROTARY_KNOB(0.0, 0.0, 2 * m_dBitmapWidth/5, cOut.dValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+				Rotate(m_dAngleMin);
+				dInc = (m_dAngleMax-m_dAngleMin)/m_dValueMax*cOut.dValue;
+				Rotate(dInc);
+				
+				COLOR(WHITE);
+				if (cOut.bPushed)
+				{
+					SCALE( 0.85);
+					if(m_dAnnInt > 0.0)
+					{
+						LIGHT(ON);
+						LIGHT(m_dAnnInt);
+						BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_2);
+						LIGHT(OFF); 	
+					}
+					else
+					{
+						BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+					}
+				}
+				else
+				{
+					SCALE( 1.10);
+					BITMAP( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth/2, m_dBitmapHeight, CTR, Bitmap2_1);
+				}
+			}
+			LINE_WIDTH(RESTORE);
+			COLOR(RESTORE);
+		MATRIX(RESTORE);
+		
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed = false; }
+	}
+}
+
+// ########################################################################################
+// Bitmap MultiState Annuciator Pushbutton
+//
+// example:
+// Instance oBMAnnPb 	bmapbAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{ 2, 1.0, 1.0}:{BITMAP_NAME="AAAAA.bmp", GBITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Number of States
+// 2nd param: width of bitmap
+// 3rd param: height of bitmap
+// 4th param: Guarded (true, false)
+// BITMAP = path of bitmap file
+// GBITMAP = path of guarded bitmap file
+//
+// ########################################################################################
+
+Object oBMAnnPb
+{
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	int		m_nStates;
+	bool	m_bGuardOn;
+	
+	double	m_dAnnInt;
+	double	m_dTAnnInt;
+	double	m_dBAnnInt;
+	bool	m_bPrevState;
+	bool	m_bPushed;
+	
+	bool	bGuarded;
+	bool	bUnguarded;
+
+	Struct cIn
+	{	
+		double	dTAnn_Int;
+		double	dBAnn_Int;
+		double	dAnn_Int;
+		double	dLine_Width;
+		bool	bPushed;
+		bool	bTextBox;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+	}
+
+	Init(int nStates, double dBitmapWidth, double dBitmapHeight, bool bGuardOn)
+	{
+		m_nStates		=	nStates;
+		if(m_nStates == 2){	m_dBitmapWidth 	=	dBitmapWidth/2;}
+		if(m_nStates == 4){	m_dBitmapWidth 	=	dBitmapWidth/4;}
+		
+		m_dBitmapHeight	=	dBitmapHeight;
+		m_bGuardOn		=	bGuardOn;
+		
+		m_bPrevState	=	false;
+		bGuarded		=	true;
+		bUnguarded		=	false;
+		cIn.bPushed 	= 	false;
+		cIn.dLine_Width = 	1.00;
+	}
+
+	Entry
+	{
+	m_bPushed	=	(m_bPrevState | cIn.bPushed);
+	m_dTAnnInt	=	(cIn.dTAnn_Int)/100.0;
+	m_dBAnnInt	=	(cIn.dBAnn_Int)/100.0;
+	m_dAnnInt	=	(cIn.dAnn_Int)/100.0;
+	
+	MATRIX(SAVE);
+		Line_Width(1.0);
+		
+		Color(Black);
+		BOX( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, FILL);
+	
+	if(m_bGuardOn)
+	{
+		if(bGuarded)
+		{			
+			Color(White);
+			if(m_bPushed)
+			{			
+				if(m_nStates == 2)
+				{
+					if(m_dAnnInt > 0.0)
+					{		
+						LIGHT(ON);
+						LIGHT(m_dAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+						LIGHT(OFF);
+					}
+					else
+					{
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+					}
+				}			
+				
+				if(m_nStates == 4)
+				{
+					if(m_dBAnnInt > 0.0)
+					{		
+						LIGHT(ON);
+						LIGHT(m_dBAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_3);
+						LIGHT(OFF);
+					}
+					else
+					{
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_4);
+					}
+				}
+			}
+			else
+			{			
+				if(m_nStates == 2)
+				{
+					if(m_dAnnInt > 0.0)
+					{		
+						LIGHT(ON);
+						LIGHT(m_dAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+						LIGHT(OFF);
+					}
+					else
+					{
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+					}
+				}			
+					
+				if(m_nStates == 4)
+				{
+					if((m_dTAnnInt > 0.0) & (m_dBAnnInt == 0.0))
+					{
+						LIGHT(ON);
+						LIGHT(m_dTAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+						LIGHT(OFF);
+					}
+					if((m_dTAnnInt > 0.0) & (m_dBAnnInt > 0.0))
+					{
+						LIGHT(ON);
+						LIGHT(m_dTAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+						LIGHT(OFF);
+					}
+						
+					if((m_dTAnnInt == 0.0) & (m_dBAnnInt > 0.0))
+					{
+						LIGHT(ON);
+						LIGHT(m_dBAnnInt);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+						LIGHT(OFF);
+					}
+					if((m_dTAnnInt == 0.0) & (m_dBAnnInt == 0.0))
+					{
+						LIGHT(ON);
+						LIGHT(0.10);
+						Bitmap( HARD_MASK, LINEAR, CLAMP, GBITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+						LIGHT(OFF);
+					}
+				}
+			}
+			
+			Color(Yellow);
+			HOTSPOT( 0.0,-0.060, m_dBitmapWidth, 7*m_dBitmapHeight/8, CTR, bUnguarded, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+			
+			if(bUnguarded)
+			{
+				bGuarded = false;
+			}
+		}
+	}
+	else
+	{
+		bUnguarded = true;
+	}
+		
+	if(bUnguarded)
+	{	
+		Color(White);
+		if(m_bPushed)
+		{	
+			if(m_nStates == 2)
+			{
+				if(m_dAnnInt > 0.0)
+				{		
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+					LIGHT(OFF);
+				}
+				else
+				{
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+				}
+			}			
+			
+			if(m_nStates == 4)
+			{
+				if(m_dBAnnInt > 0.0)
+				{		
+					LIGHT(ON);
+					LIGHT(m_dBAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_3);
+					LIGHT(OFF);
+				}
+				else
+				{
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_4);
+				}
+			}
+		}
+		else
+		{			
+			if(m_nStates == 2)
+			{
+				if(m_dAnnInt > 0.0)
+				{		
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+					LIGHT(OFF);
+				}
+				else
+				{
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+				}
+			}			
+				
+			if(m_nStates == 4)
+			{
+				if((m_dTAnnInt > 0.0) & (m_dBAnnInt == 0.0))
+				{
+					LIGHT(ON);
+					LIGHT(m_dTAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+					LIGHT(OFF);
+				}
+				if((m_dTAnnInt > 0.0) & (m_dBAnnInt > 0.0))
+				{
+					LIGHT(ON);
+					LIGHT(m_dTAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+					LIGHT(OFF);
+				}
+				if((m_dTAnnInt == 0.0) & (m_dBAnnInt > 0.0))
+				{
+					LIGHT(ON);
+					LIGHT(m_dBAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+					LIGHT(OFF);
+				}
+				if((m_dTAnnInt == 0.0) & (m_dBAnnInt == 0.0))
+				{
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+				}
+			}
+		}
+		
+		if(m_bGuardOn)
+		{
+			Color(Yellow);
+			HOTSPOT( 0.0, 0.6114, m_dBitmapWidth,   m_dBitmapHeight/2, CU, bGuarded, SELECTED, MOMENTARY, true, false, HOVER);
+			
+			LINE_WIDTH(SAVE);
+				LINE_WIDTH(cIn.dLine_Width);
+				if(cIn.bTextBox)
+				{
+					COLOR(SAVE);
+					COLOR(BLACK);
+					BOX( 0.0, 0.6114, 0.790, 0.190, CTR, FILL);
+					COLOR(RESTORE);
+				}
+			STRING(  0.0, 0.6114, CTR, NONE, "CLOSE", 5, VIP_Null, 0.130, 0.180, 1.20);
+			LINE_WIDTH(RESTORE);
+			
+			HOTSPOT( 0.0,-0.0600, m_dBitmapWidth, 7*m_dBitmapHeight/8, CTR, m_bPushed, SELECT_EDGE, ALTERNATE, true, false, HOVER);
+		}
+		else
+		{
+			Color(Yellow);
+			HOTSPOT( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, m_bPushed, SELECT_EDGE, ALTERNATE, true, false, HOVER);
+		}
+		
+		if(bGuarded)
+		{
+			bUnguarded = false;
+		}
+	}
+		
+	cOut.bPushed	=	m_bPushed;
+	m_bPrevState	=	m_bPushed;
+		
+	MATRIX(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Double rotary knob (One on another)
+//
+// example:
+// Instance oDoubleRotary 		rrAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{dOuterRadius, dOuterStartAng, dOuterEndAng, dOuterMin, dOuterMax, dInnerRadius, dInnerStartAng, dInnerEndAng, dInnerMin, dInnerMax}:{INNERKNOBIMG="ABC.bmp", OUTERKNOBIMG="CDE.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation
+//
+// ########################################################################################
+
+Object oDoubleRotary
+{
+	double m_dOuterRadius;
+	double m_dOuterStartAng;
+	double m_dOuterEndAng;
+	double m_dOuterMin;
+	double m_dOuterMax;
+	double m_dInnerRadius;
+	double m_dInnerStartAng;
+	double m_dInnerEndAng;
+	double m_dInnerMin;
+	double m_dInnerMax;
+
+	int	   m_nOuterRotaryVal;
+	double m_dOuterRotaryVal;
+	int	   m_nInnerRotaryVal;
+	double m_dInnerRotaryVal;
+	
+	bool m_bOuterisInt;
+	bool m_bInnerisInt;
+
+	
+	bool bInnerClicked;
+	
+	Struct cIn
+	{
+		bool bOuterisInt;
+		bool bInnerisInt;
+		float fOuterRotary;
+		float fInnerRotary;
+	}
+	Struct cOut
+	{
+		float fOuterRotary;
+		float fInnerRotary;
+	}
+
+	Init( double dOuterRadius, double dOuterStartAng, double dOuterEndAng, double dOuterMin, double dOuterMax, double dInnerRadius, double dInnerStartAng, double dInnerEndAng, double dInnerMin, double dInnerMax)
+	{
+		m_dOuterRadius    = dOuterRadius;
+		m_dOuterStartAng  = dOuterStartAng;
+		m_dOuterEndAng    = dOuterEndAng;
+		m_dOuterMin       = dOuterMin;
+		m_dOuterMax       = dOuterMax;
+		m_dInnerRadius    = dInnerRadius;
+		m_dInnerStartAng  = dInnerStartAng;
+		m_dInnerEndAng    = dInnerEndAng;
+		m_dInnerMin       = dInnerMin;
+		m_dInnerMax       = dInnerMax;
+		
+		cIn.bOuterisInt	  =	false;
+		cIn.bInnerisInt	  =	false;
+		
+		if(m_bOuterisInt)
+		{
+			if(dOuterMin < 0){ m_nOuterRotaryVal = 0; } else { m_nOuterRotaryVal = dOuterMin; }
+		}
+		else
+		{
+			if(dOuterMin < 0){ m_dOuterRotaryVal = 0; } else { m_dOuterRotaryVal = dOuterMin; }
+		}
+		
+		if(m_bInnerisInt)
+		{
+			if(dInnerMin < 0){ m_nInnerRotaryVal = 0; } else { m_nInnerRotaryVal = dInnerMin; }
+		}
+		else
+		{
+			if(dInnerMin < 0){ m_dInnerRotaryVal = 0; } else { m_dInnerRotaryVal = dInnerMin; }
+		}
+	}
+
+	Entry
+	{
+		m_bOuterisInt     = cIn.bOuterisInt;
+		m_bInnerisInt     = cIn.bInnerisInt;
+		//BD
+		m_dOuterRotaryVal	=	cIn.fOuterRotary;
+		m_dInnerRotaryVal	=	cIn.fInnerRotary;
+		
+		COLOR(SAVE);
+			COLOR(YELLOW);
+			//Mouse will pick up whichever is drawn first, therefore draw the inner first
+			if(m_bInnerisInt){ROTARY_KNOB(0.0, 0.0, m_dInnerRadius, m_nInnerRotaryVal, m_dInnerStartAng, m_dInnerEndAng, m_dInnerMin, m_dInnerMax, HOVER, 1.0);}
+			else{ROTARY_KNOB(0.0, 0.0, m_dInnerRadius, m_dInnerRotaryVal, m_dInnerStartAng, m_dInnerEndAng, m_dInnerMin, m_dInnerMax, HOVER, 1.0);}
+			//Draw a hotspot over the outer knob; Mouse will never pick it up but for visual references
+			HOTSPOT(0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR, bInnerClicked, HOVER, MOMENTARY, true, false, HOVER);
+			if(m_bOuterisInt){ROTARY_KNOB(0.0, 0.0, m_dOuterRadius * 1.5, m_nOuterRotaryVal, m_dOuterStartAng, m_dOuterEndAng, m_dOuterMin, m_dOuterMax, HOVER, 1.0);}
+			else{ROTARY_KNOB(0.0, 0.0, m_dOuterRadius * 1.5, m_dOuterRotaryVal, m_dOuterStartAng, m_dOuterEndAng, m_dOuterMin, m_dOuterMax, HOVER, 1.0);}
+
+			//Outer Knob
+			MATRIX(SAVE);
+				if(m_bOuterisInt){ROTATE(m_dOuterStartAng + ((m_nOuterRotaryVal - m_dOuterMin) / (m_dOuterMax - m_dOuterMin)) * (m_dOuterEndAng - m_dOuterStartAng));}
+				else{ROTATE(m_dOuterStartAng + ((m_dOuterRotaryVal - m_dOuterMin) / (m_dOuterMax - m_dOuterMin)) * (m_dOuterEndAng - m_dOuterStartAng));}
+				BITMAP(HARD_MASK, LINEAR, CLAMP, OUTERKNOBIMG, REPLACE, 0.0, 0.0, m_dOuterRadius * 2.0, m_dOuterRadius * 2.0, CTR);
+			MATRIX(RESTORE);
+			if( bInnerClicked ){ BOX(0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR); }
+			//Inner Knob
+			MATRIX(SAVE);
+				if(m_bInnerisInt){ROTATE(m_dInnerStartAng + ((m_nInnerRotaryVal - m_dInnerMin) / (m_dInnerMax - m_dInnerMin)) * (m_dInnerEndAng - m_dInnerStartAng));}
+				else{ROTATE(m_dInnerStartAng + ((m_dInnerRotaryVal - m_dInnerMin) / (m_dInnerMax - m_dInnerMin)) * (m_dInnerEndAng - m_dInnerStartAng));}
+				BITMAP(HARD_MASK, LINEAR, CLAMP, INNERKNOBIMG, REPLACE, 0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR);
+			MATRIX(RESTORE);
+		COLOR(RESTORE);
+		
+		if(m_bOuterisInt){ cOut.fOuterRotary = m_nOuterRotaryVal;}else{ cOut.fOuterRotary = m_dOuterRotaryVal;}
+		if(m_bInnerisInt){ cOut.fInnerRotary = m_nInnerRotaryVal;}else{ cOut.fInnerRotary = m_dInnerRotaryVal;}
+	}
+}
+
+// ########################################################################################
+// Double rotary knob (One on another) - Heading Knob Only
+//
+// example:
+// Instance oDoubleRotary 		rrAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{dOuterRadius, dOuterStartAng, dOuterEndAng, dOuterMin, dOuterMax, dInnerRadius, dInnerStartAng, dInnerEndAng, dInnerMin, dInnerMax}:{INNERKNOBIMG="ABC.bmp", OUTERKNOBIMG="CDE.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation
+//
+// ########################################################################################
+
+Object oDoubleRotary_H
+{
+	double m_dOuterRadius;
+	double m_dOuterStartAng;
+	double m_dOuterEndAng;
+	double m_dOuterMin;
+	double m_dOuterMax;
+	double m_dInnerRadius;
+	double m_dInnerStartAng;
+	double m_dInnerEndAng;
+	double m_dInnerMin;
+	double m_dInnerMax;
+
+	int	   m_nOuterRotaryVal;
+	double m_dOuterRotaryVal;
+	int	   m_nInnerRotaryVal;
+	double m_dInnerRotaryVal;
+	
+	bool m_bOuterisInt;
+	bool m_bInnerisInt;
+
+	
+	bool bInnerClicked;
+	
+	Struct cIn
+	{
+		bool bOuterisInt;
+		bool bInnerisInt;
+		float fOuterRotary;
+		float fInnerRotary;
+	}
+	Struct cOut
+	{
+		int fOuterRotary;
+		int fInnerRotary;
+	}
+
+	Init( double dOuterRadius, double dOuterStartAng, double dOuterEndAng, double dOuterMin, double dOuterMax, double dInnerRadius, double dInnerStartAng, double dInnerEndAng, double dInnerMin, double dInnerMax)
+	{
+		m_dOuterRadius    = dOuterRadius;
+		m_dOuterStartAng  = dOuterStartAng;
+		m_dOuterEndAng    = dOuterEndAng;
+		m_dOuterMin       = dOuterMin;
+		m_dOuterMax       = dOuterMax;
+		m_dInnerRadius    = dInnerRadius;
+		m_dInnerStartAng  = dInnerStartAng;
+		m_dInnerEndAng    = dInnerEndAng;
+		m_dInnerMin       = dInnerMin;
+		m_dInnerMax       = dInnerMax;
+		
+		cIn.bOuterisInt	  =	false;
+		cIn.bInnerisInt	  =	false;
+		
+		if(m_bOuterisInt)
+		{
+			if(dOuterMin < 0){ m_nOuterRotaryVal = 0; } else { m_nOuterRotaryVal = dOuterMin; }
+		}
+		else
+		{
+			if(dOuterMin < 0){ m_dOuterRotaryVal = 0; } else { m_dOuterRotaryVal = dOuterMin; }
+		}
+		
+		if(m_bInnerisInt)
+		{
+			if(dInnerMin < 0){ m_nInnerRotaryVal = 0; } else { m_nInnerRotaryVal = dInnerMin; }
+		}
+		else
+		{
+			if(dInnerMin < 0){ m_dInnerRotaryVal = 0; } else { m_dInnerRotaryVal = dInnerMin; }
+		}
+	}
+
+	Entry
+	{
+		m_bOuterisInt     = cIn.bOuterisInt;
+		m_bInnerisInt     = cIn.bInnerisInt;
+		//BD
+		m_dOuterRotaryVal	=	cIn.fOuterRotary;
+		m_dInnerRotaryVal	=	cIn.fInnerRotary;
+		
+		COLOR(SAVE);
+			COLOR(YELLOW);
+			//Mouse will pick up whichever is drawn first, therefore draw the inner first
+			if(m_bInnerisInt){ROTARY_KNOB(0.0, 0.0, m_dInnerRadius, m_nInnerRotaryVal, m_dInnerStartAng, m_dInnerEndAng, m_dInnerMin, m_dInnerMax, HOVER, 1.0);}
+			else{ROTARY_KNOB(0.0, 0.0, m_dInnerRadius, m_dInnerRotaryVal, m_dInnerStartAng, m_dInnerEndAng, m_dInnerMin, m_dInnerMax, HOVER, 1.0);}
+			//Draw a hotspot over the outer knob; Mouse will never pick it up but for visual references
+			HOTSPOT(0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR, bInnerClicked, HOVER, MOMENTARY, true, false, HOVER);
+			if(m_bOuterisInt){ROTARY_KNOB(0.0, 0.0, m_dOuterRadius * 1.5, m_nOuterRotaryVal, m_dOuterStartAng, m_dOuterEndAng, m_dOuterMin, m_dOuterMax, HOVER, 1.0);}
+			else{ROTARY_KNOB(0.0, 0.0, m_dOuterRadius * 1.5, m_dOuterRotaryVal, m_dOuterStartAng, m_dOuterEndAng, m_dOuterMin, m_dOuterMax, HOVER, 1.0);}
+
+			//Outer Knob
+			MATRIX(SAVE);
+				if(m_bOuterisInt){ROTATE(m_dOuterStartAng + ((m_nOuterRotaryVal - m_dOuterMin) / (m_dOuterMax - m_dOuterMin)) * (m_dOuterEndAng - m_dOuterStartAng));}
+				else{ROTATE(m_dOuterStartAng + ((m_dOuterRotaryVal - m_dOuterMin) / (m_dOuterMax - m_dOuterMin)) * (m_dOuterEndAng - m_dOuterStartAng));}
+				BITMAP(HARD_MASK, LINEAR, CLAMP, OUTERKNOBIMG, REPLACE, 0.0, 0.0, m_dOuterRadius * 2.0, m_dOuterRadius * 2.0, CTR);
+			MATRIX(RESTORE);
+			if( bInnerClicked ){ BOX(0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR); }
+			//Inner Knob
+			MATRIX(SAVE);
+				if(m_bInnerisInt){ROTATE(m_dInnerStartAng + ((m_nInnerRotaryVal - m_dInnerMin) / (m_dInnerMax - m_dInnerMin)) * (m_dInnerEndAng - m_dInnerStartAng));}
+				else{ROTATE(m_dInnerStartAng + ((m_dInnerRotaryVal - m_dInnerMin) / (m_dInnerMax - m_dInnerMin)) * (m_dInnerEndAng - m_dInnerStartAng));}
+				BITMAP(HARD_MASK, LINEAR, CLAMP, INNERKNOBIMG, REPLACE, 0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR);
+			MATRIX(RESTORE);
+		COLOR(RESTORE);
+		
+		if(m_bOuterisInt){ cOut.fOuterRotary = m_nOuterRotaryVal;}else{ cOut.fOuterRotary = m_dOuterRotaryVal;}
+		if(m_bInnerisInt){ cOut.fInnerRotary = m_nInnerRotaryVal;}else{ cOut.fInnerRotary = m_dInnerRotaryVal;}
+	}
+}
+
+// ########################################################################################
+// Triple rotary knob (One on another, continuous)
+//
+// example:
+// Instance oTriRotary 		trAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{dOuterRadius, dCenterRadius, dRadius}:{lOUTERIMG= l123, lCENTERIMG= l123, lINNERIMG= l123};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation
+// 1st param: Outer Knob Radius
+// 2nd param: Center Knob Radius
+// 3rd param: Inner Knob Radius
+// lOUTERIMG  = List Name of Outer Knob Bitmap
+// lCENTERIMG = List Name of Center Knob Name Bitmap
+// lINNERIMG  = List Name of Inner Knob Name Bitmap
+//
+// ########################################################################################
+
+Object oTriRotary
+{
+	double m_dOuterRadius;
+	double m_dCenterRadius;
+	double m_dInnerRadius;
+
+	double m_dOuterRotaryVal;
+	double m_dCenterRotaryVal;
+	double m_dInnerRotaryVal;
+	
+	bool bCenterClicked;
+	bool bInnerClicked;
+
+	Struct cOut
+	{
+		float fOuterRotary;
+		float fCenterRotary;
+		float fInnerRotary;
+	}
+	
+	Struct cIn
+	{
+		float fOuterRotary;
+		float fCenterRotary;
+		float fInnerRotary;
+	}
+
+	Init(double dOuterRadius, double dCenterRadius, double dInnerRadius)
+	{
+		m_dOuterRadius    = dOuterRadius;
+		m_dCenterRadius   = dCenterRadius;
+		m_dInnerRadius    = dInnerRadius;
+	}
+
+	Entry
+	{
+		// Backdrive
+		m_dOuterRotaryVal	=	cIn.fOuterRotary;
+		m_dCenterRotaryVal	=	cIn.fCenterRotary;
+		m_dInnerRotaryVal	=	cIn.fInnerRotary;
+		// ---------
+		
+		COLOR(SAVE);
+			COLOR(YELLOW);
+			//Mouse will pick up whichever is drawn first, therefore draw the inner first
+			ROTARY_KNOB(0.0, 0.0, m_dInnerRadius, m_dInnerRotaryVal,-735255, 735233,-32678, 32677, HOVER, 0.0);
+			
+			//Draw a hotspot over the outer knob; Mouse will never pick it up but for visual references
+			HOTSPOT(0.0, 0.0,  m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR, bInnerClicked, HOVER, MOMENTARY, true, false, HOVER);
+			ROTARY_KNOB(0.0, 0.0, m_dCenterRadius * 1.5, m_dCenterRotaryVal,-735255, 735233,-32678, 32677, HOVER, 0.0);
+			
+			//Draw a hotspot over the outer knob; Mouse will never pick it up but for visual references
+			HOTSPOT(0.0, 0.0, m_dCenterRadius * 3.0, m_dCenterRadius * 3.0, CTR, bCenterClicked, HOVER, MOMENTARY, true, false, HOVER);
+			ROTARY_KNOB(0.0, 0.0, m_dOuterRadius * 1.75, m_dOuterRotaryVal,-735255, 735233,-32678, 32677, HOVER, 0.0);
+
+			//Outer Knob
+			MATRIX(SAVE);
+				ROTATE(-735255 + (((m_dOuterRotaryVal + 32678)/ (32677 + 32678)) * (735233 + 735255)));
+				DISPLAY( 0.0, 0.0, lOUTERIMG);
+			MATRIX(RESTORE);
+			if( bCenterClicked ){ COLOR(YELLOW); BOX(0.0, 0.0, m_dCenterRadius * 3.0, m_dCenterRadius * 3.0, CTR); }
+			//Center Knob
+			MATRIX(SAVE);
+				ROTATE(-735255 + (((m_dCenterRotaryVal + 32678)/ (32677 + 32678)) * (735233 + 735255)));
+				DISPLAY( 0.0, 0.0, lCENTERIMG);
+			MATRIX(RESTORE);
+			if( bInnerClicked ){ COLOR(YELLOW);  BOX(0.0, 0.0, m_dInnerRadius * 2.0, m_dInnerRadius * 2.0, CTR); }
+			//Inner Knob
+			MATRIX(SAVE);
+				ROTATE(-735255 + (((m_dInnerRotaryVal + 32678)/ (32677 + 32678)) * (735233 + 735255)));
+				DISPLAY( 0.0, 0.0, lINNERIMG);
+			MATRIX(RESTORE);
+		COLOR(RESTORE);
+		
+			cOut.fOuterRotary	=	m_dOuterRotaryVal;
+			cOut.fCenterRotary	=	m_dCenterRotaryVal;
+			cOut.fInnerRotary	=	m_dInnerRotaryVal;
+	}
+}
+
+// ########################################################################################
+// Double Bitmap Pushbutton Knob
+//
+// example:
+// Instance oDBPK 	dbpkAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0}:{PBBITMAP_NAME ="AB.bmp", KBITMAP_NAME ="CDE.bmp"};
+//
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: height of bitmap
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oDBPK
+{		
+	double	m_dKnobDia;
+	double	m_dPBDia;
+	double	m_dAnnInt;
+	bool	m_bAnn;
+	
+	double	m_dKnobScale;
+	bool 	m_bSpringload;
+	double	m_dAngleMin;
+	double	m_dAngleMax;
+	double	m_dValueMin;
+	double	m_dValueMax;
+	bool	m_bPull;
+	bool	m_bIsInteger;
+	int		m_nValue;
+	double	m_dValue;
+	int		m_nShape;
+	double  m_dHoverTimer;
+	
+	bool	m_bPushed;
+	double	m_dVal;
+
+	Struct cKnob
+	{
+		bool	bReset;
+		double	dKnobScale;
+	}
+
+	Struct cIn
+	{
+		bool	bLock;
+		bool	bPushed;
+		double	dValue;
+		bool	bAnn;
+		double	dAnn_Int;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+		double	dValue;
+	}
+
+	Init( double dKnobDia, double dPBDia, int nShape, bool bInit, bool bSpringload, double dAngleMin, double dAngleMax, double dValueMin, double dValueMax, bool bIsInteger)
+	{
+		m_dKnobDia			=	dKnobDia;
+		m_dPBDia			=	dPBDia;
+		m_nShape 			=	nShape;
+		m_bSpringload		=	bSpringload;
+		
+		m_dAngleMin			=	dAngleMin;
+		m_dAngleMax			=	dAngleMax;
+		m_dValueMin			=	dValueMin;
+		m_dValueMax			=	dValueMax;
+		
+		m_bIsInteger		=	bIsInteger;
+		
+		cOut.bPushed		=	bInit;
+		cKnob.dKnobScale	=	1.0;
+		
+		m_bPushed			=	cIn.bPushed;
+		m_dValue			=	cIn.dValue;
+	}
+
+	Entry
+	{		
+		bool	bInnerClicked;
+		
+		m_bAnn			=	cIn.bAnn;
+		m_dAnnInt		=	(cIn.dAnn_Int)/100.0;
+		m_dKnobScale	=	cKnob.dKnobScale;
+		
+		if(cKnob.bReset){ m_nValue = 0; m_dValue = 0;}
+		
+		if((m_bPushed != cIn.bPushed) | ( m_dVal != cIn.dValue))
+		{
+			m_bPushed			=	cIn.bPushed;
+			m_dVal				=	cIn.dValue;
+			cOut.bPushed		=	cIn.bPushed;
+			if(m_bIsInteger){ m_nValue = cIn.dValue;}else{ m_dValue = cIn.dValue;}
+		}
+	
+		MATRIX(SAVE);
+			COLOR(SAVE);
+				Line_Width(1.0);	
+				Color(Yellow);
+				
+				if (m_bSpringload)	
+				{
+					HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+				}
+				else
+				{
+					HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, cOut.bPushed, SELECT_EDGE, ALTERNATE, true, false, HOVER);
+				}
+				HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, bInnerClicked, HOVER, MOMENTARY, true, false, HOVER);
+	
+				if (m_bIsInteger)
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dKnobDia * m_dKnobScale, m_nValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+					cOut.dValue = m_nValue;
+				}
+				else
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dKnobDia * m_dKnobScale, m_dValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+					cOut.dValue = m_dValue;
+				}
+				
+				MATRIX(SAVE);
+					Rotate(((( cOut.dValue - m_dValueMin)/(m_dValueMax - m_dValueMin))*(m_dAngleMax - m_dAngleMin)) + m_dAngleMin);
+					Color(WHITE);
+					BITMAP( HARD_MASK, LINEAR, CLAMP, KBITMAP_NAME, MODULATE, 0.0, 0.0, m_dKnobDia, m_dKnobDia, CTR);
+				MATRIX(RESTORE);
+				
+				Color(Black);
+				if( m_nShape == 0)
+				{CIRCLE( 0.0, 0.0, m_dPBDia*2, 32, FILL);}
+				if( m_nShape == 1)
+				{BOX( 0.0, 0.0, m_dPBDia*2, m_dPBDia*2, CTR, FILL);}
+				else{ m_nShape = 2;}
+				
+				if ((cOut.bPushed) & (!cIn.bLock)){SCALE(0.85);}
+				Color(WHITE);
+				BITMAP( HARD_MASK, LINEAR, CLAMP, PBBITMAP_NAME, MODULATE, 0.0, 0.0, m_dPBDia*2, m_dPBDia*2, CTR);
+				
+				Color(YELLOW);
+				if(bInnerClicked){BOX( 0.0, 0.0, m_dPBDia, m_dPBDia, CTR);}
+				
+			COLOR(RESTORE);
+		MATRIX(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Triple Bitmap Pushbutton Knob
+//
+// example:
+// Instance oTBPK 	tbpkAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, 1.0}:{PBLIST_NAME =lPB, OKBITMAP_NAME ="CDE.bmp", IKBITMAP_NAME ="FG.bmp"};
+//
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: height of bitmap
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oTBPK
+{		
+	double	m_dOKnobDia;
+	double	m_dIKnobDia;
+	double	m_dPBDia;
+	
+	bool 	m_bSpringload;
+	double	m_dOAngleMin;
+	double	m_dOAngleMax;
+	double	m_dIAngleMin;
+	double	m_dIAngleMax;
+	double	m_dOValueMin;
+	double	m_dOValueMax;
+	double	m_dIValueMin;
+	double	m_dIValueMax;
+	bool	m_bIsInteger[2];
+	bool	m_bReset[2];
+	double	m_dKnobScale[2];
+	int		m_nIValue;
+	double	m_dIValue;
+	int		m_nOValue;
+	double	m_dOValue;
+	int		m_nShape;
+	double  m_dHoverTimer;
+	
+	bool	m_bPushedOVRD;
+	double	m_dIValueOVRD;
+	double	m_dOValueOVRD;
+	
+	Struct cKnob
+	{
+		double	dOValueMin;
+		double	dOValueMax;
+		double	dIValueMin;
+		double	dIValueMax;
+		int 	nIsInteger;
+		double	dKnobScale[2];
+		int		nReset;
+	}
+
+	Struct cIn
+	{
+		bool	bPushedOVRD;
+		double	dIValueOVRD;
+		double	dOValueOVRD;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+		double	dIValue;
+		double	dOValue;
+	}
+
+	Init( double dOKnobDia, double dIKnobDia, double dPBDia, int nShape, bool bInit, bool bSpringload, double dOAngleMin, double dOAngleMax, double dIAngleMin, double dIAngleMax)
+	{
+		m_dOKnobDia		=	dOKnobDia;
+		m_dIKnobDia		=	dIKnobDia;
+		m_dPBDia		=	dPBDia;
+		m_nShape 		=	nShape;
+		m_bSpringload	=	bSpringload;
+	
+		m_dOAngleMin	=	dOAngleMin;
+		m_dOAngleMax	=	dOAngleMax;
+		m_dOValueMin	=	cKnob.dOValueMin;
+		m_dOValueMax	=	cKnob.dOValueMax;
+		                
+		m_dIAngleMin	=	dIAngleMin;
+		m_dIAngleMax	=	dIAngleMax;
+		m_dIValueMin	=	cKnob.dIValueMin;
+		m_dIValueMax	=	cKnob.dIValueMax;
+		
+		m_bPushedOVRD	=	cIn.bPushedOVRD;
+		m_dIValueOVRD	=	cIn.dIValueOVRD;
+		m_dOValueOVRD	=	cIn.dOValueOVRD;
+		
+		m_bIsInteger[0]	=	ROUND((cKnob.nIsInteger)/10);
+		m_bIsInteger[1]	=	{cKnob.nIsInteger} MOD {10};
+		
+		m_bReset[0]		=	ROUND((cKnob.nReset)/10);
+		m_bReset[1]		=	{cKnob.nReset} MOD {10};
+		                
+		cOut.bPushed	=	bInit;
+		
+		cKnob.dKnobScale[0]	=	2/3;
+		cKnob.dKnobScale[1]	=	7/8;
+	}
+
+	Entry
+	{		
+		bool   bInnerClicked[2];
+		
+		if(m_bPushedOVRD == !cIn.bPushedOVRD)
+		{
+			m_bPushedOVRD	= cIn.bPushedOVRD;
+			cOut.bPushed 	= m_bPushedOVRD;
+		}
+		if(m_dIValueOVRD != cIn.dIValueOVRD)
+		{
+			m_dIValueOVRD	= cIn.dIValueOVRD;
+			m_nIValue		= m_dIValueOVRD;
+			m_dIValue		= m_dIValueOVRD;
+		}
+		if(m_dOValueOVRD != cIn.dOValueOVRD)
+		{
+			m_dOValueOVRD	= cIn.dOValueOVRD;
+			m_nOValue 		= m_dOValueOVRD;
+			m_dOValue 		= m_dOValueOVRD;
+		}
+		
+		if(m_bReset[1]){ m_nIValue = 0.0; m_dIValue = 0.0;}
+		if(m_bReset[0]){ m_nOValue = 0.0; m_dOValue = 0.0;}
+		
+		m_dKnobScale[0]	=	cKnob.dKnobScale[0];
+		m_dKnobScale[1]	=	cKnob.dKnobScale[1];
+	
+		MATRIX(SAVE);
+			COLOR(SAVE);
+				Line_Width(1.0);
+			
+				Color(Yellow);
+				
+				if (m_bSpringload)	
+				{
+					HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, ALWAYS);
+				}
+				else
+				{
+					HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, cOut.bPushed, SELECT_EDGE, ALTERNATE, true, false, ALWAYS);
+				}
+				HOTSPOT(0.0, 0.0 , m_dPBDia, m_dPBDia, CTR, bInnerClicked[0], HOVER, MOMENTARY, true, false, HOVER);
+	
+				if (m_bIsInteger[1])
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dIKnobDia * m_dKnobScale[0], m_nIValue, m_dIAngleMin, m_dIAngleMax, m_dIValueMin, m_dIValueMax, HOVER, 0);
+					cOut.dIValue = m_nIValue;
+				}
+				else
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dIKnobDia * m_dKnobScale[0], m_dIValue, m_dIAngleMin, m_dIAngleMax, m_dIValueMin, m_dIValueMax, HOVER, 0);
+					cOut.dIValue = m_dIValue;
+				}
+				HOTSPOT(0.0, 0.0, m_dIKnobDia * 2 * m_dKnobScale[0], m_dIKnobDia * m_dKnobScale[0], CTR, bInnerClicked[1], HOVER, MOMENTARY, true, false, HOVER);
+	
+				if (m_bIsInteger[0])
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dOKnobDia * m_dKnobScale[1], m_nOValue, m_dOAngleMin, m_dOAngleMax, m_dOValueMin, m_dOValueMax, HOVER, 0);
+					cOut.dOValue = m_nOValue;
+				}
+				else
+				{
+					ROTARY_KNOB( 0.0, 0.0, m_dOKnobDia * m_dKnobScale[1], m_dOValue, m_dOAngleMin, m_dOAngleMax, m_dOValueMin, m_dOValueMax, HOVER, 0);
+					cOut.dOValue = m_dOValue;
+				}
+				
+				Color(WHITE);
+					
+				MATRIX(SAVE);
+					Rotate(((( cOut.dOValue - m_dOValueMin)/(m_dOValueMax - m_dOValueMin))*(m_dOAngleMax - m_dOAngleMin)) + m_dOAngleMin);
+					BITMAP( HARD_MASK, LINEAR, CLAMP, OKBITMAP_NAME, MODULATE, 0.0, 0.0, m_dOKnobDia, m_dOKnobDia, CTR);
+				MATRIX(RESTORE);
+				
+				MATRIX(SAVE);
+				Rotate((((  cOut.dIValue - m_dIValueMin)/(m_dIValueMax - m_dIValueMin))*(m_dIAngleMax - m_dIAngleMin)) + m_dIAngleMin);
+				BITMAP( HARD_MASK, LINEAR, CLAMP, IKBITMAP_NAME, MODULATE, 0.0, 0.0, m_dIKnobDia, m_dIKnobDia, CTR);
+				MATRIX(RESTORE);
+				
+				Color(Yellow);
+				if(bInnerClicked[1]){BOX( 0.0, 0.0, m_dIKnobDia * 2 * m_dKnobScale[0], m_dIKnobDia * 2 * m_dKnobScale[0], CTR);}
+				
+				Color(Black);
+				if( m_nShape == 0)
+				{CIRCLE( 0.0, 0.0, m_dPBDia*2, 32, FILL);}
+				if( m_nShape == 1)
+				{BOX( 0.0, 0.0, m_dPBDia*2, m_dPBDia*2, CTR, FILL);}
+				else{ m_nShape = 2;}
+				
+				if (cOut.bPushed){SCALE(0.85);}
+				Color(WHITE);
+				BITMAP( HARD_MASK, LINEAR, CLAMP, PBBITMAP_NAME, MODULATE, 0.0, 0.0, m_dPBDia*2, m_dPBDia*2, CTR);
+				
+				if(bInnerClicked[0]){ Color(YELLOW); BOX( 0.0, 0.0, m_dPBDia, m_dPBDia, CTR);}
+				
+			COLOR(RESTORE);
+		MATRIX(RESTORE);
+	}
+}
+
+
+
+// ########################################################################################
+// Bitmap Annuciator Pushbutton [bAnn, dAnn_Int][Bitmap with 2 states] 
+// Bitmap Annuciator [bAnnTop, dAnnTop_Int, bAnnBot, dAnnBot_Int] Pushbutton [Bitmap with 4 states]
+// 
+// default State = true: [bAnn, dAnn_Int] or [bAnnTop, dAnnTop_Int, bAnnBot, dAnnBot_Int]
+// example:
+// Instance oBAnnTBPb 	bapAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{ 2, 1.0, 1.0, 0}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Number of States
+// 2nd param: height of bitmap
+// 3rd param: height of bitmap
+// 4th param: Shape of Bitmap (CIRCLE = 0, SQUARE=1)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oBAnnTBPb
+{		
+	double	m_nStates;
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	int		m_nShape;
+	double	m_dAnnInt;
+	double	m_dAnnTopInt;
+	double	m_dAnnBotInt;
+	
+	bool	m_bAnn;
+	bool	m_bAnnTop;
+	bool	m_bAnnBot;
+
+	Struct cIn
+	{
+		bool	bAnn;
+		bool	bAnnTop;
+		bool	bAnnBot;
+		double	dAnn_Int;
+		double	dAnnTop_Int;
+		double	dAnnBot_Int;
+
+		bool	bPushed;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+	}
+
+	Init(int nStates, double dBitmapWidth, double dBitmapHeight, int nShape)
+	{
+		m_nStates 		=	nStates;
+		
+		if( m_nStates == 2){ m_dBitmapWidth =	dBitmapWidth/2;}
+		if( m_nStates == 4){ m_dBitmapWidth =	dBitmapWidth/4;}		
+		
+		m_dBitmapHeight	=	dBitmapHeight;
+		m_nShape		=	nShape;
+		
+		cOut.bPushed	=	false;
+		
+		cIn.bAnn			= false;
+		cIn.bAnnTop			= false;
+		cIn.bAnnBot			= false;
+		cIn.dAnn_Int		= 0.0;
+		cIn.dAnnTop_Int		= 0.0;
+		cIn.dAnnBot_Int		= 0.0;		
+	}
+
+	Entry
+	{		
+//		m_bAnn			=	cIn.bAnn;
+		m_bAnnTop		=	cIn.bAnnTop;
+		m_bAnnBot		=	cIn.bAnnBot;
+		m_dAnnInt		=	(cIn.dAnn_Int)/100.0;		
+		m_dAnnTopInt	=	(cIn.dAnnTop_Int)/100.0;
+		m_dAnnBotInt	=	(cIn.dAnnBot_Int)/100.0;
+		
+		cOut.bPushed	=	cIn.bPushed;
+		
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			
+			Color(Black);
+			if( m_nShape == 0)
+			{CIRCLE( 0.0, 0.0, m_dBitmapWidth/2, 32, FILL);}
+			if( m_nShape == 1)
+			{BOX( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, FILL);}
+			
+			
+			Color(Yellow);
+			Hotspot( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+			
+			COLOR(WHITE);
+			
+			if(cOut.bPushed){SCALE(0.85);}
+				
+			if( m_nStates == 2)
+			{
+				if (m_dAnnInt == 0.0)	
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+					LIGHT(OFF);
+				}
+				else
+				{
+					if (m_dAnnInt	<	dMin_Int)	{	m_dAnnInt	=	dMin_Int;	}
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+					LIGHT(OFF);
+				}
+			}	
+			
+			if( m_nStates == 4)
+			{				
+				m_bAnnTop = m_bAnnTop | (m_dAnnTopInt > 0.0);
+				m_bAnnBot = m_bAnnBot | (m_dAnnBotInt > 0.0);
+			
+				if (m_dAnnTopInt	<	dMin_Int)	{	m_dAnnTopInt	=	dMin_Int;	}
+				if (m_dAnnBotInt	<	dMin_Int)	{	m_dAnnBotInt	=	dMin_Int;	}
+			
+				if (m_bAnnTop & !m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT(m_dAnnTopInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_3);
+					LIGHT(OFF);
+				}
+				
+				if (!m_bAnnTop & m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT(m_dAnnBotInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+					LIGHT(OFF);
+				}
+				
+				if (m_bAnnTop & m_bAnnBot)
+				{
+					LIGHT(ON);
+					LIGHT((m_dAnnTopInt + m_dAnnBotInt) / 2);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+					LIGHT(OFF);
+				}
+				
+				if (!m_bAnnTop & !m_bAnnBot)
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_4);
+					LIGHT(OFF);
+				}
+			}
+			
+		MATRIX(RESTORE);
+	}
+}
+
+
+// ########################################################################################
+// 1 Bitmap Annuciator Pushbutton [dAnn_Int][Bitmap with 2 states] 
+// 2 Bitmap Annuciator [dAnnTop_Int, dAnnBot_Int] Pushbutton [Bitmap with 4 states] 
+// 
+// default State = true: [bAnn, dAnn_Int] or [bAnnTop, dAnnTop_Int, bAnnBot, dAnnBot_Int]
+// example:
+// Instance oBAnnTBPb 	bapAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{ 2, 1.0, 1.0, 0}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: Number of States
+// 2nd param: height of bitmap
+// 3rd param: height of bitmap
+// 4th param: Shape of Bitmap (CIRCLE = 0, SQUARE=1)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oBPb_BAT_BAB
+{		
+	double	m_nStates;
+	double	m_dBitmapWidth;
+	double	m_dBitmapHeight;
+	int		m_nShape;
+	double	m_dAnnInt;
+	double	m_dAnnTopInt;
+	double	m_dAnnBotInt;
+
+	Struct cIn
+	{
+		double	dAnn_Int;
+		double	dAnnTop_Int;
+		double	dAnnBot_Int;
+
+		bool	bPushed;
+	}
+	
+	Struct cOut
+	{
+		bool	bPushed;
+	}
+
+	Init(int nStates, double dBitmapWidth, double dBitmapHeight, int nShape)
+	{
+		m_nStates 		=	nStates;
+		
+		if( m_nStates == 2){ m_dBitmapWidth =	dBitmapWidth/2;}
+		if( m_nStates == 4){ m_dBitmapWidth =	dBitmapWidth/4;}		
+		
+		m_dBitmapHeight	=	dBitmapHeight;
+		m_nShape		=	nShape;
+		
+		cOut.bPushed	=	false;
+		cIn.dAnn_Int		= 0.0;
+		cIn.dAnnTop_Int		= 0.0;
+		cIn.dAnnBot_Int		= 0.0;		
+	}
+
+	Entry
+	{		
+		m_dAnnInt		=	(cIn.dAnn_Int)/100.0;		
+		m_dAnnTopInt	=	(cIn.dAnnTop_Int)/100.0;
+		m_dAnnBotInt	=	(cIn.dAnnBot_Int)/100.0;
+		
+		cOut.bPushed	=	cIn.bPushed;
+		
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			
+			Color(Black);
+			if( m_nShape == 0)
+			{CIRCLE( 0.0, 0.0, m_dBitmapWidth/2, 32, FILL);}
+			if( m_nShape == 1)
+			{BOX( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, FILL);}
+			
+			
+			Color(Yellow);
+			Hotspot( 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, cOut.bPushed, SELECTED, MOMENTARY, true, false, HOVER);
+			
+			COLOR(WHITE);
+			
+			if(cOut.bPushed){SCALE(0.85);}
+				
+			if( m_nStates == 2)
+			{
+				if (m_dAnnInt == 0.0)	
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_2);
+					LIGHT(OFF);
+				}
+				else
+				{
+					if (m_dAnnInt	<	dMin_Int)	{	m_dAnnInt	=	dMin_Int;	}
+					LIGHT(ON);
+					LIGHT(m_dAnnInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap2_1);
+					LIGHT(OFF);
+				}
+			}	
+			
+			if( m_nStates == 4)
+			{				
+				if (m_dAnnTopInt > 0.0)
+				{
+					if (m_dAnnTopInt < dMin_Int) { m_dAnnTopInt	= dMin_Int;	}
+					LIGHT(ON);
+					LIGHT(m_dAnnTopInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_3);
+					LIGHT(OFF);
+				}
+				
+				if (m_dAnnBotInt > 0.0)
+				{
+					if (m_dAnnBotInt < dMin_Int) { m_dAnnBotInt	= dMin_Int;	}
+					LIGHT(ON);
+					LIGHT(m_dAnnBotInt);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_2);
+					LIGHT(OFF);
+				}
+				
+				if ((m_dAnnTopInt > 0.0) & (m_dAnnBotInt > 0.0))
+				{
+					if (m_dAnnTopInt < dMin_Int) { m_dAnnTopInt	= dMin_Int;	}
+					if (m_dAnnBotInt < dMin_Int) { m_dAnnBotInt	= dMin_Int;	}
+					LIGHT(ON);
+					LIGHT(m_dAnnTopInt + m_dAnnBotInt / 2);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_1);
+					LIGHT(OFF);
+				}
+				
+				if (m_dAnnTopInt == 0.0) & (m_dAnnBotInt == 0.0)
+				{
+					LIGHT(ON);					
+					LIGHT(dMin_Int);
+					Bitmap( HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, m_dBitmapWidth, m_dBitmapHeight, CTR, Bitmap4_4);
+					LIGHT(OFF);
+				}
+			}
+			
+		MATRIX(RESTORE);
+	}
+}

@@ -83,6 +83,12 @@ namespace vip_sharp
 
         public void Visit(VIPExpressionListNode node)
         {
+            bool first = true;
+            foreach (VIPNode exprnode in node.ChildNodes)
+            {
+                if (first) first = false; else Code.Append(',');
+                exprnode.Accept(this);
+            }
         }
 
         public void Visit(VIPFullVariableDefinitionNode node)
@@ -240,7 +246,7 @@ namespace vip_sharp
 
         public void Visit(VIPPolygonCommandNode node)
         {
-            if (node.Type == VIPPolygonType.WithArrays)
+            if (node.VerticesIdentifier != null && node.ColorsIdentifier != null)
             {
                 Code.Append($"{VIPUtilsInstance}.Polygon(");
                 node.VerticesIdentifier.Accept(this);
@@ -483,6 +489,32 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionCallCommandNode node)
         {
+            // special commands
+            if (node.Name.Parts.Length == 1)
+            {
+                var qname = node.Name.Parts[0].Item1;
+                string sfn = null;
+                if (qname.EqualsI("line_width"))
+                    sfn = "LineWidth";
+                else if (qname.EqualsI("arc_line"))
+                    sfn = "ArcLine";
+
+                if (sfn != null)
+                {
+                    Code.Append($"{VIPUtilsInstance}.{sfn}(");
+
+                    bool first = true;
+                    foreach (var argnode in node.Arguments)
+                    {
+                        if (first) first = false; else Code.Append(',');
+                        ((VIPNode)argnode.AstNode).Accept(this);
+                    }
+
+                    Code.AppendLine(");");
+                    return;
+                }
+            }
+
             throw new NotImplementedException();
         }
 
@@ -533,9 +565,31 @@ namespace vip_sharp
 
         public void Visit(VIPColorCommandNode node)
         {
-            Code.Append($"{VIPUtilsInstance}.Color(");
-            node.ArrayName.Accept(this);
-            Code.AppendLine(");");
+            if (node.Save)
+                Code.AppendLine($"{VIPUtilsInstance}.ColorSave();");
+            else if (node.Restore)
+                Code.AppendLine($"{VIPUtilsInstance}.ColorRestore();");
+            else if (node.R != null && node.G != null && node.B != null)
+            {
+                Code.Append($"{VIPUtilsInstance}.Color(");
+                node.R.Accept(this);
+                Code.Append(',');
+                node.G.Accept(this);
+                Code.Append(',');
+                node.B.Accept(this);
+                if (node.A != null)
+                {
+                    Code.Append(',');
+                    node.A.Accept(this);
+                }
+                Code.AppendLine(");");
+            }
+            else
+            {
+                Code.Append($"{VIPUtilsInstance}.Color(");
+                node.ArrayName.Accept(this);
+                Code.AppendLine(");");
+            }
         }
 
         public void Visit(VIPCircleCommandNode node)
@@ -548,7 +602,7 @@ namespace vip_sharp
             node.Radius.Accept(this);
             Code.Append(',');
             node.Steps.Accept(this);
-            Code.Append($",{node.Filled.ToString().ToLower()});");
+            Code.AppendLine($",{node.Filled.ToString().ToLower()});");
         }
 
         public void Visit(VIPStringLiteralNode node)
@@ -560,10 +614,41 @@ namespace vip_sharp
         {
             if (node.Type.EqualsI("save"))
                 Code.AppendLine($"{VIPUtilsInstance}.MatrixSave();");
-            else if (node.Type.EqualsI("load"))
-                Code.AppendLine($"{VIPUtilsInstance}.MatrixLoad();");
+            else if (node.Type.EqualsI("restore"))
+                Code.AppendLine($"{VIPUtilsInstance}.MatrixRestore();");
             else if (node.Type.EqualsI("identity"))
                 Code.AppendLine($"{VIPUtilsInstance}.MatrixIdentity();");
+        }
+
+        public void Visit(VIPListDefinition node)
+        {
+            Code.AppendLine($"{VIPUtilsClass}.DisplayList __{node.Name} = new {VIPUtilsClass}.DisplayList(()=>{{");
+            foreach (VIPNode cmdnode in node.ChildNodes)
+                cmdnode.Accept(this);
+            Code.AppendLine("});");
+        }
+
+        public void Visit(VIPShapeCommandNode node)
+        {
+            string cmd;
+            if (node.Command.EqualsI("line_strip"))
+                cmd = "LineStrip";
+            else if (node.Command.EqualsI("polygon"))
+                cmd = "Polygon";
+            else if (node.Command.EqualsI("quad"))
+                cmd = "Quad";
+            else if (node.Command.EqualsI("triangle"))
+                cmd = "Triangle";
+            else if (node.Command.EqualsI("line"))
+                cmd = "Line";
+            else if (node.Command.EqualsI("closed_line"))
+                cmd = "ClosedLine";
+            else
+                throw new NotImplementedException();
+
+            Code.Append($"{VIPUtilsInstance}.{cmd}(");
+            node.ExpressionList.Accept(this);
+            Code.AppendLine(");");
         }
     }
 }

@@ -1,0 +1,1354 @@
+// **************************
+// ** [ TRU SYSTEMS INC. ] **
+// ########################################################################################
+// ## FILENAME     : xxxxxxxx.xxx                                                        ##
+// ## PROJECT/PART :  VIP++ Switch Classes                                               ##
+// ##------------------------------------------------------------------------------------##
+// ## DESCRIPTION  :  These classes code into VIP++ the switches/knobs/pushbutons        ##
+// ##                                                                                    ##
+// ##------------------------------------------------------------------------------------##
+// ## AUTHOR: First.Last                                                                 ##
+// ## DATE CREATED: 30/04/15                 LAST REVISION: dd/mm/yy                     ##
+// ########################################################################################
+
+Typedef TVertex {
+	double	dX;
+	double	dY;
+}
+
+Typedef TColor {
+	double	dR;
+	double	dG;
+	double	dB;
+}
+
+TColor DARK = {10.0, 10.0, 10.0};
+
+Function GetColorRGB(int nColorIn, float fInt, TColor& cColorOut)
+{
+	if (nColorIn == 0)	{	cColorOut.dR = 0;		cColorOut.dG = 0;		cColorOut.dB = 0; }
+	if (nColorIn == 1)	{	cColorOut.dR = 25;		cColorOut.dG = 25;		cColorOut.dB = 25; }
+	if (nColorIn == 2)	{	cColorOut.dR = 50;		cColorOut.dG = 50;		cColorOut.dB = 50; }
+	if (nColorIn == 3)	{	cColorOut.dR = 75;		cColorOut.dG = 75;		cColorOut.dB = 75; }
+	if (nColorIn == 4)	{	cColorOut.dR = 100;		cColorOut.dG = 100;		cColorOut.dB = 100; }
+	if (nColorIn == 5)	{	cColorOut.dR = 100;		cColorOut.dG = 0;		cColorOut.dB = 0; }
+	if (nColorIn == 6)	{	cColorOut.dR = 0;		cColorOut.dG = 100;		cColorOut.dB = 0; }
+	if (nColorIn == 7)	{	cColorOut.dR = 0;		cColorOut.dG = 0;		cColorOut.dB = 100; }
+	if (nColorIn == 8)	{	cColorOut.dR = 0;		cColorOut.dG = 100;		cColorOut.dB = 100; }
+	if (nColorIn == 9)	{	cColorOut.dR = 100;		cColorOut.dG = 0;		cColorOut.dB = 100; }
+	if (nColorIn == 10)	{	cColorOut.dR = 100;		cColorOut.dG = 100;		cColorOut.dB = 0; }
+	if (nColorIn == 11)	{	cColorOut.dR = 97.7;	cColorOut.dG = 66.4;	cColorOut.dB = 23.4; }
+	if (nColorIn == 12)	{	cColorOut.dR = 100;		cColorOut.dG = 64.5;	cColorOut.dB = 0; }
+	if (nColorIn == 13)	{	cColorOut.dR = 53.9;	cColorOut.dG = 16.8;	cColorOut.dB = 88.3; }
+	if (nColorIn == 14)	{	cColorOut.dR = 64.5;	cColorOut.dG = 16.4;	cColorOut.dB = 16.4; }
+	if (nColorIn == 15)	{	cColorOut.dR = 82;		cColorOut.dG = 41;		cColorOut.dB = 11.7; }
+	if (nColorIn == 16)	{	cColorOut.dR = 0;		cColorOut.dG = 50;		cColorOut.dB = 0; }
+	if (nColorIn == 17)	{	cColorOut.dR = 15.6;	cColorOut.dG = 100;		cColorOut.dB = 15.6; }
+	if (nColorIn == 18)	{	cColorOut.dR = 100;		cColorOut.dG = 21.5;	cColorOut.dB = 21.5; }
+	if (nColorIn == 19)	{	cColorOut.dR = 50;		cColorOut.dG = 10.5;	cColorOut.dB = 10.5; }
+	if (nColorIn == 20)	{	cColorOut.dR = 0;		cColorOut.dG = 54.3;	cColorOut.dB = 54.3; }
+	if (nColorIn == 21)	{	cColorOut.dR = 39.1;	cColorOut.dG = 58.2;	cColorOut.dB = 92.6; }
+	if (nColorIn == 22)	{	cColorOut.dR = 100;		cColorOut.dG = 7.8;		cColorOut.dB = 57.4; }
+	if (nColorIn == 23)	{	cColorOut.dR = 100;		cColorOut.dG = 84;		cColorOut.dB = 0; }
+
+	cColorOut.dR = cColorOut.dR * fInt / 100.0;
+	cColorOut.dG = cColorOut.dG * fInt / 100.0;
+	cColorOut.dB = cColorOut.dB * fInt / 100.0;
+}
+
+// Use for switches initial position
+Define SW_UP   1
+Define SW_DN   0
+Define SW_CTR  2
+
+// Use for switches spingloaded option
+Define SPNGLOAD_NO	 0
+Define SPNGLOAD_UP	 1
+Define SPNGLOAD_BOTH 2
+Define SPNGLOAD_DN	 3
+
+Use "Parts\Parts.list"
+Use "Libraries\TVertex.lib"
+Use "Libraries\Extended_Switches.lib"
+
+// ########################################################################################
+// 2 position switch (with optional springloading )
+//
+// example:
+// Instance oSwPos2 		swAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, SW_UP,  SPNGLOAD_NO}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: ratio of bitmap
+// 2nd param: initial position of switch at init
+// 3rd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oSwPos2
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.5,  1.0,
+								0.5,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.5,  0.0,
+								0.5,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	bool m_bClick_Up;
+	bool m_bClick_Down;
+
+	int m_nSpringload;
+
+	double m_dBitmapRatio;
+
+	Struct cIn
+	{
+		double dLight;	
+		int    nHotspot_Alpha;
+	}
+	
+	Struct cOut
+	{
+		bool bPos_Up;
+	}
+
+	Init(double dBitmapRatio, int nInitState, int nSpringload)
+	{
+		m_dBitmapRatio 	= 1.0 / dBitmapRatio;
+
+		cOut.bPos_Up	= nInitState;
+
+		m_nSpringload	= nSpringload;
+		cIn.dLight 		= 100.0;
+		cIn.nHotspot_Alpha= 100.0;
+	}
+
+	Entry
+	{
+		double dHotSpotY;
+	
+		Matrix(SAVE);
+			m_bClick_Up = false;
+			m_bClick_Down = false;
+			if (m_dBitmapRatio > 0.5)	{	dHotSpotY = 0.5; }
+			else					 	{ 	dHotSpotY = 0.25; }
+	
+			if (m_nSpringload > SPNGLOAD_NO) { cOut.bPos_Up	  = false; }
+	
+			Color(SAVE);
+				Line_Width(1.0);
+				Color(Yellow, cIn.nHotspot_Alpha);
+				Hotspot(0.0,  0.5*dHotSpotY, 0.5, dHotSpotY, CTR, m_bClick_Up, 	SELECTED, MOMENTARY, true, false, HOVER);
+				Hotspot(0.0, -0.5*dHotSpotY, 0.5, dHotSpotY, CTR, m_bClick_Down, SELECTED, MOMENTARY, true, false, HOVER);
+	
+				if (m_bClick_Up)	{ cOut.bPos_Up = true; }
+				if (m_bClick_Down)	{ cOut.bPos_Up = false; }
+	
+				Color(White);
+				Light(ON);
+					Light(cIn.dLight/100.0);
+					if (cOut.bPos_Up == true)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, UpBitmap); }
+					if (cOut.bPos_Up == false)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, DownBitmap); }
+				Light(OFF);
+			Color(RESTORE);
+		Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// 3 position switch (with optional springloading )
+//
+// example:
+// Instance oSwPos3 		swAAAAA	{X=0.0, Y=0.0, S=1.0}:{1.0, SW_UP,  SPNGLOAD_NO}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// 1st param: ratio of bitmap
+// 2nd param: initial position of switch at init
+// 3rd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP, SPNGLOAD_BOTH)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oSwPos3
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.3333,  1.0,
+								0.3333,  0.0 };
+
+	TVertex	CtrBitmap[4] = {	0.3333,  0.0,
+								0.3333,  1.0,
+								0.6667,  1.0,
+								0.6667,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.6667,  0.0,
+								0.6667,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	bool m_bClick_Up;
+	bool m_bClick_Down;
+	bool m_bClick_Ctr;
+	bool m_bMouseLocked;
+
+	int m_nSpringload;
+
+	double m_dBitmapRatio;
+
+	Struct cIn
+	{
+		double dLight;	
+	}
+		
+	Struct cOut
+	{
+		bool bPos_Up;
+		bool bPos_Down;
+	}
+
+	Init(double dBitmapRatio, int nInitState, int nSpringload)
+	{
+		m_dBitmapRatio 	= 1.5 / dBitmapRatio;
+
+		cOut.bPos_Up	= (nInitState == SW_UP);
+		cOut.bPos_Down	= (nInitState == SW_DN);
+
+		m_nSpringload	= nSpringload;
+		
+		cIn.dLight		= 100.0;
+	}
+
+	Entry
+	{
+		Matrix(SAVE);
+			m_bClick_Up 	= false;
+			m_bClick_Ctr	= false;
+			m_bClick_Down 	= false;
+	
+			if (m_nSpringload > SPNGLOAD_NO) { cOut.bPos_Up	  = false; }
+			if (m_nSpringload > SPNGLOAD_UP) { cOut.bPos_Down = false; }
+	
+			Color(SAVE);
+				Line_Width(1.0);
+				Color(Yellow);
+				Hotspot(0.0, 0.1, 0.5, 0.4, CL, m_bClick_Up, 	SELECTED, MOMENTARY, true, false, HOVER);
+				Hotspot(0.0,-0.1, 0.5, 0.4, CU, m_bClick_Down,	SELECTED, MOMENTARY, true, false, HOVER);
+				Hotspot(0.0, 0.0, 0.5, 0.2, CTR, m_bClick_Ctr,	SELECTED, MOMENTARY, true, false, HOVER);
+	
+				if (m_bClick_Ctr)	{ m_bMouseLocked = false; }
+	
+				if (m_bClick_Down .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up .AND. !m_bMouseLocked)	{ cOut.bPos_Up 	= false;
+																									cOut.bPos_Down= true; }
+				if (m_bClick_Down .AND. cOut.bPos_Up)	{ cOut.bPos_Up 	= false;
+														cOut.bPos_Down= false;
+														m_bMouseLocked = true; }
+	
+				if (m_bClick_Up .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up .AND. !m_bMouseLocked)	{ cOut.bPos_Up 	= true;
+																									cOut.bPos_Down= false; }
+	
+				if (m_bClick_Up .AND. cOut.bPos_Down)	{ cOut.bPos_Up 	= false;
+														cOut.bPos_Down= false;
+														m_bMouseLocked = true; }
+	
+				if (m_bClick_Ctr)	{ cOut.bPos_Up 	= false;
+									cOut.bPos_Down= false; }
+	
+				if (!System.bLButton)	{	m_bMouseLocked = false;	}
+	
+				Color(White);
+				Light(ON);
+					Light(cIn.dLight/100.0);
+					if (cOut.bPos_Up == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, UpBitmap); }
+					if (cOut.bPos_Down == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, DownBitmap); }
+					if ((cOut.bPos_Up .OR. cOut.bPos_Down) == false)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, MODULATE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, CtrBitmap); }
+				Light(OFF);
+	
+			Color(RESTORE);		
+		Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Pushbutton switch (with optional springloading )
+//
+// example:
+// Instance oPushBtn 		pbAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, SW_DN,  SPNGLOAD_UP}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation
+// 1st param: ratio of bitmap
+// 2nd param: initial position of switch at init
+// 3rd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oPushBtn
+{
+	double	m_dBitmapRatio;
+	int		m_nSpringload;
+
+	Struct cIn
+	{
+		int nHotspot_Alpha;
+	}
+	
+	Struct cOut
+	{
+		bool bPushed_In;
+	}
+
+	Init(double dBitmapRatio, bool bInitState, int nSpringload)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_dBitmapRatio 	= dBitmapRatio;
+
+		m_nSpringload	= nSpringload;
+		
+		cIn.nHotspot_Alpha	= 100.0;
+	}
+
+	Entry
+	{
+		bool m_bClick;
+		
+		Matrix(SAVE);
+			m_bClick = false;
+	
+			if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed_In = false; }
+	
+			Color(SAVE);
+				Color(YELLOW, cIn.nHotspot_Alpha);
+	
+				if (m_nSpringload > SPNGLOAD_NO)	{
+					Hotspot(0.0, 0.0, 1.0, m_dBitmapRatio, CTR, m_bClick, 	SELECTED, MOMENTARY, true, false, HOVER);
+					cOut.bPushed_In = m_bClick;
+				}
+				else	{
+					Hotspot(0.0, 0.0, 1.0, m_dBitmapRatio, CTR, m_bClick, 	RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+					if (m_bClick)	{ cOut.bPushed_In = !cOut.bPushed_In; }
+				}
+	
+				if (cOut.bPushed_In == true)	{ Scale(0.9); }
+	
+				Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 1.0, m_dBitmapRatio, CTR);
+			Color(RESTORE);
+		Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Annunciator-Pushbutton (Black Text over colored background, Single or dual section)
+//
+// example:
+// Instance oPushAnnun 	pbAAAAA		{X=0.0, Y=0.0, S=1.0}:{false, SPNGLOAD_NO, 1, 1, 0.1, 0.15, 1.35, false}:{NFONT=VIP_NULL, CCOLORTOP="WHITE", CCOLORBOT="AMBER", CFONTTOPCOLOR="BLACK", CFONTBOTCOLOR="BLACK", LGUARDBMP_CLOSE=0, LGUARDBMP_OPEN=0};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width (scaling)
+// 1st param: initial position of switch at init, true is pushed in
+// 2nd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// 3rd param: number of section (currently support 1 or 2 sections of text)
+// 4th param: number of text line per section
+// 5th param: scaling of the character in X direction
+// 6th param: scaling of the character in Y direction
+// 7th param: delta spacing between the characters in X direction.
+// 8th param: Flag to define switch as per Airbus (Box around bottom text)
+// NFONT:	  FONT list name
+// CCOLORTOP: Color of entire/top section
+// CCOLORBOT: Color of bottom section
+// CFONTTOPCOLOR: Color of top font
+// CFONTBOTCOLOR: Color of bottom font
+//
+// ########################################################################################
+
+Object oPushAnnun
+{
+	int m_nSection;
+	int m_nLineText;
+	double	m_dX;
+	double	m_dY;
+	double	m_dSpacing;
+	int		m_nSpringload;
+	bool	m_bBox;
+
+	Struct cIn
+	{
+		float fBklt_Top;
+		float fBklt_Bot;
+		float fFont_Top_Int;
+		float fFont_Bot_Int;
+
+		// Characters Row
+		char	cFirst[10];
+		char	cSecond[10];
+		char	cThird[10];
+		char	cFourth[10];
+
+		double	dLineWidth;
+	}
+
+	Struct cOut
+	{
+		bool bPushed_In;
+	}
+
+	Init(bool bInitState, int nSpringload, int nSection, int nLineText, double dX, double dY, double dSpacing, bool bIsBoxPresent)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+
+		m_nSection 	= nSection;
+		m_nLineText = nLineText;
+		m_dX		= dX;
+		m_dY		= dY;
+		m_dSpacing	= dSpacing;
+
+		cIn.fBklt_Top		= 100.0;
+		cIn.fBklt_Bot		= 100.0;
+		cIn.fFont_Top_Int	= 100.0;
+		cIn.fFont_Bot_Int	= 100.0;
+
+		m_bBox	=	bIsBoxPresent;
+	}
+
+	Entry
+	{
+		bool bClick;
+		double dDynSpace;
+		TColor cColor;
+
+		bClick = false;
+
+		Matrix(SAVE);
+			Color(SAVE);
+				Line_Width(3.0);
+				Color(YELLOW);
+	
+				if (m_nSpringload > SPNGLOAD_NO)	{
+					Hotspot(0.0, 0.0, 1.0, 1.0, CTR, bClick, SELECTED, MOMENTARY, true, false, HOVER);
+					cOut.bPushed_In = bClick;
+				}
+				else	{
+					Hotspot(0.0, 0.0, 1.0, 1.0, CTR, bClick, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+					if (bClick)	{ cOut.bPushed_In = !cOut.bPushed_In; }
+				}
+	
+				Line_Width(1.0);
+	
+				Color(0.0, 0.0, 0.0);
+				QUAD{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5};
+	
+				if (cOut.bPushed_In == true)	{ Scale(0.85); }
+	
+				Color(DARK);
+				QUAD{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5};
+				if (cOut.bPushed_In == true)
+				{
+					COLOR(DARK_GREY);
+					BOX(0.0, 0.0, 1.00, 1.00, CTR);
+				}
+	
+				if (m_nSection == 1)	{
+					Color(CCOLORTOP, cIn.fBklt_Top);
+					QUAD{-0.45, -0.45, -0.45, 0.45, 0.45, 0.45, 0.45, -0.45};
+	
+					if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+					Line_Width(cIn.dLineWidth);
+					GetColorRGB(CFONTTOPCOLOR, cIn.fFont_Top_Int, cColor);
+					Color(cColor);
+					if (m_nLineText == 1)	{	String(0.0, 0.0, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+					if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.625;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												String(0.0, -dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+					if (m_nLineText == 3)	{	dDynSpace = m_dY * 1.5;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												String(0.0,  0.0, 		  CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);  }
+					if (m_nLineText == 4)	{	dDynSpace = m_dY * 0.750;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												dDynSpace = m_dY * 2.250;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												String(0.0, -dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				}
+	
+				if (m_nSection == 2)	{
+					Color(CCOLORTOP, cIn.fBklt_Top);
+					QUAD{-0.45, 0.025, -0.45, 0.45, 0.45, 0.45, 0.45, 0.025};
+	
+					if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+					Line_Width(cIn.dLineWidth);
+					GetColorRGB(CFONTTOPCOLOR, cIn.fFont_Top_Int, cColor);
+					Color(cColor);
+					if (m_nLineText == 1)	{	String(0.0, 0.25, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+					if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 + 0.25;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												dDynSpace = -m_dY * 0.750 + 0.25 ;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+					Line_Width(1.0);
+					Color(CCOLORBOT, cIn.fBklt_Bot);
+					QUAD{-0.45, -0.45, -0.45, -0.025, 0.45, -0.025, 0.45, -0.45};
+	
+					Line_Width(cIn.dLineWidth);
+					GetColorRGB(CFONTBOTCOLOR, cIn.fFont_Bot_Int, cColor);
+					Color(cColor);
+					if (m_nLineText == 1)	{	String(0.0, -0.25, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+					if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 - 0.25;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);
+												dDynSpace = -m_dY * 0.750 - 0.25;
+												String(0.0,  dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+	
+					if (m_bBox)				{
+							Line_Width(cIn.dLineWidth * 1.5);
+							BOX(0.0, -0.25, 0.9, 0.35, CTR);	}
+				}
+	
+			Color(RESTORE);
+		Matrix(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Guarded Annunciator-Pushbutton (Black Text over colored background, Single or dual section)
+//
+// example:
+// Instance oPushAnnunGuarded 	pbAAAAA		{X=0.0, Y=0.0, S=1.0}:{false, SPNGLOAD_NO, 1, 1, 0.1, 0.15, 1.35, false}:{NFONT=VIP_NULL, CCOLORTOP="WHITE", CCOLORBOT="AMBER", CFONTTOPCOLOR="BLACK", CFONTBOTCOLOR="BLACK", LGUARDBMP_CLOSE=0, LGUARDBMP_OPEN=0};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width (scaling)
+// 1st param: initial position of switch at init, true is pushed in
+// 2nd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// 3rd param: number of section (currently support 1 or 2 sections of text)
+// 4th param: number of text line per section
+// 5th param: scaling of the character in X direction
+// 6th param: scaling of the character in Y direction
+// 7th param: delta spacing between the characters in X direction.
+// 8th param: Flag to define switch as per Airbus (Box around bottom text) and with list of bitmaps for guard
+// NFONT:	  FONT list name
+// CCOLORTOP: Color of entire/top section
+// CCOLORBOT: Color of bottom section
+// CFONTTOPCOLOR: Color of top font
+// CFONTBOTCOLOR: Color of bottom font
+// LGUARDBMP_OPEN: path of list containing bitmap when guard is open
+// LGUARDBMP_CLOSE: path of list containing bitmap when guard is closed
+//
+// ########################################################################################
+
+Object oPushAnnunGuarded
+{
+	int m_nSection;
+	int m_nLineText;
+	double	m_dX;
+	double	m_dY;
+	double	m_dSpacing;
+	int		m_nSpringload;
+	bool	m_bGuarded;
+	bool	m_bBox;
+	double  m_dGuardTimer;
+
+	Struct cIn
+	{
+		float fBklt_Top;
+		float fBklt_Bot;
+		float fFont_Top_Int;
+		float fFont_Bot_Int;
+
+		// Characters Row
+		char	cFirst[10];
+		char	cSecond[10];
+		char	cThird[10];
+		char	cFourth[10];
+
+		double	dLineWidth;
+		int		nHotspot_Alpha;
+	}
+
+	Struct cOut
+	{
+		bool bPushed_In;
+	}
+
+	Init(bool bInitState, int nSpringload, int nSection, int nLineText, double dX, double dY, double dSpacing, bool bIsBoxPresent)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+
+		m_nSection 	= nSection;
+		m_nLineText = nLineText;
+		m_dX		= dX;
+		m_dY		= dY;
+		m_dSpacing	= dSpacing;
+
+		cIn.fBklt_Top		= 100.0;
+		cIn.fBklt_Bot		= 100.0;
+		cIn.fFont_Top_Int	= 100.0;
+		cIn.fFont_Bot_Int	= 100.0;
+		cIn.nHotspot_Alpha	= 100.0;
+
+		m_bBox	=	bIsBoxPresent;
+
+		m_bGuarded 	= true;
+		m_dGuardTimer	=	0.0;
+	}
+
+	Entry
+	{
+		bool bClick;
+		double dDynSpace;
+		TColor cColor;
+
+		bClick = false;
+
+		COLOR(SAVE);
+		MATRIX(SAVE);
+			Line_Width(3.0);
+			Color(Yellow, cIn.nHotspot_Alpha);
+			if (!m_bGuarded)	{
+				if (m_nSpringload > SPNGLOAD_NO)	{
+					Hotspot(0.0, 0.0, 1.0, 1.0, CTR, bClick, SELECTED, MOMENTARY, true, false, HOVER);
+					cOut.bPushed_In = bClick;
+				}
+				else	{
+					Hotspot(0.0, 0.0, 1.0, 1.0, CTR, bClick, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+					if (bClick)	{ cOut.bPushed_In = !cOut.bPushed_In; }
+				}
+			}
+
+			Line_Width(1.0);
+			Color(0.0, 0.0, 0.0);
+			QUAD{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5};
+
+			if (cOut.bPushed_In == true)	{ Scale(0.9); }
+
+			Color(DARK);
+			QUAD{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5};
+
+			if (m_nSection == 1)	{
+				Color(CCOLORTOP, cIn.fBklt_Top);
+				QUAD{-0.45, -0.45, -0.45, 0.45, 0.45, 0.45, 0.45, -0.45};
+
+				if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+				Line_Width(cIn.dLineWidth);
+				GetColorRGB(CFONTTOPCOLOR, cIn.fFont_Top_Int, cColor);
+				Color(cColor);
+				if (m_nLineText == 1)	{	String(0.0, 0.0, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.625;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				if (m_nLineText == 3)	{	dDynSpace = m_dY * 1.5;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											String(0.0,  0.0, 		  CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);  }
+				if (m_nLineText == 4)	{	dDynSpace = m_dY * 0.750;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											dDynSpace = m_dY * 2.250;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											String(0.0, -dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+			}
+
+			if (m_nSection == 2)	{
+				Color(CCOLORTOP, cIn.fBklt_Top);
+				QUAD{-0.45, 0.025, -0.45, 0.45, 0.45, 0.45, 0.45, 0.025};
+
+				if (cIn.dLineWidth == 0) { cIn.dLineWidth = 3.0; }
+				Line_Width(cIn.dLineWidth);
+				GetColorRGB(CFONTTOPCOLOR, cIn.fFont_Top_Int, cColor);
+				Color(cColor);
+				if (m_nLineText == 1)	{	String(0.0, 0.25, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 + 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFirst, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											dDynSpace = -m_dY * 0.750 + 0.25 ;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+				Line_Width(1.0);
+				Color(CCOLORBOT, cIn.fBklt_Bot);
+				QUAD{-0.45, -0.45, -0.45, -0.025, 0.45, -0.025, 0.45, -0.45};
+
+				Line_Width(cIn.dLineWidth);
+				GetColorRGB(CFONTBOTCOLOR, cIn.fFont_Bot_Int, cColor);
+				Color(cColor);
+				if (m_nLineText == 1)	{	String(0.0, -0.25, CTR, NONE, cIn.cSecond, 0, NFONT, m_dX, m_dY, m_dSpacing);	 }
+				if (m_nLineText == 2)	{	dDynSpace = m_dY * 0.750 - 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cThird, 0, NFONT, m_dX, m_dY, m_dSpacing);
+											dDynSpace = -m_dY * 0.750 - 0.25;
+											String(0.0,  dDynSpace, CTR, NONE, cIn.cFourth, 0, NFONT, m_dX, m_dY, m_dSpacing); }
+
+				if (m_bBox)				{
+						Line_Width(cIn.dLineWidth * 1.5);
+						BOX(0.0, -0.25, 0.9, 0.35, CTR);	}
+			}
+		MATRIX(RESTORE);
+
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			//CRJ-type
+			if (!m_bBox)	{
+				if (m_bGuarded)	{
+						COLOR(WHITE, 50.0);
+						BOX(0.0, 0.0, 1.1, 1.1, CTR, FILL);
+						// BOX(0.0, 0.0, 1.22, 1.45, CTR, FILL);
+						COLOR(YELLOW, cIn.nHotspot_Alpha);
+						Hotspot(0.0, 0.0, 1.1, 1.1, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, false, true, HOVER);
+						// Hotspot(0.0, 0.0, 1.22, 1.45, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, false, true, HOVER);
+				}
+				else	{
+					COLOR(WHITE);
+					BOX(0.0, 0.6, 1.1, 0.1, CTR, FILL)	;
+					COLOR(YELLOW, cIn.nHotspot_Alpha);
+					Hotspot(0.0, 0.6, 1.1, 0.150, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+				}
+			}
+			else	{
+				Color(YELLOW, cIn.nHotspot_Alpha);
+				if (m_bGuarded)	{
+						Display(0.0, 0.0, LGUARDBMP_CLOSE);
+						Hotspot(0.0, 0.0, 1.36, 1.36	, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, false, true, HOVER);
+						// Hotspot(0.0, 0.0, 1.22, 1.45, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, false, true, HOVER);
+						m_dGuardTimer 	= 0.0;
+				}
+				else	{
+					Display(0.0, 0.0, LGUARDBMP_OPEN);
+					Hotspot(0.0, 1.1, 1.36, 1.0, CTR, m_bGuarded, RELEASE_EDGE, MOMENTARY, true, false, HOVER);
+
+					//Reclose Guard after timer
+					m_dGuardTimer = m_dGuardTimer + System.dDT;
+					if (m_dGuardTimer > 3.0)	{
+						m_bGuarded 		= true;
+						m_dGuardTimer 	= 0.0;
+					}
+				}
+			}
+
+		MATRIX(RESTORE);
+		COLOR(RESTORE);
+	}
+}
+
+// ########################################################################################
+// Pushbutton + Rotary Knob (use 2 bitmaps)
+//
+// example:
+// Instance oPushRotKnob 	pbAAAAA		{X=0.0, Y=0.0, S=1.0}:{true, SPNGLOAD_NO}:{KNOB_IN=AAAAAA, KNOB_OUT=BBBBBB};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width (scaling)
+// 1st param: initial position of switch at init, true is pushed in
+// 2nd param: springloading (SPNGLOAD_NO, SPNGLOAD_UP)
+// KNOB_IN  = path of list containing bitmap when pushed in
+// KNOB_OUT = path of list containing bitmap when released (out)
+//
+// ########################################################################################
+
+Object oPushRotKnob
+{
+	bool	m_bLock[5];
+	int 	m_nSpringload;
+	double	m_dAngleMin;
+	double	m_dAngleMax;
+	double	m_dValueMin;
+	double	m_dValueMax;
+	bool	m_bIsInteger;
+	int		m_nValue;
+	double  m_dHoverTimer;
+
+	Struct cIn
+	{
+		double	dKnob_Bklt;
+		int 	nHotspot_Alpha;
+	}
+
+	Struct cOut
+	{
+		bool 	bPushed_In;
+		double	dValue;
+	}
+
+	Init(bool bInitState, int nSpringload, double dAngleMin, double dAngleMax, double dValueMin, double dValueMax, bool bIsInteger)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+
+		m_dAngleMin		= dAngleMin;
+		m_dAngleMax		= dAngleMax;
+		m_dValueMin		= dValueMin;
+		m_dValueMax		= dValueMax;
+		m_bIsInteger	= bIsInteger;
+
+		cIn.dKnob_Bklt	= 100.0;
+		cIn.nHotspot_Alpha	= 100.0;
+	}
+
+	Entry
+	{
+		bool   bClick;
+		bool   bHover;
+
+		double dInc;
+
+		MATRIX(save);
+			COLOR(YELLOW, cIn.nHotspot_Alpha);
+			HOTSPOT(0.0, 0.825, 1.25, 0.5, CTR, bHover, HOVER, MOMENTARY, true, false, NEVER);
+			if (bHover)	{	m_dHoverTimer = 3.0; }
+
+			LINE_WIDTH(1.0);
+			if (m_bIsInteger)	{
+				ROTARY_KNOB(0.0, 0.0, 0.65, m_nValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+				Rotate(m_dAngleMin);
+				dInc = (m_dAngleMax-m_dAngleMin)/m_dValueMax*m_nValue;
+				Rotate(dInc);
+				if (cOut.bPushed_In)	{ Display(0.0, 0.0, KNOB_IN);	}
+				else					{ Scale(1.1);
+										  COLOR(WHITE);
+										  LIGHT(ON);
+										  LIGHT(cIn.dKnob_Bklt/100.0);
+										  Display(0.0, 0.0, KNOB_OUT);
+										  LIGHT(OFF); 					}
+			cOut.dValue = m_nValue;
+			}
+			else	{
+				ROTARY_KNOB(0.0, 0.0, 0.65, cOut.dValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0);
+				Rotate(m_dAngleMin);
+				dInc = (m_dAngleMax-m_dAngleMin)/m_dValueMax*cOut.dValue;
+				Rotate(dInc);
+				COLOR(WHITE);
+				if (cOut.bPushed_In)	{ Display(0.0, 0.0, KNOB_IN);	}
+				else					{ Scale(1.1);
+										  LIGHT(ON);
+										  LIGHT(cIn.dKnob_Bklt/100.0);
+										  Display(0.0, 0.0, KNOB_OUT);
+										  LIGHT(OFF); 					}
+			}
+		MATRIX(restore);
+
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed_In = false; }
+
+		COLOR(YELLOW, cIn.nHotspot_Alpha);
+		if (m_dHoverTimer > 0.0)	{
+			m_dHoverTimer = m_dHoverTimer - System.dDT;
+			if (cOut.bPushed_In) { String(0.0, 0.825, CTR, NONE, "PULL", 0, VIP_NULL, 0.1, 0.15, 1.5);	}
+			else				 { String(0.0, 0.825, CTR, NONE, "PUSH", 0, VIP_NULL, 0.1, 0.15, 1.5);	}
+
+			if (m_nSpringload > SPNGLOAD_NO)	{
+				HOTSPOT(0.0, 0.825, 1.25, 0.5, CTR, bClick, SELECTED, MOMENTARY, true, false, ALWAYS);
+			}
+			else	{
+				HOTSPOT(0.0, 0.825, 1.25, 0.5, CTR, bClick, SELECT_EDGE, MOMENTARY, true, false, ALWAYS);
+			}
+		}
+		if (bClick)	{ cOut.bPushed_In = !cOut.bPushed_In;	}
+	}
+}
+
+
+// ########################################################################################
+// Circuit Breaker
+//
+// example:
+// Instance oCB 	cbAAAAA	{X=0.0, Y=0.0, S=1.0, R=0.0}:{1.0, false}:{BITMAP_NAME="AAAAA.bmp"};
+//
+// X: Horizontal position
+// Y: Vertical position
+// S: Width
+// R: Rotation (if required)
+// 1st param: width of bitmap
+// 2nd param: initial position of switch at init
+// BITMAP_NAME = path of bitmap file
+//
+// ########################################################################################
+
+Object oCB
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.5,  1.0,
+								0.5,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.5,  0.0,
+								0.5,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	double m_dBitmapTrans;
+
+	Struct cIn
+	{
+		bool bPop_Request;
+	}
+
+	Struct cOut
+	{
+		bool bCB_Inserted;
+	}
+
+	Init(double dBitmapWidth, bool bInitState)
+	{
+		m_dBitmapTrans 		= dBitmapWidth / 4.0;
+
+		cOut.bCB_Inserted	= bInitState;
+	}
+
+	Entry
+	{
+		bool m_bClick;		//True when CB inserted
+
+		m_bClick = false;
+
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			Color(Yellow);
+			HOTSPOT(0.0, 0.0, 0.5, 0.5, CTR, m_bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+
+			if (m_bClick)					{ cOut.bCB_Inserted = !cOut.bCB_Inserted; }
+
+			if (cIn.bPop_Request) 			{ cOut.bCB_Inserted = false; }
+
+			Translate(0.0, -0.105);
+			CLIP(0.0, 0.0, LIST_CLIP);
+			if (!cOut.bCB_Inserted)	{ Display(-m_dBitmapTrans, 0.0, LIST_BMP); }
+			else					{ Display( m_dBitmapTrans, 0.0, LIST_BMP); }
+			CLIP(OFF);
+
+
+		MATRIX(RESTORE);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IN DEVELOPMENT
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Object oCB_old
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.5,  1.0,
+								0.5,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.5,  0.0,
+								0.5,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	double m_dBitmapRatio;
+
+	Struct cIn
+	{
+		bool bPop_Request;
+	}
+
+	Struct cOut
+	{
+		bool bCB_Inserted;
+	}
+
+	Init(double dBitmapRatio, bool bInitState)
+	{
+		m_dBitmapRatio 	= 1.0 / dBitmapRatio;
+
+		cOut.bCB_Inserted	= bInitState;
+	}
+
+	Entry
+	{
+		bool m_bClick;		//True when CB inserted
+
+		m_bClick = false;
+
+		MATRIX(SAVE);
+			Line_Width(1.0);
+			Color(Yellow);
+			HOTSPOT(0.0, 0.0, 0.5, 0.5, CTR, m_bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+
+			if (m_bClick)					{ cOut.bCB_Inserted = !cOut.bCB_Inserted; }
+
+			if (cIn.bPop_Request) 			{ cOut.bCB_Inserted = false; }
+
+			Translate(0.0, -0.105);
+			if (!cOut.bCB_Inserted)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, UpBitmap); }
+			else					{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, DownBitmap); }
+
+
+		MATRIX(RESTORE);
+	}
+}
+
+Object oPushRotKnobDev
+{
+	bool	m_bLock[5];
+	int 	m_nSpringload;
+	double	m_dAngleMin;
+	double	m_dAngleMax;
+	double	m_dValueMin;
+	double	m_dValueMax;
+	bool	m_bIsInteger;
+	int		m_nValue;
+
+	// List KNOB_DARK	{	Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_IN,  REPLACE, 0.0, 0.0, 1.0, 1.0, CTR);	};
+	// List KNOB_BRIGHT	{	Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_OUT, REPLACE, 0.0, 0.0, 1.0, 1.0, CTR);	};
+
+	// BITMAP_RES(KNOB_DARK, 	HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_IN);
+	// BITMAP_RES(KNOB_BRIGHT, HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_OUT);
+
+	Struct cOut
+	{
+		bool 	bPushed_In;
+		double	dValue;
+	}
+
+	Init(bool bInitState, int nSpringload, double dAngleMin, double dAngleMax, double dValueMin, double dValueMax, bool bIsInteger)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+
+		m_dAngleMin		= dAngleMin;
+		m_dAngleMax		= dAngleMax;
+		m_dValueMin		= dValueMin;
+		m_dValueMax		= dValueMax;
+		m_bIsInteger	= bIsInteger;
+	}
+
+	Entry
+	{
+		double bClick;
+		double dInc;
+
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed_In = false; }
+
+		MATRIX(save);
+			COLOR(YELLOW);
+			if (m_bIsInteger)	{
+				if (cOut.bPushed_In)	{ ROTARY_KNOB(0.0, 0.0, 0.65, m_nValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0, LKNOBDARK);	}
+				else					{ Scale(1.1);
+										ROTARY_KNOB(0.0, 0.0, 0.65, m_nValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0, LKNOBBRIGHT);	}
+			cOut.dValue = m_nValue;
+			}
+			else	{
+				if (cOut.bPushed_In)	{ ROTARY_KNOB(0.0, 0.0, 0.65, cOut.dValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0, LKNOBDARK);	}
+				else					{ Scale(1.1);
+										ROTARY_KNOB(0.0, 0.0, 0.65, cOut.dValue, m_dAngleMin, m_dAngleMax, m_dValueMin, m_dValueMax, HOVER, 0, LKNOBBRIGHT);	}
+			}
+		MATRIX(restore);
+
+		COLOR(YELLOW);
+		HOTSPOT(0.0, -0.825, 1.25, 0.5, CTR, bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+
+		if (bClick)	{ cOut.bPushed_In = !cOut.bPushed_In;	}
+	}
+}
+
+
+Object oCBDev
+{
+	Struct cIn
+	{
+		bool bPop_Request;
+	}
+
+	Struct cOut
+	{
+		bool bCB_Inserted;
+	}
+
+//	Init(bool nInitState, bool& bCB_In_Pointer, bool& bPop_Req_Pointer )
+//	{
+//		m_bToggle 			= false;
+//		cOut.bCB_Inserted 	= bCB_In_Pointer;
+//		cIn.bPop_Request	= bPop_Req_Pointer;
+//
+//		cOut.bCB_Inserted	= nInitState;
+//	}
+
+	Init(bool nInitState)
+	{
+		cOut.bCB_Inserted	= nInitState;
+	}
+
+	Entry
+	{
+		bool m_bClick;		//True when CB inserted
+
+		m_bClick = false;
+
+		Color(SAVE);
+			Color(Yellow);
+			HOTSPOT(0.0, 0.0, 1.0, 1.0, CTR, m_bClick, SELECT_EDGE, MOMENTARY, true, false, HOVER);
+
+			if (m_bClick)					{ cOut.bCB_Inserted = !cOut.bCB_Inserted; }
+
+			if (cIn.bPop_Request) 			{ cOut.bCB_Inserted = false; }
+
+			if (cOut.bCB_Inserted) 			{ Color(RED, 0.0); }
+			else 							{ Color(RED, 60.0); }
+			Circle(0.0,0.0,0.5,20,FILL);
+		Color(RESTORE);
+	}
+}
+
+Object oPushRotKnobDevOld
+{
+	double m_dValue;
+	double m_dAngleX;
+	double m_dAngleY;
+	double m_dAngleOldX;
+	double m_dAngleOldY;
+	bool   m_bLock[5];
+	bool   m_bDebug;
+	char   cText[6];
+	int m_nSpringload;
+
+	List KNOB_DARK		{	Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_DARK, 	REPLACE, 0.0, 0.0, 1.0, 1.0, CTR);	};
+	List KNOB_BRIGHT	{	Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME_BRIGHT,REPLACE, 0.0, 0.0, 1.0, 1.0, CTR);	};
+
+	Struct cOut
+	{
+		bool 	bPushed_In;
+		double	dValue;
+	}
+
+	Init(bool bInitState, int nSpringload)
+	{
+		cOut.bPushed_In	= bInitState;
+
+		m_nSpringload	= nSpringload;
+
+		m_bDebug = false;
+	}
+
+	Entry
+	{
+		double bClick;
+		double dInc;
+
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPushed_In = false; }
+
+		MATRIX(save);
+			ROTATE(-180.0);
+			ROTATE(3.6*m_dValue);
+			if (cOut.bPushed_In)	{ DISPLAY(0.0, 0.0, KNOB_DARK);	}
+			else					{ Scale(1.1);
+									  DISPLAY(0.0, 0.0, KNOB_BRIGHT);	}
+		MATRIX(restore);
+
+		COLOR(YELLOW);
+
+		m_dAngleOldX = m_dAngleX;
+		m_dAngleOldY = m_dAngleY;
+		SLIDER(0.0, 0.0, 1.25, 1.25, CTR,  0.0, m_dAngleY, 0.0, 100.0, HOVER, 0);
+		SLIDER(0.0, 0.0, 1.25, 1.25, CTR, 90.0, m_dAngleX, 0.0, 100.0, HOVER, 0);
+
+		if ((m_dAngleOldX < 50.0) & (m_dAngleOldY < 50.0))	{ dInc =   (m_dAngleY - m_dAngleOldY) - (m_dAngleX - m_dAngleOldX);	}
+		if ((m_dAngleOldX < 50.0) & (m_dAngleOldY > 50.0))	{ dInc =   (m_dAngleY - m_dAngleOldY) + (m_dAngleX - m_dAngleOldX);	}
+		if ((m_dAngleOldX > 50.0) & (m_dAngleOldY > 50.0))	{ dInc = - (m_dAngleY - m_dAngleOldY) + (m_dAngleX - m_dAngleOldX);	}
+		if ((m_dAngleOldX > 50.0) & (m_dAngleOldY < 50.0))	{ dInc = - (m_dAngleY - m_dAngleOldY) - (m_dAngleX - m_dAngleOldX);	}
+		m_dValue = m_dValue + (0.5 * dInc);
+		if (m_dValue > 100.0)	{ m_dValue = 100.0;	}
+		if (m_dValue < 0.0)		{ m_dValue =   0.0;	}
+
+		cOut.dValue = m_dValue;
+
+		HOTSPOT(0.0, -0.825, 1.25, 0.5, CTR, bClick, SELECTED, MOMENTARY, true, false, HOVER);
+
+		m_bLock[1] = m_bLock[2];
+		m_bLock[2] = m_bLock[3];
+		m_bLock[3] = m_bLock[4];
+		m_bLock[4] = bClick;
+
+		if (bClick & !m_bLock[0])	{ cOut.bPushed_In = !cOut.bPushed_In;
+									  m_bLock[4] = true;					}
+
+		if (m_bLock[4] | m_bLock[3] | m_bLock[2] | m_bLock[1] | bClick)	{ m_bLock[0] = true;	}
+		else															{ m_bLock[0] = false;	}
+
+		if (m_bDebug)	{
+		//	if (m_dAngleY < 50.0)	{
+		//		if ((m_dAngleOldX < 50.0) & (m_dAngleX > 50.0)) { m_dValue = m_dValue + 90.0; }
+		//		if ((m_dAngleOldX > 50.0) & (m_dAngleX < 50.0)) { m_dValue = m_dValue - 90.0; }
+		//	}
+			if (bClick)	{
+				Format(cText, "%03.1f", m_dValue);
+				String(0.0, -2.0, CTR, NONE, cText, 0, VIP_NULL, 0.1, 0.15, 1.5);	}
+
+			Format(cText, "%03.1f", m_dAngleY);
+			String(0.0, 1.0, CTR, NONE, cText, 0, VIP_NULL, 0.1, 0.15, 1.5);
+			COLOR(RED);
+			Format(cText, "%03.1f", m_dAngleX);
+			String(0.0, -1.0, CTR, NONE, cText, 0, VIP_NULL, 0.1, 0.15, 1.5);
+			COLOR(YELLOW);
+		}
+	}
+}
+
+
+Object oSwPos3_Hot3
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.3333,  1.0,
+								0.3333,  0.0 };
+
+	TVertex	CtrBitmap[4] = {	0.3333,  0.0,
+								0.3333,  1.0,
+								0.6667,  1.0,
+								0.6667,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.6667,  0.0,
+								0.6667,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	bool m_bClick_Up;
+	bool m_bClick_Ctr;
+	bool m_bClick_Down;
+
+	int m_nSpringload;
+
+	double m_dBitmapRatio;
+
+	Struct cOut
+	{
+		bool bPos_Up;
+		bool bPos_Down;
+	}
+
+	Init(double dBitmapRatio, int nInitState, int nSpringload)
+	{
+		m_dBitmapRatio 	= 1.5 / dBitmapRatio;
+
+		cOut.bPos_Up	= (nInitState == SW_UP);
+		cOut.bPos_Down	= (nInitState == SW_DN);
+
+		m_nSpringload	= nSpringload;
+	}
+
+	Entry
+	{
+		m_bClick_Up 	= false;
+		m_bClick_Ctr	= false;
+		m_bClick_Down 	= false;
+
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPos_Up	  = false; }
+		if (m_nSpringload > SPNGLOAD_UP) { cOut.bPos_Down = false; }
+
+		Color(SAVE);
+			Color(Yellow);
+			if (cOut.bPos_Down == false)	{
+				Hotspot(0.0,  0.165, 0.5, 0.33, CL,  m_bClick_Up, 	SELECTED, MOMENTARY, true, false, HOVER); }
+			Hotspot(0.0,  0.0,   0.5, 0.33, CTR, m_bClick_Ctr,	SELECTED, MOMENTARY, true, false, HOVER);
+			if (cOut.bPos_Up == false)	{
+				Hotspot(0.0, -0.165, 0.5, 0.33, CU,	 m_bClick_Down,	SELECTED, MOMENTARY, true, false, HOVER); }
+
+			if (m_bClick_Down .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up)	{ cOut.bPos_Up 	= false;
+																			  cOut.bPos_Down= true; }
+			if (m_bClick_Down .AND. cOut.bPos_Up)	{ cOut.bPos_Up 	= false;
+													  cOut.bPos_Down= false; }
+
+			if (m_bClick_Up .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up)	{ cOut.bPos_Up 	= true;
+																		  cOut.bPos_Down= false; }
+			if (m_bClick_Up .AND. cOut.bPos_Down)	{ cOut.bPos_Up 	= false;
+													  cOut.bPos_Down= false;}
+
+			if (m_bClick_Ctr)						{ cOut.bPos_Up 	= false;
+													  cOut.bPos_Down= false;}
+
+			if (cOut.bPos_Up == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, UpBitmap); }
+			if (cOut.bPos_Down == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, DownBitmap); }
+			if ((cOut.bPos_Up .OR. cOut.bPos_Down) == false)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, CtrBitmap); }
+
+		Color(RESTORE);
+	}
+}
+
+Object oSwPos32
+{
+	TVertex	DownBitmap[4] = {	0.0,  0.0,
+								0.0,  1.0,
+								0.3333,  1.0,
+								0.3333,  0.0 };
+
+	TVertex	CtrBitmap[4] = {	0.3333,  0.0,
+								0.3333,  1.0,
+								0.6667,  1.0,
+								0.6667,  0.0 };
+
+	TVertex	UpBitmap[4] = {		0.6667,  0.0,
+								0.6667,  1.0,
+								1.0,  1.0,
+								1.0,  0.0 };
+
+	bool m_bClick_Up;
+	bool m_bClick_Down;
+	bool m_bMouseLocked;
+
+	int m_nSpringload;
+
+	double m_dBitmapRatio;
+
+	Struct cOut
+	{
+		bool bPos_Up;
+		bool bPos_Down;
+	}
+
+	Init(double dBitmapRatio, int nInitState, int nSpringload)
+	{
+		m_dBitmapRatio 	= 1.5 / dBitmapRatio;
+
+		cOut.bPos_Up	= (nInitState == SW_UP);
+		cOut.bPos_Down	= (nInitState == SW_DN);
+
+		m_nSpringload	= nSpringload;
+	}
+
+	Entry
+	{
+		m_bClick_Up 	= false;
+		m_bClick_Down 	= false;
+
+		if (m_nSpringload > SPNGLOAD_NO) { cOut.bPos_Up	  = false; }
+		if (m_nSpringload > SPNGLOAD_UP) { cOut.bPos_Down = false; }
+
+		Color(SAVE);
+			Color(Yellow);
+			Hotspot(0.0, 0.0, 0.5, 0.5, CL, m_bClick_Up, 	SELECTED, MOMENTARY, true, false, HOVER);
+			Hotspot(0.0, 0.0, 0.5, 0.5, CU, m_bClick_Down, 	SELECTED, MOMENTARY, true, false, HOVER);
+
+			if (m_bClick_Down .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up .AND. !m_bMouseLocked)	{ cOut.bPos_Up 	= false;
+																								  cOut.bPos_Down= true; }
+			if (m_bClick_Down .AND. cOut.bPos_Up)	{ cOut.bPos_Up 	= false;
+													  cOut.bPos_Down= false;
+													  m_bMouseLocked = true; }
+
+			if (m_bClick_Up .AND. !cOut.bPos_Down .AND. !cOut.bPos_Up .AND. !m_bMouseLocked)	{ cOut.bPos_Up 	= true;
+																								  cOut.bPos_Down= false; }
+
+			if (m_bClick_Up .AND. cOut.bPos_Down)	{ cOut.bPos_Up 	= false;
+													  cOut.bPos_Down= false;
+													  m_bMouseLocked = true; }
+
+			if (!System.bLButton)	{	m_bMouseLocked = false;	}
+
+			if (cOut.bPos_Up == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, UpBitmap); }
+			if (cOut.bPos_Down == true)							{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, DownBitmap); }
+			if ((cOut.bPos_Up .OR. cOut.bPos_Down) == false)	{ Bitmap(HARD_MASK, LINEAR, CLAMP, BITMAP_NAME, REPLACE, 0.0, 0.0, 0.5, m_dBitmapRatio, CTR, CtrBitmap); }
+
+		Color(RESTORE);
+	}
+}

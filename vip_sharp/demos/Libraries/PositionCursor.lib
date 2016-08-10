@@ -1,0 +1,175 @@
+//************************************************************************************************
+//*	Debug Tool: Position Cursor
+//* This tool will give the position of the cursor regardless of translate or zoom of VIP view.
+//*
+//*	Created by:	Jim Moretti
+//*	Date:		10 April 2015
+//*	
+//************************************************************************************************
+
+Use "Libraries\VIP.fnt"
+
+Object oPosition_Cursor
+{	
+	char	szXPos[10];
+	char	szYPos[10];
+	char	szZPos[10];
+	char	szR[10];
+	char	szAngl[10];
+	double	dXPos;
+	double	dYPos;
+	bool	bGlued;
+	bool	bAdvancedMode;
+	bool	bNewRef;
+	double  dOldCursorXPos;
+	double  dOldCursorYPos;
+	double  dTextSize;
+	double  dNewRefX;
+	double  dNewRefY;	
+	double  dScreenPosX;
+	double  dScreenPosY;
+	
+	CAL_RES Cal_Angles	{0, 90, 0.08716, 85, 0.17365, 80, 0.25882, 75, 0.34202, 70, 0.42262, 65, 0.5, 60, 0.57358, 55, 0.64279, 50, 0.70711, 45, 0.76604, 40, 0.81915, 35, 0.86603, 30, 0.90631, 25, 0.93969, 20, 0.96593, 15, 0.98481, 10, 0.99619, 5, 1, 0};
+
+	Struct cIn
+	{
+		double	dCursor_XPos;
+		double	dCursor_YPos;
+		double  dTranslatX;
+		double  dTranslatY;
+		double  dZoom;
+		double  dSize;
+		double  dAngle;
+		double  dLine_Width;
+	}
+	Struct cOut
+	{
+		double	dCorr_XPos;
+		double	dCorr_YPos;
+	}
+	
+	Init()
+	{		
+		dNewRefX = 0.0;
+		dNewRefY = 0.0;
+		cIn.dLine_Width	= 2.0;
+	}
+	
+	Entry
+	{
+		double dTempX;
+		double dTempY;
+		double dTempAngle;
+		double dLineWidthHalf;
+		
+		if (System.bKBHit) {
+			
+			// Pressing Key "+" on the numpad
+			if (System.cKeyCode == 0x2B) {
+				bAdvancedMode = !bAdvancedMode; 
+			}	
+					
+			// Pressing key Space 		
+			if (System.cKeyCode == 0x20) {
+				bGlued = !bGlued; 
+			}		
+			
+			// Pressing key Tab 
+			if (System.cKeyCode == 0x09) {
+				bNewRef  = true;
+				dNewRefX = dXPos;
+				dNewRefY = dYPos;
+			}	
+			
+			// Pressing key Backspace 
+			if (System.cKeyCode == 0x08) {
+				bNewRef  = false;
+				dNewRefX = 0.0;
+				dNewRefY = 0.0;
+			}
+		}
+	
+		Matrix(SAVE);
+		COLOR(SAVE);
+			dLineWidthHalf = cIn.dLine_Width / 2.0;
+			LINE_WIDTH(dLineWidthHalf);
+			if (!bGlued) {
+				dXPos = (cIn.dCursor_XPos - cIn.dTranslatX)/cIn.dZoom; 
+				dYPos = (cIn.dCursor_YPos - cIn.dTranslatY)/cIn.dZoom;
+				dTempX = dXPos - dNewRefX;
+				Format(szXPos, "%2.3f", dTempX);
+				dTempY = dYPos - dNewRefY;
+				Format(szYPos, "%2.3f", dTempY);
+				
+				if(bAdvancedMode)	// Enables Advanced Mode, which shows the Zoom factor and Rotation
+				{
+					Format(szZPos, "%2.3f", cIn.dZoom);
+					
+					// Getting Hypotenuse 
+					System.dTemp[0] = (((dTempY^2) + (dTempX^2))^0.5);
+					// Getting Value for the result of X/R
+					System.dTemp[1] = ABS(dTempX / System.dTemp[0]);
+					// Using the X/R and a Cal Table for Cosine inverse from 0 to 90 degrees, we find the angle
+					CAL( Cal_Angles, System.dTemp[1], dTempAngle);
+					// Subtract 90 degrees from the angle, so along (0.0, inf) the angle is 0.0 degrees
+					System.dTemp[3] = ABS(dTempAngle - 90.0);
+					// When the Cursor is in the 2nd or 1st quadrant, no adjustments are needed
+					if( dTempY >= 0.0)
+					{System.dTemp[4] = System.dTemp[3];}
+					// When the Cursor is in the 3rd Quadrant, we subtract 90 degree
+					if((dTempX < 0.0) & (dTempY < 0.0))
+					{System.dTemp[4] = ((-1) * (-90.0 + System.dTemp[3])) + 90.0;}
+					// When the Cursor is in the 4th Quadrant, we add 90 degree
+					if((dTempX >= 0.0) & (dTempY < 0.0))
+					{System.dTemp[4] =  180 - System.dTemp[3];}
+					// Using the Absolute Angle value, we define the angle to be negative when X is less than 0, and positive for when X is greater than 0
+					if(dTempX < 0.0){ System.dTemp[5] = ((-1)*System.dTemp[4]);}else{System.dTemp[5] = System.dTemp[4];}
+					
+					// Result
+					Format(szAngl, "%3.2f", System.dTemp[5]);
+					Format(szR,    "%2.3f", System.dTemp[0]);
+				}
+				
+				dOldCursorXPos = cIn.dCursor_XPos;
+				dOldCursorYPos = cIn.dCursor_YPos;
+				
+				cOut.dCorr_XPos = dXPos;
+				cOut.dCorr_YPos = dYPos;
+			}
+			
+				Color(CCOLOR);
+				Matrix(SAVE);
+				LINE_WIDTH(SAVE);
+					LINE_WIDTH(cIn.dLine_Width);
+					Translate(5.0, 0.0);
+					String((dOldCursorXPos+0.5), (dOldCursorYPos+(0.75*cIn.dSize)), LC, NONE, szXPos, 0, VIP_Null, cIn.dSize, cIn.dSize, 1.2);
+					String((dOldCursorXPos+0.5), (dOldCursorYPos-(0.75*cIn.dSize)), LC, NONE, szYPos, 0, VIP_Null, cIn.dSize, cIn.dSize, 1.2);
+					
+					if(bAdvancedMode)	// Enables Advanced Mode, which shows the Zoom factor and Rotation
+					{
+						if(bNewRef){String((dOldCursorXPos+0.5), (dOldCursorYPos-(2.25*cIn.dSize)), LC, NONE, szR, 0, VIP_Null, cIn.dSize, cIn.dSize, 1.2);}
+						else{String((dOldCursorXPos+0.5), (dOldCursorYPos-(2.25*cIn.dSize)), LC, NONE, szZPos, 	   0, VIP_Null, cIn.dSize, cIn.dSize, 1.2);}
+						String((dOldCursorXPos+0.5), (dOldCursorYPos-(3.75*cIn.dSize)), LC, NONE, szAngl, 0, VIP_Null, cIn.dSize, cIn.dSize, 1.2);
+					}
+				LINE_WIDTH(RESTORE);		
+				Matrix(RESTORE);		
+			
+			LINE_WIDTH(cIn.dLine_Width);
+			if (!bGlued) {
+				Color(CCOLOR, 50.0);
+				Line{-1000.0, cIn.dCursor_YPos, 1000.0, cIn.dCursor_YPos};
+				Line{cIn.dCursor_XPos, -1000.0, cIn.dCursor_XPos, 1000.0};
+				if(bNewRef){Line{ (dNewRefX * cIn.dZoom) + (cIn.dTranslatX/cIn.dZoom), (dNewRefY * cIn.dZoom) + (cIn.dTranslatY/cIn.dZoom), cIn.dCursor_XPos, cIn.dCursor_YPos};}
+				Translate(cIn.dCursor_XPos, cIn.dCursor_YPos);
+				Rotate(45.0);  
+				Line{-1000.0, 0.0, 1000.0, 0.0};
+				Line{0.0, -1000.0, 0.0, 1000.0};
+				Rotate(-45.0);  
+				Rotate(cIn.dAngle);  
+				Line{-1000.0, 0.0, 1000.0, 0.0};
+				Line{0.0, -1000.0, 0.0, 1000.0};
+			}
+		COLOR(RESTORE);		
+		Matrix(RESTORE);		
+	}
+}

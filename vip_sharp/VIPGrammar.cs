@@ -29,7 +29,7 @@ namespace vip_sharp
             var translatecommand = new NonTerminal("translatecommand", typeof(VIPTranslateCommandNode));
             var scalecommand = new NonTerminal("scalecommand", typeof(VIPScaleCommandNode));
             var fullvariabledefinition = new NonTerminal("fullvariabledefinition", typeof(VIPFullVariableDefinitionNode));
-            var polygoncommand = new NonTerminal("polygoncommand", typeof(VIPPolygonCommandNode));
+            var shapecommand = new NonTerminal("shapecommand", typeof(VIPShapeCommandNode));
             var rotatecommand = new NonTerminal("rotatecommand", typeof(VIPRotateCommandNode));
             var assignmentcommand = new NonTerminal("assignmentcommand", typeof(VIPAssignmentCommandNode));
             var returncommand = new NonTerminal("returncommand", typeof(VIPReturnCommandNode));
@@ -52,6 +52,7 @@ namespace vip_sharp
             var structdefinition = new NonTerminal("structdefinition", typeof(VIPStructDefinitionNode));
             var objectinitdefinition = new NonTerminal("objectinitdefinition", typeof(VIPObjectInitDefinition));
             var objectentrydefinition = new NonTerminal("objectentrydefinition", typeof(VIPObjectEntryDefinition));
+            var listdefinition = new NonTerminal("listdefinition", typeof(VIPListDefinition));
 
             var expressionlist = new NonTerminal("expressionlist", typeof(VIPExpressionListNode));
             var functiondefinitionargumentlist = new NonTerminal("functiondefinitionargumentlist", typeof(VIPFunctionDefinitionArgumentListNode));
@@ -82,16 +83,17 @@ namespace vip_sharp
             main.Rule = (ToTerm("main") + "{" + commands + "}") | ("main" + commands + "go");
 
             defs.Rule = MakeStarRule(defs, null, def);
-            def.Rule = macrodefinition | structdefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
+            def.Rule = listdefinition | macrodefinition | structdefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
                 | functiondefinition | objectdefinition | instancedefinition;
 
             objectdefs.Rule = MakeStarRule(objectdefs, null, objectdef);
-            objectdef.Rule = objectinitdefinition | objectentrydefinition | macrodefinition | structdefinition | bitmapresdefinition
+            objectdef.Rule = listdefinition | objectinitdefinition | objectentrydefinition | macrodefinition | structdefinition | bitmapresdefinition
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
 
-            commands.Rule = MakePlusRule(commands, null, command);
-            command.Rule = circlecommand | matrixcommand | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand
-                | fullvariabledefinition | polygoncommand | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
+            commands.Rule = MakeStarRule(commands, null, command);
+            command.Rule = shapecommand | circlecommand | matrixcommand
+                | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition
+                | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
             fullvariabledefinition.Rule =
@@ -103,7 +105,13 @@ namespace vip_sharp
                 | (typeidentifier + plainidentifier + "[" + "]" + ";")
                 | (typeidentifier + plainidentifier + "=" + expr + ";")
                 | (typeidentifier + plainidentifier + ";");
-            polygoncommand.Rule = ToTerm("polygon") + "{" + qualifiedidentifier + "," + qualifiedidentifier + "}" + ";";
+            shapecommand.Rule = ToTerm("rotate") + "{" + expressionlist + "}" + ";"
+                | ToTerm("line") + "{" + expressionlist + "}" + ";"
+                | ToTerm("quad") + "{" + expressionlist + "}" + ";"
+                | ToTerm("line_strip") + "{" + expressionlist + "}" + ";"
+                | ToTerm("closed_line") + "{" + expressionlist + "}" + ";"
+                | ToTerm("polygon") + "{" + expressionlist + "}" + ";"
+                | ToTerm("triangle") + "{" + expressionlist + "}" + ";";
             rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")" + ";";
             assignmentcommand.Rule = qualifiedidentifier + "=" + expr + ";";
             functiondefinition.Rule = ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
@@ -116,11 +124,14 @@ namespace vip_sharp
             ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + "{" + commands + "}";
             drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")" + ";";
             functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")" + ";";
-            colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";";
+            colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";"
+                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + ")" + ";";
             circlecommand.Rule = ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + "fill" + ")" + ";"
                 | ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
-            matrixcommand.Rule = ToTerm("matrix") + "(" + (ToTerm("save") | "load" | "identity") + ")" + ";";
-
+            matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")" + ";"
+                | ToTerm("matrix") + "(" + "restore" + ")" + ";"
+                | ToTerm("matrix") + "(" + "identity" + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -139,6 +150,7 @@ namespace vip_sharp
             structdefinition.Rule = "struct" + plainidentifier + "{" + variabledefinitions + "}";
             objectentrydefinition.Rule = ToTerm("entry") + "{" + commands + "}";
             objectinitdefinition.Rule = ToTerm("init") + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
+            listdefinition.Rule = ToTerm("list") + plainidentifier + "{" + commands + "}" | ToTerm("list") + plainidentifier + "{" + commands + "}" + ";";
 
             expressionlist.Rule = MakeStarRule(expressionlist, ToTerm(","), expr);
             functiondefinitionargumentlist.Rule = MakeStarRule(functiondefinitionargumentlist, ToTerm(","), functiondefinitionargument);
@@ -155,7 +167,7 @@ namespace vip_sharp
             unop.Rule = ToTerm("-") | "+" | "!" | "~";
 
             identifier.Rule = plainidentifier + "[" + expr + "]" | plainidentifier;
-            qualifiedidentifier.Rule = MakeStarRule(qualifiedidentifier, ToTerm("."), identifier);
+            qualifiedidentifier.Rule = MakePlusRule(qualifiedidentifier, ToTerm("."), identifier);
             typeidentifier.Rule = MakePlusRule(typeidentifier, ToTerm("."), plainidentifier);
 
             // grammar setup
@@ -175,6 +187,9 @@ namespace vip_sharp
             RegisterOperators(5, "*", "/");
             RegisterOperators(6, "<=", ">=", "!=", "=", "<", ">");
             RegisterOperators(7, "||", "&&", ".AND.", ".OR.");
+
+            RegisterBracePair("(", ")");
+            MarkMemberSelect(".");
         }
     }
 
@@ -229,6 +244,8 @@ namespace vip_sharp
         void Visit(VIPCircleCommandNode vIPCircleCommandNode);
         void Visit(VIPStringLiteralNode vIPStringLiteralNode);
         void Visit(VIPMatrixCommandNode vIPMatrixCommandNode);
+        void Visit(VIPListDefinition vIPListDefinition);
+        void Visit(VIPShapeCommandNode vIPShapeCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -292,6 +309,19 @@ namespace vip_sharp
         {
             Name = nodes[1].Token.ValueString;
             AddChild(nodes[2].ChildNodes);
+        }
+
+        public string Name;
+    }
+
+    public class VIPListDefinition : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            Name = nodes[1].Token.ValueString;
+            AddChild(nodes[2].ChildNodes.Select(n => n.ChildNodes[0]));
         }
 
         public string Name;
@@ -817,10 +847,37 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            ArrayName = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
+            if (nodes[1].AstNode is VIPQualifiedIdentifierNode)
+            {
+                // save/restore?
+                var qnode = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
+                if (qnode.Parts.Length == 1)
+                    if (qnode.Parts[0].Item1.EqualsI("save"))
+                    {
+                        Save = true;
+                        return;
+                    }
+                    else if (qnode.Parts[0].Item1.EqualsI("restore"))
+                    {
+                        Restore = true;
+                        return;
+                    }
+
+                ArrayName = qnode;
+            }
+            else
+            {
+                R = (VIPExpressionNode)nodes[1].AstNode;
+                G = (VIPExpressionNode)nodes[2].AstNode;
+                B = (VIPExpressionNode)nodes[3].AstNode;
+                if (nodes.Count > 4)
+                    A = (VIPExpressionNode)nodes[4].AstNode;
+            }
         }
 
         public VIPQualifiedIdentifierNode ArrayName;
+        public VIPExpressionNode R, G, B, A;
+        public bool Save, Restore;
     }
 
     public class VIPFunctionCallCommandNode : VIPNode
@@ -837,7 +894,6 @@ namespace vip_sharp
         public ParseTreeNodeList Arguments;
     }
 
-    public enum VIPPolygonType { WithArrays };
 
     public class VIPPolygonCommandNode : VIPNode
     {
@@ -847,13 +903,28 @@ namespace vip_sharp
         {
             if (nodes[2].AstNode is VIPQualifiedIdentifierNode && nodes[1].AstNode is VIPQualifiedIdentifierNode)
             {
-                Type = VIPPolygonType.WithArrays;
                 VerticesIdentifier = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
                 ColorsIdentifier = (VIPQualifiedIdentifierNode)nodes[2].AstNode;
             }
+            else
+                ExpressionList = (VIPExpressionListNode)nodes[1].AstNode;
         }
 
-        public VIPPolygonType Type;
         public VIPQualifiedIdentifierNode VerticesIdentifier, ColorsIdentifier;
+        public VIPExpressionListNode ExpressionList;
+    }
+
+    public class VIPShapeCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            Command = nodes[0].Token.ValueString;
+            ExpressionList = (VIPExpressionListNode)nodes[1].AstNode;
+        }
+
+        public string Command;
+        public VIPExpressionListNode ExpressionList;
     }
 }
