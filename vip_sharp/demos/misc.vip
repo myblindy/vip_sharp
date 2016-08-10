@@ -1,4 +1,5 @@
 use "libraries\vip.fnt"
+use "libraries\arial.fnt"
 
 main
 {
@@ -8,5 +9,5 @@ main
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
 	String(0, 2, CC, NONE, sData2, 0, VIP_Null, 1, 1, 1.2);
 	
-	String(-3, 6, LC, NONE, "multiline test | worked yay!", 0, VIP_Null, 0.3, 0.6, 1.2);
+	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 }

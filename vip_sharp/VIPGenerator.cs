@@ -643,6 +643,8 @@ namespace vip_sharp
                 cmd = "Line";
             else if (node.Command.EqualsI("closed_line"))
                 cmd = "ClosedLine";
+            else if (node.Command.EqualsI("rotate"))
+                cmd = "Rotate";
             else
                 throw new NotImplementedException();
 
