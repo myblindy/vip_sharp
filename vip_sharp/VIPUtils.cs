@@ -153,6 +153,8 @@ namespace vip_sharp
                 blend == BitmapBlend.Blend ? GL.BLEND :
                 GL.REPLACE);
 
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
             gl.Begin(GL.QUADS);
 
             var texvals = DoublesFromStructure(vertexes[0]);
@@ -258,15 +260,106 @@ namespace vip_sharp
 
         public void ArcLine(double x, double y, double r, double start, double end, double steps)
         {
+            gl.Begin(GL.LINE_STRIP);
+
+            var inc = (end - start) / steps;
+            for (int idx = 0; idx <= steps; ++idx)
+                gl.Vertex2d(
+                    x + r * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360),
+                    y + r * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360));
+
+            gl.End();
         }
 
+        public void Color(double c, double a) => gl.Color4d(c, c, c, a);
         public void Color(double r, double g, double b) => gl.Color3d(r, g, b);
         public void Color(double r, double g, double b, double a) => gl.Color4d(r, g, b, a);
 
         public void MatrixSave() => gl.PushMatrix();
         public void MatrixRestore() => gl.PopMatrix();
         public void MatrixIdentity() => gl.LoadIdentity();
+
         public void ColorSave() => gl.PushAttrib(GL.CURRENT_BIT);
         public void ColorRestore() => gl.PopAttrib();
+
+        public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
+        {
+            if (cnt == 0)
+                cnt = s.TakeWhile(c => c != '\0').Count();
+
+            // figure out the bounding box
+            double h = 0, w = 0, maxw = 0;
+            foreach (var c in s.Take(cnt))
+                if (c == '|')
+                {
+                    ++h;
+                    if (maxw < w) maxw = w;
+                    w = 0;
+                }
+                else
+                    ++w;
+            if (maxw < w) maxw = w;
+
+            // and update the x and y coords based on the box and ref
+            UpdateCoordsWithBoxInfo(ref x, ref y, maxw * spacex, h * spacey, @ref);
+
+            gl.PushMatrix();
+
+            gl.Translated(x, y, 0);
+            gl.Scaled(scalex, scaley, 1);
+            gl.PushMatrix();
+
+            int linecnt = 0;
+
+            foreach (var c in s.Take(cnt))
+                if (c == '|')
+                {
+                    // new line
+                    gl.PopMatrix();
+                    gl.Translated(0, ++linecnt * -spacey, 0);
+                    gl.PushMatrix();
+                }
+                else
+                {
+                    gl.CallList(baselist.ListID + c);
+                    gl.Translated(spacex, 0, 0);
+                }
+
+            gl.PopMatrix();
+            gl.PopMatrix();
+        }
+
+        private void UpdateCoordsWithBoxInfo(ref double x, ref double y, double w, double h, PositionRef @ref)
+        {
+            switch (@ref)
+            {
+                case PositionRef.CC:
+                    x -= w / 2; y -= h / 2;
+                    break;
+                case PositionRef.CL:
+                    x -= w / 2;
+                    break;
+                case PositionRef.CU:
+                    x -= w / 2; y -= h;
+                    break;
+                case PositionRef.LC:
+                    y -= h / 2;
+                    break;
+                case PositionRef.LL:
+                    break;
+                case PositionRef.LU:
+                    y -= h;
+                    break;
+                case PositionRef.RC:
+                    x -= w; y -= h / 2;
+                    break;
+                case PositionRef.RL:
+                    x -= w;
+                    break;
+                case PositionRef.RU:
+                    x -= w; y -= h;
+                    break;
+            }
+        }
     }
 }

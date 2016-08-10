@@ -18,7 +18,7 @@ namespace vip_sharp
 
         public BipolarArray(string init)
         {
-            Array = new T[init.Length];
+            Array = new T[init.Length + 1];             // null character
             for (int i = 0; i < init.Length; ++i)
                 ((dynamic)Array)[i] = init[i];
         }

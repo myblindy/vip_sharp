@@ -3,8 +3,10 @@ use "libraries\vip.fnt"
 main
 {
 	char	sData2[15]	= "Werkt Het ?";
-	char	sData[]		= "Ja, het Werkt";
+	char	sData[]		= "\x1 Ja, het Werkt";
 	
-	line{-1,-1, -2,-2, 0,2};
-
+	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
+	String(0, 2, CC, NONE, sData2, 0, VIP_Null, 1, 1, 1.2);
+	
+	String(-3, 6, LC, NONE, "multiline test | worked yay!", 0, VIP_Null, 0.3, 0.6, 1.2);
 }

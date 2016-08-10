@@ -25,7 +25,8 @@ __m_dBlinkTime = 1/(__dBlinkFreq/2);
 public void Run() {
 if(__cIn.__bStat&&(__m_dCurrTime<__m_dBlinkTime)) {
 vip_sharp.VIPUtils.Instance.Color(__m_Color);
-vip_sharp.VIPUtils.Instance.Circle(0,0,2,40,true);}
+vip_sharp.VIPUtils.Instance.Circle(0,0,2,40,true);
+}
 __m_dCurrTime = __m_dCurrTime+vip_sharp.VIPUtils.Instance.VIPSystemClass.__dDT;
 if(__m_dCurrTime>(__m_dBlinkTime*2)) {
 __m_dCurrTime = __m_dCurrTime-(__m_dBlinkTime*2);

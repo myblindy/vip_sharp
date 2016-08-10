@@ -40,6 +40,7 @@ namespace vip_sharp
             var colorcommand = new NonTerminal("colorcommand", typeof(VIPColorCommandNode));
             var circlecommand = new NonTerminal("circlecommand", typeof(VIPCircleCommandNode));
             var matrixcommand = new NonTerminal("matrixcommand", typeof(VIPMatrixCommandNode));
+            var stringcommand = new NonTerminal("stringcommand", typeof(VIPStringCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -91,7 +92,7 @@ namespace vip_sharp
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
 
             commands.Rule = MakeStarRule(commands, null, command);
-            command.Rule = shapecommand | circlecommand | matrixcommand
+            command.Rule = stringcommand | shapecommand | circlecommand | matrixcommand
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition
                 | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
@@ -132,6 +133,14 @@ namespace vip_sharp
             matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")" + ";"
                 | ToTerm("matrix") + "(" + "restore" + ")" + ";"
                 | ToTerm("matrix") + "(" + "identity" + ")" + ";";
+            stringcommand.Rule = ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -221,31 +230,32 @@ namespace vip_sharp
         void Visit(VIPFunctionDefinitionArgument node);
         void Visit(VIPReturnCommandNode node);
         void Visit(VIPQualifiedIdentifierNode node);
-        void Visit(VIPIdentifierNode vIPIdentifierNode);
-        void Visit(VIPTypeIdentifierNode vIPTypeIdentifierNode);
-        void Visit(VIPBitmapResDefinitionNode vIPBitmapResDefinitionNode);
-        void Visit(VIPPathIdentifierNode vIPPathIdentifierNode);
-        void Visit(VIPBitmapCommandNode vIPBitmapCommandNode);
-        void Visit(VIPIfCommandNode vIPIfCommandNode);
-        void Visit(VIPObjectDefinitionNode vIPObjectDefinitionNode);
-        void Visit(VIPInstanceDefinitionNode vIPInstanceDefinitionNode);
-        void Visit(VIPNamedArgumentListNode vIPNamedArgumentListNode);
-        void Visit(VIPNamedArgumentNode vIPNamedArgumentNode);
-        void Visit(VIPDrawCommandNode vIPDrawCommandNode);
-        void Visit(VIPMacroDefinitionNode vIPMacroDefinitionNode);
-        void Visit(VIPPlainIdentifierListNode vIPPlainIdentifierListNode);
-        void Visit(VIPFunctionCallCommandNode vIPFunctionCallCommandNode);
-        void Visit(VIPStructDefinitionNode vIPStructDefinitionNode);
-        void Visit(VIPObjectDefsNode vIPObjectDefsNode);
-        void Visit(VIPObjectDefNode vIPObjectDefNode);
-        void Visit(VIPObjectInitDefinition vIPObjectInitDefinition);
-        void Visit(VIPObjectEntryDefinition vIPObjectEntryDefinition);
-        void Visit(VIPColorCommandNode vIPColorCommandNode);
-        void Visit(VIPCircleCommandNode vIPCircleCommandNode);
-        void Visit(VIPStringLiteralNode vIPStringLiteralNode);
-        void Visit(VIPMatrixCommandNode vIPMatrixCommandNode);
-        void Visit(VIPListDefinition vIPListDefinition);
-        void Visit(VIPShapeCommandNode vIPShapeCommandNode);
+        void Visit(VIPIdentifierNode node);
+        void Visit(VIPTypeIdentifierNode node);
+        void Visit(VIPBitmapResDefinitionNode node);
+        void Visit(VIPPathIdentifierNode node);
+        void Visit(VIPBitmapCommandNode node);
+        void Visit(VIPIfCommandNode node);
+        void Visit(VIPObjectDefinitionNode node);
+        void Visit(VIPInstanceDefinitionNode node);
+        void Visit(VIPNamedArgumentListNode node);
+        void Visit(VIPNamedArgumentNode node);
+        void Visit(VIPDrawCommandNode node);
+        void Visit(VIPMacroDefinitionNode node);
+        void Visit(VIPPlainIdentifierListNode node);
+        void Visit(VIPFunctionCallCommandNode node);
+        void Visit(VIPStructDefinitionNode node);
+        void Visit(VIPObjectDefsNode node);
+        void Visit(VIPObjectDefNode node);
+        void Visit(VIPObjectInitDefinition node);
+        void Visit(VIPObjectEntryDefinition node);
+        void Visit(VIPColorCommandNode node);
+        void Visit(VIPCircleCommandNode node);
+        void Visit(VIPStringLiteralNode node);
+        void Visit(VIPMatrixCommandNode node);
+        void Visit(VIPListDefinition node);
+        void Visit(VIPShapeCommandNode node);
+        void Visit(VIPStringCommandNode vIPStringCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -777,6 +787,30 @@ namespace vip_sharp
             Type = nodes[1].Token.ValueString;
 
         public string Type;
+    }
+
+    public class VIPStringCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            Ref = nodes[3].Token.ValueString;
+            StringData = (VIPNode)nodes[5].AstNode;
+            CharCount = (VIPExpressionNode)nodes[6].AstNode;
+            BaseList = (VIPQualifiedIdentifierNode)nodes[7].AstNode;
+            ScaleX = (VIPExpressionNode)nodes[8].AstNode;
+            ScaleY = (VIPExpressionNode)nodes[9].AstNode;
+            SpaceX = (VIPExpressionNode)nodes[10].AstNode;
+            if (nodes.Count > 11)
+                SpaceY = (VIPExpressionNode)nodes[11].AstNode;
+        }
+
+        public VIPExpressionNode X, Y, ScaleX, ScaleY, CharCount, SpaceX, SpaceY;
+        public string Ref;
+        public VIPNode StringData, BaseList;
     }
 
     public class VIPBitmapCommandNode : VIPNode
