@@ -478,8 +478,8 @@ vip_sharp.VIPUtils.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 vip_sharp.VIPUtils.DisplayList __VIP_Delete = new vip_sharp.VIPUtils.DisplayList(()=>{
 });
 public void Run() {
-vip_sharp.BipolarArray<char> __sData2 = new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
-vip_sharp.BipolarArray<char> __sData = new vip_sharp.BipolarArray<char>("Ja, het Werkt");
+vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
+vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("Ja, het Werkt");
 vip_sharp.VIPUtils.Instance.Line(-1,-1,-2,-2,0,2);
 }
 }

@@ -9,12 +9,10 @@ public class __Blinker : vip_sharp.VIPUtils.IVIPObject {
 public double X=0, Y=0;
 public double GetX() { return X; }
 public double GetY() { return Y; }
-double __m_dBlinkTime = 0;
-double __m_dCurrTime = 0;
-__TColor3 __m_Color = new __TColor3();
-public class __struct_cIn {public bool __bStat;
-} public __struct_cIn __cIn=new __struct_cIn();
 public __Blinker(double __dBlinkFreq,double __dR,double __dG,double __dB) {
+this.__m_dBlinkTime = 0;
+this.__m_dCurrTime = 0;
+this.__m_Color = new __TColor3();
 __m_Color.__dR = __dR;
 __m_Color.__dG = __dG;
 __m_Color.__dB = __dB;
@@ -22,10 +20,18 @@ if(__dBlinkFreq>0) {
 __m_dBlinkTime = 1/(__dBlinkFreq/2);
 }
 }
+double __m_dBlinkTime;
+double __m_dCurrTime;
+__TColor3 __m_Color;
+public class __struct_cIn {
+public bool __bStat;
+}
+public __struct_cIn __cIn=new __struct_cIn();
 public void Run() {
 if(__cIn.__bStat&&(__m_dCurrTime<__m_dBlinkTime)) {
 vip_sharp.VIPUtils.Instance.Color(__m_Color);
-vip_sharp.VIPUtils.Instance.Circle(0,0,2,40,true);}
+vip_sharp.VIPUtils.Instance.Circle(0,0,2,40,true);
+}
 __m_dCurrTime = __m_dCurrTime+vip_sharp.VIPUtils.Instance.VIPSystemClass.__dDT;
 if(__m_dCurrTime>(__m_dBlinkTime*2)) {
 __m_dCurrTime = __m_dCurrTime-(__m_dBlinkTime*2);
