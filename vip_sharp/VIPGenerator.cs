@@ -745,12 +745,34 @@ namespace vip_sharp
                 cmd = "Line";
             else if (node.Command.EqualsI("closed_line"))
                 cmd = "ClosedLine";
+            else if (node.Command.EqualsI("rotate"))
+                cmd = "Rotate";
             else
                 throw new NotImplementedException();
 
             code.Append($"{VIPUtilsInstance}.{cmd}(");
             node.ExpressionList.Accept(this);
             code.AppendLine(");");
+        }
+
+        public void Visit(VIPStringCommandNode node)
+        {
+            Code.Append($"{VIPUtilsInstance}.DrawString(");
+            node.X.Accept(this); Code.Append(',');
+            node.Y.Accept(this); Code.Append(',');
+            Code.Append($"{VIPUtilsClass}.PositionRef.{node.Ref},");
+            node.StringData.Accept(this); Code.Append(',');
+            node.CharCount.Accept(this); Code.Append(',');
+            node.BaseList.Accept(this); Code.Append(',');
+            node.ScaleX.Accept(this); Code.Append(',');
+            node.ScaleY.Accept(this); Code.Append(',');
+            node.SpaceX.Accept(this);
+            if (node.SpaceY != null)
+            {
+                Code.Append(',');
+                node.SpaceY.Accept(this);
+            }
+            Code.AppendLine(");");
         }
     }
 }

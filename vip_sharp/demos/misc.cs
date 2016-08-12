@@ -477,9 +477,485 @@ vip_sharp.VIPUtils.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 vip_sharp.VIPUtils.DisplayList __VIP_Delete = new vip_sharp.VIPUtils.DisplayList(()=>{
 });
+vip_sharp.VIPUtils.DisplayList __ARIAL_Null = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineWidth(10);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Smiley = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.5,0.5,16,false);
+vip_sharp.VIPUtils.Instance.Circle(0.3,0.7,0.05,6,false);
+vip_sharp.VIPUtils.Instance.Circle(0.7,0.7,0.05,6,false);
+vip_sharp.VIPUtils.Instance.ArcLine(0.5,0.5,0.3,90,270,4);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Smiley_Filled = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ColorSave();
+vip_sharp.VIPUtils.Instance.Color(0,0,0);
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.5,0.5,16,false);
+vip_sharp.VIPUtils.Instance.Color(100,100,100);
+vip_sharp.VIPUtils.Instance.Circle(0.3,0.7,0.05,6,false);
+vip_sharp.VIPUtils.Instance.Circle(0.7,0.7,0.05,6,false);
+vip_sharp.VIPUtils.Instance.ArcLine(0.5,0.5,0.3,90,270,4);
+vip_sharp.VIPUtils.Instance.ColorRestore();
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Heart = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Polygon(0.5,0,0.1,0.4,0,0.6,0,0.8,0.2,1,0.3,1,0.4,0.9,0.5,0.7);
+vip_sharp.VIPUtils.Instance.Polygon(0.5,0.7,0.4,0.9,0.3,1,0.2,1,0,0.8,0,0.6,0.1,0.4,0.5,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Diamond = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Quad(0.5,1,1,0.5,0.5,0,0,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Clover = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Polygon(0.5,0.5,0.3,0.8,0.4,1,0.6,1,0.7,0.8);
+vip_sharp.VIPUtils.Instance.Polygon(0.5,0.5,0.4,0.3,0.3,0.2,0.1,0.2,0,0.3,0,0.4,0.2,0.5);
+vip_sharp.VIPUtils.Instance.Polygon(0.2,0.5,0,0.4,0,0.3,0.1,0.2,0.3,0.2,0.4,0.3,0.5,0.5);
+vip_sharp.VIPUtils.Instance.Triangle(0.4,0,0.5,0.3,0.6,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Ace = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Polygon(0.5,1,0.5,0.5,0.4,0.3,0.3,0.2,0.2,0.2,0,0.4,0,0.6);
+vip_sharp.VIPUtils.Instance.Polygon(0,0.6,0,0.4,0.2,0.2,0.3,0.2,0.4,0.3,0.5,0.5,0.5,1);
+vip_sharp.VIPUtils.Instance.Triangle(0.4,0,0.5,0.3,0.6,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Big_Dot = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Quad_Big_Dot = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Open_Circle = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Circle_Filled = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Male_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.3,0.3,0.3,12,false);
+vip_sharp.VIPUtils.Instance.Line(0.627,0.627,1,1);
+vip_sharp.VIPUtils.Instance.LineStrip(0.7,1,1,1,1,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Female_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.7,0.3,12,false);
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,0.4);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Note = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.4,0.1,0.1,6,false);
+vip_sharp.VIPUtils.Instance.LineStrip(0.5,1,0.5,1,0.7,0.8,0.7,0.6,0.6,0.4);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Double_Note = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.3,0.2,0.1,6,false);
+vip_sharp.VIPUtils.Instance.Circle(0.8,0.1,0.1,6,false);
+vip_sharp.VIPUtils.Instance.Line(0.3,0.3,0.3,1,0.9,0.1,0.9,0.8);
+vip_sharp.VIPUtils.Instance.Quad(0.3,0.9,0.3,1,0.9,0.8,0.9,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Sun = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.5,0.3,12,false);
+vip_sharp.VIPUtils.Instance.MatrixSave();
+vip_sharp.VIPUtils.Instance.Translate(0.5, 0.5);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.Rotate(45);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,0,0.5);
+vip_sharp.VIPUtils.Instance.MatrixRestore();
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Triangle_Right = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.9,0.5,0.1,0.9,0.1,0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Triangle_Left = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.1,0.5,0.9,0.9,0.9,0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Arrow_Up_Down = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Double_Exclamation = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Pi_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Double_S = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Fat_Stripe = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Arrow_Up_Down_Bottom = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.4,0.7,0.5,1,0.6,0.7);
+vip_sharp.VIPUtils.Instance.Triangle(0.5,0,0.4,0.3,0.6,0.3);
+vip_sharp.VIPUtils.Instance.Line(0.3,0,0.7,0,0.5,0.4,0.5,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Up_Arrow = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.4,0.7,0.5,1,0.6,0.7);
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Down_Arrow = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.5,0,0.4,0.3,0.6,0.3);
+vip_sharp.VIPUtils.Instance.Line(0.5,1,0.5,0.3);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Right_Arrow = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(1,0.5,0.7,0.4,0.7,0.6);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,0.7,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Left_Arrow = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0,0.5,0.3,0.6,0.3,0.4);
+vip_sharp.VIPUtils.Instance.Line(0.3,0.5,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_FS = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Double_Arrow = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Triangle_Up = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.5,0.9,0.9,0.1,0.1,0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Triangle_Down = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.1,0.9,0.9,0.9,0.5,0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Space = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Exlamation_Point = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Triangle(0.5,0.3,0.4,1,0.6,1);
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.1,0.1,6,true);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Double_Quote = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,0.9,0.4,0.9,0.4,0.8,0.3,0.8,0.3,0.9,0.4,1);
+vip_sharp.VIPUtils.Instance.LineStrip(0.6,0.9,0.7,0.9,0.7,0.8,0.6,0.8,0.6,0.9,0.7,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Number_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.25,0,0.35,1,0.65,0,0.75,1,0,0.3,0.95,0.3,0.05,0.7,1,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Dollar_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.1,0.2,0.2,0.1,0.8,0.1,0.9,0.2,0.9,0.4,0.8,0.5,0.2,0.5,0.1,0.6,0.1,0.8,0.2,0.9,0.8,0.9,0.9,0.8);
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Percent = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Circle(0.3,0.7,0.1,6,false);
+vip_sharp.VIPUtils.Instance.Circle(0.7,0.3,0.1,6,false);
+vip_sharp.VIPUtils.Instance.Line(0.2,0.1,0.8,0.9);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Ampersand = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.7,0,0.2,0.6,0.2,0.7,0.3,0.8,0.5,0.8,0.6,0.7,0.6,0.6,0.1,0.3,0.1,0.1,0.2,0,0.5,0,0.7,0.3);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Apostrophe = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.4,0.9,0.5,0.9,0.5,0.8,0.4,0.8,0.4,0.9,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Left_Parenthesis = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.6,0,0.5,0,0.4,0.2,0.4,0.8,0.5,1,0.6,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Right_Parenthesis = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.4,0,0.5,0,0.6,0.2,0.6,0.8,0.5,1,0.4,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Asterisk = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.MatrixSave();
+vip_sharp.VIPUtils.Instance.Translate(0.5, 0.7);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.3);
+vip_sharp.VIPUtils.Instance.Rotate(72);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.3);
+vip_sharp.VIPUtils.Instance.Rotate(72);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.3);
+vip_sharp.VIPUtils.Instance.Rotate(72);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.3);
+vip_sharp.VIPUtils.Instance.Rotate(72);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.3);
+vip_sharp.VIPUtils.Instance.MatrixRestore();
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Plus_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0.4,0.8,0.4);
+vip_sharp.VIPUtils.Instance.Line(0.4,0.1,0.4,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Comma = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,0,0.2,0,0.2,0.1,0.3,0.1,0.3,0,0.2,-0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_minus = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.2,0.5,0.8,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Period = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0.2,0.1,0.3,0.1,0.3,0,0.2,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Slash = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.2,0,0.8,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_0 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0,0,1,1,1,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_1 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,1,0.5,1,0.5,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_2 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,1,1,1,0.5,0,0.5,0,0,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_3 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,1,1,1,0,0,0);
+vip_sharp.VIPUtils.Instance.Line(0.3,0.5,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_4 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0,0.5,1,0.5);
+vip_sharp.VIPUtils.Instance.Line(1,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_5 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,1,0,1,0.5,0,0.5,0,1,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_6 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,1,0.5,1,0,0,0,0,1,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_7 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,1,1,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_8 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0,0,1,1,1,1,0);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_nr_9 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.5,0,0.5,0,1,1,1,1,0,0,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Colon = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0.4,0.7,0.4,0.8,0.5,0.8,0.5,0.7);
+vip_sharp.VIPUtils.Instance.ClosedLine(0.4,0.2,0.4,0.3,0.5,0.3,0.5,0.2);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Semicolon = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0.4,0.7,0.4,0.8,0.5,0.8,0.5,0.7);
+vip_sharp.VIPUtils.Instance.ClosedLine(0.4,0.2,0.4,0.3,0.5,0.3,0.5,0.2);
+vip_sharp.VIPUtils.Instance.Line(0.5,0.2,0.4,0.1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Less_Than = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.9,0.1,0.1,0.5,0.9,0.9);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Equal_Sign = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.1,0.4,0.9,0.4,0.1,0.6,0.9,0.6);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Greater_Than = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.1,0.1,0.9,0.5,0.1,0.9);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Question_Mark = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.8,0,1,1,1,1,0.6,0.5,0.6,0.5,0.3);
+vip_sharp.VIPUtils.Instance.Circle(0.5,0.1,0.1,6,false);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_AT_Symbol = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.7,0.4,0.6,0.3,0.3,0.3,0.3,0.6,0.4,0.7,0.7,0.7);
+vip_sharp.VIPUtils.Instance.LineStrip(0.7,0.8,0.7,0.3,0.8,0.3,1,0.5,1,0.8,0.8,1,0.2,1,0,0.8,0,0.2,0.2,0,0.8,0,1,0.2);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_A = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0.5,1,1,0);
+vip_sharp.VIPUtils.Instance.Line(0.15,0.3,0.85,0.3);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_B = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0,0,1,0.7,1,0.9,0.9,0.9,0.6,0.7,0.5,1,0.3,1,0.1,0.8,0);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,0.7,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_C = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.2,0.8,0,0.2,0,0,0.2,0,0.8,0.2,1,0.8,1,1,0.8);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_D = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0,0,1,0.7,1,1,0.7,1,0.2,0.8,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_E = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0,0,0,0,1,1,1);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_F = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0,1,1,1);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,0.9,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_G = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.5,0.5,1,0.5,1,0.2,0.8,0,0.2,0,0,0.2,0,0.8,0.2,1,0.8,1,1,0.8);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_H = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,0,1);
+vip_sharp.VIPUtils.Instance.Line(0,0.5,1,0.5);
+vip_sharp.VIPUtils.Instance.Line(1,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_I = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_J = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,1,1,0.25,0.875,0.125,0.625,0,0.375,0,0.125,0.125,0,0.25,0,0.375);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_K = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,0,1);
+vip_sharp.VIPUtils.Instance.Line(0.2,0.5,1,0);
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.5,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_L = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0,0,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_M = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0,1,0.5,0.5,1,1,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_N = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0,1,1,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_O = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0.2,0,0,0.2,0,0.8,0.2,1,0.8,1,1,0.8,1,0.2,0.8,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_P = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0,1,0.8,1,1,0.8,1,0.6,0.8,0.4,0,0.4);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_Q = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0.2,0,0,0.2,0,0.8,0.2,1,0.8,1,1,0.8,1,0.2,0.8,0);
+vip_sharp.VIPUtils.Instance.Line(0.7,0.3,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_R = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0,0,1,0.8,1,1,0.8,1,0.6,0.8,0.4,0,0.4);
+vip_sharp.VIPUtils.Instance.Line(0.8,0.4,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_S = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.1,0.2,0,0.8,0,1,0.2,1,0.4,0.9,0.5,0.1,0.5,0,0.6,0,0.8,0.2,1,0.8,1,1,0.9);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_T = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,1,1,1);
+vip_sharp.VIPUtils.Instance.Line(0.5,1,0.5,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_U = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0,0.2,0.2,0,0.8,0,1,0.2,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_V = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0.5,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_W = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0.2,0,0.5,1,0.8,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_X = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,1,1);
+vip_sharp.VIPUtils.Instance.Line(0,1,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_Y = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,1,0.5,0.5,1,1);
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_Z = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0,0,0,1,1,0,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Left_Square_Bracket = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.8,0,0.3,0,0.3,1,0.8,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Back_Slash = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.2,1,0.8,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Right_Square_Bracket = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.2,1,0.7,1,0.7,0,0.2,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Caret = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,0.8,0.5,1,0.7,0.8);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Underline = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Accent = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.4,0.9,0.5,0.9,0.5,0.8,0.4,0.8,0.4,0.9,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_la = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.4,0.2,0.6,0.8,0.6,1,0.4,1,0);
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.1,0.8,0,0.2,0,0.2,0,0,0.1,0,0.2,0.2,0.3,0.8,0.3,1,0.2);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lb = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0.1,0.8,0,0.2,0,0,0.1);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lc = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.1,0.8,0,0.2,0,0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_ld = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.1,0.8,0,0.2,0,0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5);
+vip_sharp.VIPUtils.Instance.Line(1,0,1,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_le = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.1,0.8,0,0.2,0,0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0.3,0,0.3);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lf = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.4,0,0.4,0.8,0.6,1,0.8,1);
+vip_sharp.VIPUtils.Instance.Line(0.2,0.5,0.6,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lg = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.1,0.8,0,0.2,0,0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5);
+vip_sharp.VIPUtils.Instance.LineStrip(1,0.6,1,-0.2,0.8,-0.4,0.2,-0.4,0,-0.3);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lh = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,0,1);
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_li = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,0.6,0.5,0.7,0.5,0.8);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lj = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,-0.4,0.5,-0.4,0.7,-0.3,0.7,0.6);
+vip_sharp.VIPUtils.Instance.Line(0.7,0.7,0.7,0.8);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lk = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,0,1);
+vip_sharp.VIPUtils.Instance.Line(0,0.3,1,0.6);
+vip_sharp.VIPUtils.Instance.Line(0.2,0.35,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_ll = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lm = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.1,0.6,0.4,0.6,0.5,0.5,0.6,0.6,0.9,0.6,1,0.5,1,0);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.6);
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_ln = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.6,0.9,0.6,1,0.5,1,0);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.6);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lo = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0.1,0.8,0,0.2,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lp = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0.1,0.8,0,0.2,0,0,0.1);
+vip_sharp.VIPUtils.Instance.Line(0,0.6,0,-0.4);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lq = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.ClosedLine(0,0.1,0,0.5,0.2,0.6,0.8,0.6,1,0.5,1,0.1,0.8,0,0.2,0);
+vip_sharp.VIPUtils.Instance.Line(0.7,0.2,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lr = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.5,0.2,0.6,0.9,0.6,1,0.5);
+vip_sharp.VIPUtils.Instance.Line(0,0,0,0.6);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_ls = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.1,0.2,0,0.9,0,1,0.1,1,0.2,0.8,0.3,0.2,0.3,0,0.4,0,0.5,0.1,0.6,0.8,0.6,1,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lt = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.4,1,0.4,0.1,0.5,0,0.6,0);
+vip_sharp.VIPUtils.Instance.Line(0.2,0.7,0.6,0.7);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lu = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.6,0,0.1,0.2,0,0.8,0,1,0.1);
+vip_sharp.VIPUtils.Instance.Line(1,0.6,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lv = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.6,0.5,0,1,0.6);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lw = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.6,0.2,0,0.5,0.3,0.8,0,1,0.6);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lx = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0,0,1,1,0,1,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_ly = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,-0.4,0.5,0,1,0.6);
+vip_sharp.VIPUtils.Instance.Line(0,0.6,0.5,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_lt_lz = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0,0.6,1,0.6,0,0,1,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Left_Bracket_2 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.7,0,0.5,0,0.4,0.1,0.4,0.4,0.3,0.5,0.4,0.6,0.4,0.9,0.5,1,0.7,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Vertical_Line = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.Line(0.5,0,0.5,1);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Right_Bracket_2 = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.3,1,0.5,1,0.6,0.9,0.6,0.6,0.7,0.5,0.6,0.4,0.6,0.1,0.5,0,0.3,0);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Tilde = new vip_sharp.VIPUtils.DisplayList(()=>{
+vip_sharp.VIPUtils.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
+});
+vip_sharp.VIPUtils.DisplayList __ARIAL_Delete = new vip_sharp.VIPUtils.DisplayList(()=>{
+});
 public void Run() {
-vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
-vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("Ja, het Werkt");
-vip_sharp.VIPUtils.Instance.Line(-1,-1,-2,-2,0,2);
+vip_sharp.BipolarArray<char> __sData2 = new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
+vip_sharp.BipolarArray<char> __sData = new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
+vip_sharp.VIPUtils.Instance.DrawString(0,0,vip_sharp.VIPUtils.PositionRef.CC,__sData,0,__VIP_Null,1,1,1.2);
+vip_sharp.VIPUtils.Instance.DrawString(0,2,vip_sharp.VIPUtils.PositionRef.CC,__sData2,0,__VIP_Null,1,1,1.2);
+vip_sharp.VIPUtils.Instance.DrawString(-3,6,vip_sharp.VIPUtils.PositionRef.LC,"multiline test 2 | worked yay!",0,__ARIAL_Null,0.3,0.6,1.2);
 }
 }
