@@ -16,7 +16,11 @@ namespace vip_sharp
         [STAThread]
         static void Main(string[] args)
         {
-            VIPUtils.RunGL(VIPCompiler.Compile(args[0]));
+            var compiledfile = VIPCompiler.Compile(args[0]);
+            if (compiledfile == null)
+                return;
+
+            VIPUtils.RunGL(compiledfile);
         }
     }
 }

@@ -952,10 +952,12 @@ vip_sharp.VIPUtils.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 vip_sharp.VIPUtils.DisplayList __ARIAL_Delete = new vip_sharp.VIPUtils.DisplayList(()=>{
 });
 public void Run() {
-vip_sharp.BipolarArray<char> __sData2 = new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
-vip_sharp.BipolarArray<char> __sData = new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
+vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
+vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
+vip_sharp.VIPUtils.Instance.Color(10);
 vip_sharp.VIPUtils.Instance.DrawString(0,0,vip_sharp.VIPUtils.PositionRef.CC,__sData,0,__VIP_Null,1,1,1.2);
 vip_sharp.VIPUtils.Instance.DrawString(0,2,vip_sharp.VIPUtils.PositionRef.CC,__sData2,0,__VIP_Null,1,1,1.2);
+vip_sharp.VIPUtils.Instance.Color(5);
 vip_sharp.VIPUtils.Instance.DrawString(-3,6,vip_sharp.VIPUtils.PositionRef.LC,"multiline test 2 | worked yay!",0,__ARIAL_Null,0.3,0.6,1.2);
 }
 }

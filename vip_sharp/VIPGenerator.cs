@@ -680,10 +680,21 @@ namespace vip_sharp
                 }
                 code.AppendLine(");");
             }
-            else
+            else if (node.ArrayName != null)
             {
                 code.Append($"{VIPUtilsInstance}.Color(");
                 node.ArrayName.Accept(this);
+                code.AppendLine(");");
+            }
+            else
+            {
+                code.Append($"{VIPUtilsInstance}.Color(");
+                node.C.Accept(this);
+                if (node.A != null)
+                {
+                    code.Append(',');
+                    node.A.Accept(this);
+                }
                 code.AppendLine(");");
             }
         }
