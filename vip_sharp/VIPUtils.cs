@@ -22,8 +22,6 @@ namespace vip_sharp
             if (!Path.IsPathRooted(libpath))
                 libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
-            //AppDomain.CurrentDomain.AssemblyResolve += Domain_AssemblyResolve;
-
             var frm = new VIPForm();
             rc = RenderingContext.CreateContext(frm);
 
