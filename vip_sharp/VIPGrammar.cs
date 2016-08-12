@@ -127,7 +127,9 @@ namespace vip_sharp
             functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")" + ";";
             colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";"
                 | ToTerm("color") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + ")" + ";";
+                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("color") + "(" + expr + "," + expr + ")" + ";"
+                | ToTerm("color") + "(" + expr + ")" + ";";
             circlecommand.Rule = ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + "fill" + ")" + ";"
                 | ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
             matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")" + ";"
@@ -899,7 +901,7 @@ namespace vip_sharp
 
                 ArrayName = qnode;
             }
-            else
+            else if (nodes.Count > 3)
             {
                 R = (VIPExpressionNode)nodes[1].AstNode;
                 G = (VIPExpressionNode)nodes[2].AstNode;
@@ -907,10 +909,19 @@ namespace vip_sharp
                 if (nodes.Count > 4)
                     A = (VIPExpressionNode)nodes[4].AstNode;
             }
+            else if (nodes.Count > 2)
+            {
+                C = (VIPExpressionNode)nodes[1].AstNode;
+                A = (VIPExpressionNode)nodes[2].AstNode;
+            }
+            else if (nodes.Count > 1)
+            {
+                C = (VIPExpressionNode)nodes[1].AstNode;
+            }
         }
 
         public VIPQualifiedIdentifierNode ArrayName;
-        public VIPExpressionNode R, G, B, A;
+        public VIPExpressionNode R, G, B, A, C;
         public bool Save, Restore;
     }
 

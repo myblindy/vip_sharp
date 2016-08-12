@@ -8,8 +8,12 @@ public class __BarberPole : vip_sharp.VIPUtils.IVIPObject {
 public double X=0, Y=0;
 public double GetX() { return X; }
 public double GetY() { return Y; }
-vip_sharp.BipolarArray<__TVertex> __TextVertices2 = new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex{__dX = 0,__dY = 0},new __TVertex{__dX = 0,__dY = 3},new __TVertex{__dX = 1,__dY = 3},new __TVertex{__dX = 1,__dY = 0}};
-double __dOffSet = 0;
+public __BarberPole() {
+this.__TextVertices2= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0,__dY = 0},new __TVertex {__dX = 0,__dY = 3},new __TVertex {__dX = 1,__dY = 3},new __TVertex {__dX = 1,__dY = 0}};
+this.__dOffSet = 0;
+}
+vip_sharp.BipolarArray<__TVertex> __TextVertices2;
+double __dOffSet;
 vip_sharp.VIPUtils.BitmapRes __STRIPE = new vip_sharp.VIPUtils.BitmapRes(vip_sharp.VIPUtils.BitmapType.RGB, vip_sharp.VIPUtils.BitmapFilter.Linear, vip_sharp.VIPUtils.BitmapClamp.Repeat, @"stripe.bmp");
 public void Run() {
 __TextVertices2[0].__dY = 0-__dOffSet;

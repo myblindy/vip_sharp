@@ -6,8 +6,10 @@ main
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "\x1 Ja, het Werkt";
 	
+	color(yellow);
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
 	String(0, 2, CC, NONE, sData2, 0, VIP_Null, 1, 1, 1.2);
 	
+	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 }

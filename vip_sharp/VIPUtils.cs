@@ -97,6 +97,37 @@ namespace vip_sharp
             }
         }
 
+        private Tuple<double, double, double>[] StandardColors = new[]
+        {
+            Tuple.Create(0.000, 0.000, 0.000),          //BLACK
+            Tuple.Create(0.250, 0.250, 0.250),          //DARK_GREY
+            Tuple.Create(0.500, 0.500, 0.500),          //GREY
+            Tuple.Create(0.750, 0.750, 0.750),          //LIGHT_GREY
+            Tuple.Create(1.000, 1.000, 1.000),          //WHITE
+
+            Tuple.Create(1.000, 0.000, 0.000),          //RED
+            Tuple.Create(0.000, 1.000, 0.000),          //GREEN
+            Tuple.Create(0.000, 0.000, 1.000),          //BLUE
+
+            Tuple.Create(0.000, 1.000, 1.000),          //CYAN
+            Tuple.Create(1.000, 0.000, 1.000),          //MAGENTA
+            Tuple.Create(1.000, 1.000, 0.000),          //YELLOW
+
+            Tuple.Create(0.980, 0.666, 0.235),          //AMBER
+            Tuple.Create(1.000, 0.647, 0.000),          //ORANGE
+            Tuple.Create(0.541, 0.169, 0.886),          //VIOLET
+            Tuple.Create(0.647, 0.168, 0.168),          //BROWN
+            Tuple.Create(0.824, 0.412, 0.118),          //LIGHT_BROWN
+            Tuple.Create(0.000, 0.500, 0.000),          //DARK_GREEN
+            Tuple.Create(0.157, 1.000, 0.157),          //LIGHT_GREEN
+            Tuple.Create(1.000, 0.216, 0.216),          //LIGHT_RED
+            Tuple.Create(0.500, 0.000, 0.000),          //DARK_RED
+            Tuple.Create(0.000, 0.545, 0.545),          //DARK_CYAN
+            Tuple.Create(0.392, 0.584, 0.929),          //SOFT_BLUE
+            Tuple.Create(1.000, 0.078, 0.576),          //PINK
+            Tuple.Create(1.000, 0.843, 0.000),          //GOLD
+        };
+
         private static IList<double> DoublesFromStructure<T>(T o)
         {
             var lst = new List<double>();
@@ -269,9 +300,10 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Color(double c, double a) => gl.Color4d(c, c, c, a);
-        public void Color(double r, double g, double b) => gl.Color3d(r, g, b);
-        public void Color(double r, double g, double b, double a) => gl.Color4d(r, g, b, a);
+        public void Color(int c) => gl.Color3d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
+        public void Color(int c, double a) => gl.Color4d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, a);
+        public void Color(double r, double g, double b) => gl.Color3d(r / 100 * 255, g / 100 * 255, b / 100 * 255);
+        public void Color(double r, double g, double b, double a) => gl.Color4d(r / 100 * 255, g / 100 * 255, b / 100 * 255, a / 100 * 255);
 
         public void MatrixSave() => gl.PushMatrix();
         public void MatrixRestore() => gl.PopMatrix();
