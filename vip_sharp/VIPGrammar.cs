@@ -41,6 +41,7 @@ namespace vip_sharp
             var circlecommand = new NonTerminal("circlecommand", typeof(VIPCircleCommandNode));
             var matrixcommand = new NonTerminal("matrixcommand", typeof(VIPMatrixCommandNode));
             var stringcommand = new NonTerminal("stringcommand", typeof(VIPStringCommandNode));
+            var hotspotcommand = new NonTerminal("hotspotcommand", typeof(VIPHotSpotCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -92,7 +93,7 @@ namespace vip_sharp
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
 
             commands.Rule = MakeStarRule(commands, null, command);
-            command.Rule = stringcommand | shapecommand | circlecommand | matrixcommand
+            command.Rule = hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition
                 | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
@@ -143,6 +144,8 @@ namespace vip_sharp
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
+            hotspotcommand.Rule = ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
+                + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -258,6 +261,7 @@ namespace vip_sharp
         void Visit(VIPListDefinition node);
         void Visit(VIPShapeCommandNode node);
         void Visit(VIPStringCommandNode vIPStringCommandNode);
+        void Visit(VIPHotSpotCommandNode vIPHotSpotCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -789,6 +793,42 @@ namespace vip_sharp
             Type = nodes[1].Token.ValueString;
 
         public string Type;
+    }
+
+    public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover }
+    public enum HotSpotType { Momentary, Alternate }
+    public enum HotSpotHoverBox { Never, Always, Hover }
+
+    public class VIPHotSpotCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            W = (VIPExpressionNode)nodes[3].AstNode;
+            H = (VIPExpressionNode)nodes[4].AstNode;
+            Ref = nodes[5].Token.ValueString;
+            Var = (VIPQualifiedIdentifierNode)nodes[6].AstNode;
+            Trigger = nodes[7].Token.ValueString.EqualsI("selected") ? HotSpotTrigger.Selected
+                  : nodes[7].Token.ValueString.EqualsI("select_edge") ? HotSpotTrigger.SelectEdge
+                  : nodes[7].Token.ValueString.EqualsI("release_edge") ? HotSpotTrigger.ReleaseEdge
+                  : HotSpotTrigger.Hover;
+            Type = nodes[8].Token.ValueString.EqualsI("momentary") ? HotSpotType.Momentary : HotSpotType.Alternate;
+            TrueValue = (VIPExpressionNode)nodes[9].AstNode;
+            FalseValue = (VIPExpressionNode)nodes[10].AstNode;
+            HoverBox = nodes[11].Token.ValueString.EqualsI("never") ? HotSpotHoverBox.Never
+                : nodes[11].Token.ValueString.EqualsI("always") ? HotSpotHoverBox.Always
+                : HotSpotHoverBox.Hover;
+        }
+
+        public VIPExpressionNode X, Y, W, H, TrueValue, FalseValue;
+        public string Ref;
+        public VIPQualifiedIdentifierNode Var;
+        public HotSpotType Type;
+        public HotSpotTrigger Trigger;
+        public HotSpotHoverBox HoverBox;
     }
 
     public class VIPStringCommandNode : VIPNode

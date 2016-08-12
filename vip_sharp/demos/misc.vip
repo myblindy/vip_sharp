@@ -5,6 +5,7 @@ main
 {
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "\x1 Ja, het Werkt";
+	bool b;
 	
 	color(yellow);
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
@@ -12,4 +13,6 @@ main
 	
 	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
+	
+	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, HOVER);
 }

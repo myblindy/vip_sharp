@@ -785,5 +785,10 @@ namespace vip_sharp
             }
             Code.AppendLine(");");
         }
+
+        public void Visit(VIPHotSpotCommandNode node)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
