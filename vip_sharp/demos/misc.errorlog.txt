@@ -4,6 +4,4 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
 This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
 
-misc.cs(7,88): error CS0103: The name '__VIP_Null' does not exist in the current context
-misc.cs(8,89): error CS0103: The name '__VIP_Null' does not exist in the current context
-misc.cs(10,114): error CS0103: The name '__ARIAL_Null' does not exist in the current context
+misc.cs(963,29): error CS1061: 'vip_sharp.VIPUtils' does not contain a definition for 'HotSpot' and no extension method 'HotSpot' accepting a first argument of type 'vip_sharp.VIPUtils' could be found (are you missing a using directive or an assembly reference?)

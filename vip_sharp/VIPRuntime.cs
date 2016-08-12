@@ -11,10 +11,10 @@ using System.Drawing;
 
 namespace vip_sharp
 {
-    public class VIPUtils
+    public class VIPRuntime
     {
-        public static VIPUtils Instance { get; } = new VIPUtils();
-        private VIPUtils() { }
+        public static VIPRuntime Instance { get; } = new VIPRuntime();
+        private VIPRuntime() { }
 
         internal static RenderingContext rc;
         internal static void RunGL(string libpath)
@@ -42,6 +42,9 @@ namespace vip_sharp
         public class VIPSystemClassType
         {
             public double __dDT;
+            public bool LeftButtonDown;
+            public bool LastLeftButtonDown;
+            public double MouseX, MouseY;
         }
         public VIPSystemClassType VIPSystemClass = new VIPSystemClassType();
 
@@ -50,6 +53,9 @@ namespace vip_sharp
         public enum BitmapClamp { Clamp, Repeat }
         public enum BitmapBlend { Blend, Modulate, Decal, Replace }
         public enum PositionRef { CTR, CC = CTR, CU, CL, LL, LC, LU, RU, RL, RC }
+        public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover }
+        public enum HotSpotType { Momentary, Alternate }
+        public enum HotSpotHoverBox { Never, Always, Hover }
 
         public class BitmapRes
         {
@@ -274,7 +280,7 @@ namespace vip_sharp
 
         public void Quad(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         {
-            gl.Begin(GL.QUADS);
+            gl.Begin(GL.LINE_LOOP);
             gl.Vertex2d(x1, y1);
             gl.Vertex2d(x2, y2);
             gl.Vertex2d(x3, y3);
@@ -389,6 +395,25 @@ namespace vip_sharp
                 case PositionRef.RU:
                     x -= w; y -= h;
                     break;
+            }
+        }
+
+        public void HotSpot<T>(double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
+            HotSpotType type, T trueval, T falseval, HotSpotHoverBox hoverbox)
+        {
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
+            var hover = VIPSystemClass.MouseX >= x && VIPSystemClass.MouseX <= x + w
+                && VIPSystemClass.MouseY >= y && VIPSystemClass.MouseY <= y + h;
+            var sel = VIPSystemClass.LeftButtonDown && hover;
+            var = sel ? trueval : falseval;
+
+            if (hoverbox == HotSpotHoverBox.Always || (hoverbox == HotSpotHoverBox.Hover && hover))
+            {
+                ColorSave();
+                Color(1, 1, 0);
+                Quad(x, y, x + w, y, x + w, y + h, x, y + h);
+                ColorRestore();
             }
         }
     }

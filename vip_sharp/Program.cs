@@ -20,7 +20,7 @@ namespace vip_sharp
             if (compiledfile == null)
                 return;
 
-            VIPUtils.RunGL(compiledfile);
+            VIPRuntime.RunGL(compiledfile);
         }
     }
 }

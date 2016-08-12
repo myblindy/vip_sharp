@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using static vip_sharp.VIPRuntime;
 
 namespace vip_sharp
 {
@@ -794,10 +795,6 @@ namespace vip_sharp
 
         public string Type;
     }
-
-    public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover }
-    public enum HotSpotType { Momentary, Alternate }
-    public enum HotSpotHoverBox { Never, Always, Hover }
 
     public class VIPHotSpotCommandNode : VIPNode
     {

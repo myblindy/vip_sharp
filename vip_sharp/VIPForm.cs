@@ -20,10 +20,17 @@ namespace vip_sharp
         DateTime LastFPSCountedAt = DateTime.Now;
         DateTime LastRenderedAt = DateTime.Now;
 
+        const double MinX = -15, MaxX = 15, MinY = -15, MaxY = 15;
+
         public VIPForm()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             InitializeComponent();
+
+            // events
+            MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };
+            MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false; };
+            MouseMove += (s, e) => { VIPRuntime.Instance.VIPSystemClass.MouseX = ToX(e.X); VIPRuntime.Instance.VIPSystemClass.MouseY = ToY(e.Y); };
 
             // set up the rc
             gl.DepthMask(false);
@@ -34,6 +41,9 @@ namespace vip_sharp
             Initialized = true;
             Application.Idle += Application_Idle;
         }
+
+        double ToX(int x) => ((double)x) / ClientSize.Width * (MaxX - MinX) + MinX;
+        double ToY(int y) => -(((double)y) / ClientSize.Height * (MaxY - MinY) + MinY);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct NativeMessage
@@ -68,7 +78,7 @@ namespace vip_sharp
             gl.Viewport(0, 0, ClientSize.Width, ClientSize.Height);
             gl.MatrixMode(GL.PROJECTION);
             gl.LoadIdentity();
-            gl.Ortho(-15, 15, -15, 15, -10, 10);
+            gl.Ortho(MinX, MaxX, MinY, MaxY, -10, 10);
         }
 
         protected void Render()
@@ -78,11 +88,11 @@ namespace vip_sharp
             gl.LoadIdentity();
 
             var now = DateTime.Now;
-            VIPUtils.Instance.VIPSystemClass.__dDT = (now - LastRenderedAt).TotalSeconds;
+            VIPRuntime.Instance.VIPSystemClass.__dDT = (now - LastRenderedAt).TotalSeconds;
             LibMainClass.Run();
             LastRenderedAt = now;
 
-            VIPUtils.rc.SwapBuffers();
+            VIPRuntime.rc.SwapBuffers();
 
             ++Frames;
         }

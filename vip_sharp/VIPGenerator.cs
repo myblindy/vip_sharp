@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static vip_sharp.VIPRuntime;
 
 namespace vip_sharp
 {
@@ -17,8 +18,8 @@ namespace vip_sharp
         private bool BuildConstructor = false;
         private bool InObjectDefinition = false;
 
-        private const string VIPUtilsClass = "vip_sharp.VIPUtils";
-        private const string VIPUtilsInstance = VIPUtilsClass + ".Instance";
+        private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
+        private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
         private const string VIPArrayClass = "vip_sharp.BipolarArray";
 
         class VIPTypeComparer : IEqualityComparer<string[]>
@@ -97,7 +98,7 @@ namespace vip_sharp
             {
                 if (first) first = false; else code.Append('.');
                 var prefix = ValueTypes.Contains(part.Item1) ? "" : "__";
-                var name = part.Item1.EqualsI("system") ? $"{VIPUtilsInstance}.VIPSystemClass" : prefix + part.Item1;
+                var name = part.Item1.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + part.Item1;
                 code.Append(name);
                 if (part.Item2 != null)
                 {
@@ -258,7 +259,7 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append($"{VIPUtilsInstance}.Translate(");
+            code.Append($"{VIPRuntimeInstance}.Translate(");
             node.X.Accept(this);
             code.Append(", ");
             node.Y.Accept(this);
@@ -269,7 +270,7 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append($"{VIPUtilsInstance}.Scale(");
+            code.Append($"{VIPRuntimeInstance}.Scale(");
             node.Scale.Accept(this);
             code.AppendLine(");");
         }
@@ -278,7 +279,7 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append($"{VIPUtilsInstance}.Rotate(");
+            code.Append($"{VIPRuntimeInstance}.Rotate(");
             node.Angle.Accept(this);
             code.AppendLine(");");
         }
@@ -306,7 +307,7 @@ namespace vip_sharp
 
             if (node.VerticesIdentifier != null && node.ColorsIdentifier != null)
             {
-                code.Append($"{VIPUtilsInstance}.Polygon(");
+                code.Append($"{VIPRuntimeInstance}.Polygon(");
                 node.VerticesIdentifier.Accept(this);
                 code.Append(",");
                 node.ColorsIdentifier.Accept(this);
@@ -450,8 +451,8 @@ namespace vip_sharp
                 : "MipMap";
             var clamp = node.ClampMode.EqualsI("CLAMP") ? "Clamp" : "Repeat";
 
-            Code.AppendLine($"{VIPUtilsClass}.BitmapRes __{node.Handle} = new {VIPUtilsClass}.BitmapRes(" +
-                $"{VIPUtilsClass}.BitmapType.{type}, {VIPUtilsClass}.BitmapFilter.{filter}, {VIPUtilsClass}.BitmapClamp.{clamp}, " +
+            Code.AppendLine($"{VIPRuntimeClass}.BitmapRes __{node.Handle} = new {VIPRuntimeClass}.BitmapRes(" +
+                $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
         }
 
@@ -468,12 +469,12 @@ namespace vip_sharp
                 : node.Blend.EqualsI("DECAL") ? "Decal"
                 : "Replace";
 
-            code.Append($"{VIPUtilsInstance}.Bitmap(");
+            code.Append($"{VIPRuntimeInstance}.Bitmap(");
             node.Handle.Accept(this);
-            code.Append($", {VIPUtilsClass}.BitmapBlend.{blend}, ");
+            code.Append($", {VIPRuntimeClass}.BitmapBlend.{blend}, ");
             node.X.Accept(this); code.Append(','); node.Y.Accept(this); code.Append(',');
             node.W.Accept(this); code.Append(','); node.H.Accept(this); code.Append(',');
-            code.Append($"{VIPUtilsClass}.PositionRef.{node.Ref},");
+            code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
             node.Vertices.Accept(this);
             code.AppendLine(");");
         }
@@ -494,7 +495,7 @@ namespace vip_sharp
         {
             LastObjectName = node.Name;
 
-            Code.AppendLine($"public class __{node.Name} : {VIPUtilsClass}.IVIPObject {{");
+            Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.IVIPObject {{");
             Code.AppendLine("public double X=0, Y=0;");
             Code.AppendLine("public double GetX() { return X; }");
             Code.AppendLine("public double GetY() { return Y; }");
@@ -559,7 +560,7 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append($"{VIPUtilsInstance}.Draw(");
+            code.Append($"{VIPRuntimeInstance}.Draw(");
             node.ObjectName.Accept(this);
             code.AppendLine(");");
         }
@@ -590,7 +591,7 @@ namespace vip_sharp
 
                 if (sfn != null)
                 {
-                    code.Append($"{VIPUtilsInstance}.{sfn}(");
+                    code.Append($"{VIPRuntimeInstance}.{sfn}(");
 
                     bool first = true;
                     foreach (var argnode in node.Arguments)
@@ -662,12 +663,12 @@ namespace vip_sharp
             var code = BuildConstructor ? ConstructorCode : Code;
 
             if (node.Save)
-                code.AppendLine($"{VIPUtilsInstance}.ColorSave();");
+                code.AppendLine($"{VIPRuntimeInstance}.ColorSave();");
             else if (node.Restore)
-                code.AppendLine($"{VIPUtilsInstance}.ColorRestore();");
+                code.AppendLine($"{VIPRuntimeInstance}.ColorRestore();");
             else if (node.R != null && node.G != null && node.B != null)
             {
-                code.Append($"{VIPUtilsInstance}.Color(");
+                code.Append($"{VIPRuntimeInstance}.Color(");
                 node.R.Accept(this);
                 code.Append(',');
                 node.G.Accept(this);
@@ -682,13 +683,13 @@ namespace vip_sharp
             }
             else if (node.ArrayName != null)
             {
-                code.Append($"{VIPUtilsInstance}.Color(");
+                code.Append($"{VIPRuntimeInstance}.Color(");
                 node.ArrayName.Accept(this);
                 code.AppendLine(");");
             }
             else
             {
-                code.Append($"{VIPUtilsInstance}.Color(");
+                code.Append($"{VIPRuntimeInstance}.Color(");
                 node.C.Accept(this);
                 if (node.A != null)
                 {
@@ -703,7 +704,7 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append($"{VIPUtilsInstance}.Circle(");
+            code.Append($"{VIPRuntimeInstance}.Circle(");
             node.X.Accept(this);
             code.Append(',');
             node.Y.Accept(this);
@@ -724,16 +725,16 @@ namespace vip_sharp
             var code = BuildConstructor ? ConstructorCode : Code;
 
             if (node.Type.EqualsI("save"))
-                code.AppendLine($"{VIPUtilsInstance}.MatrixSave();");
+                code.AppendLine($"{VIPRuntimeInstance}.MatrixSave();");
             else if (node.Type.EqualsI("restore"))
-                code.AppendLine($"{VIPUtilsInstance}.MatrixRestore();");
+                code.AppendLine($"{VIPRuntimeInstance}.MatrixRestore();");
             else if (node.Type.EqualsI("identity"))
-                code.AppendLine($"{VIPUtilsInstance}.MatrixIdentity();");
+                code.AppendLine($"{VIPRuntimeInstance}.MatrixIdentity();");
         }
 
         public void Visit(VIPListDefinition node)
         {
-            Code.AppendLine($"{VIPUtilsClass}.DisplayList __{node.Name} = new {VIPUtilsClass}.DisplayList(()=>{{");
+            Code.AppendLine($"{VIPRuntimeClass}.DisplayList __{node.Name} = new {VIPRuntimeClass}.DisplayList(()=>{{");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             Code.AppendLine("});");
@@ -761,17 +762,17 @@ namespace vip_sharp
             else
                 throw new NotImplementedException();
 
-            code.Append($"{VIPUtilsInstance}.{cmd}(");
+            code.Append($"{VIPRuntimeInstance}.{cmd}(");
             node.ExpressionList.Accept(this);
             code.AppendLine(");");
         }
 
         public void Visit(VIPStringCommandNode node)
         {
-            Code.Append($"{VIPUtilsInstance}.DrawString(");
+            Code.Append($"{VIPRuntimeInstance}.DrawString(");
             node.X.Accept(this); Code.Append(',');
             node.Y.Accept(this); Code.Append(',');
-            Code.Append($"{VIPUtilsClass}.PositionRef.{node.Ref},");
+            Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
             node.StringData.Accept(this); Code.Append(',');
             node.CharCount.Accept(this); Code.Append(',');
             node.BaseList.Accept(this); Code.Append(',');
@@ -788,7 +789,19 @@ namespace vip_sharp
 
         public void Visit(VIPHotSpotCommandNode node)
         {
-            throw new NotImplementedException();
+            Code.Append($"{VIPRuntimeInstance}.HotSpot(");
+            node.X.Accept(this); Code.Append(',');
+            node.Y.Accept(this); Code.Append(',');
+            node.W.Accept(this); Code.Append(',');
+            node.H.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
+            Code.Append("ref "); node.Var.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.HotSpotTrigger.{Enum.GetName(typeof(HotSpotTrigger), node.Trigger)},");
+            Code.Append($"{VIPRuntimeClass}.HotSpotType.{Enum.GetName(typeof(HotSpotType), node.Type)},");
+            node.TrueValue.Accept(this); Code.Append(',');
+            node.FalseValue.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.HotSpotHoverBox.{Enum.GetName(typeof(HotSpotHoverBox), node.HoverBox)}");
+            Code.AppendLine(");");
         }
     }
 }

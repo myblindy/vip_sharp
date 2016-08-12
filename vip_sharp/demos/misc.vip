@@ -15,4 +15,8 @@ main
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
 	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, HOVER);
+	if(b)
+	{
+		string(2,-3.5,CC,NONE, "ON", 0, ARIAL_Null, 0.4, 0.7, 1.2);
+	}
 }

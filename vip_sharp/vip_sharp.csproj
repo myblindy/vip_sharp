@@ -95,7 +95,7 @@
     <Compile Include="VIPGenerator.cs" />
     <Compile Include="VIPGrammar.cs" />
     <Compile Include="VIPPreprocessor.cs" />
-    <Compile Include="VIPUtils.cs" />
+    <Compile Include="VIPRuntime.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
