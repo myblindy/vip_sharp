@@ -2,12 +2,18 @@ use "libraries\vip.fnt"
 use "libraries\arial.fnt"
 
 Bitmap_Res(STRIPE, RGB, LINEAR, CLAMP, stripe.bmp);
+Bitmap_Res(SWITCH, RGB, LINEAR, CLAMP, sw.png);
+
+typedef TVector { double X; double Y; }
+TVector UpUV[4] =   {    0,0,    0,1, 0.33,1, 0.33,0 };
+TVector DownUV[4] = { 0.66,0, 0.66,1,    1,1,    1,0 };
+
+bool swstate = false;
 
 main
 {
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "\x1 Ja, het Werkt";
-	bool b;
 	
 	color(gold);
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
@@ -16,9 +22,15 @@ main
 	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
-	translate(2,2);
-	rotate(50);
-	scale(4);
+	// normal switch
+	bool up;    hotspot(9,9,5,5,CL, up,   SELECTED, MOMENTARY, true, false, HOVER); if(up)   { swstate = true; }
+	bool down;  hotspot(9,9,5,5,CU, down, SELECTED, MOMENTARY, true, false, HOVER); if(down) { swstate = false; }
+	if(swstate)  { bitmap(SWITCH, REPLACE, 9,9,5,5,CL,UpUV);   Color(GREEN); String(6,9,RC,NONE,"State:  ON",0,ARIAL_Null,0.4,0.7,1.2); }
+	if(!swstate) { bitmap(SWITCH, REPLACE, 9,9,5,5,CU,DownUV); Color(RED);   String(6,9,RC,NONE,"State: OFF",0,ARIAL_Null,0.4,0.7,1.2); }
+	
+	// sideways button
+	translate(2,2);rotate(50);scale(4);color(WHITE);
+	bool b;
 	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, ALWAYS, STRIPE);
 	if(b)
 	{

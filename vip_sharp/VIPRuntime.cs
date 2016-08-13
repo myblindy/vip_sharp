@@ -357,7 +357,7 @@ namespace vip_sharp
                 cnt = s.TakeWhile(c => c != '\0').Count();
 
             // figure out the bounding box
-            double h = 0, w = 0, maxw = 0;
+            double h = 1, w = 0, maxw = 0;
             foreach (var c in s.Take(cnt))
                 if (c == '|')
                 {
@@ -370,7 +370,7 @@ namespace vip_sharp
             if (maxw < w) maxw = w;
 
             // and update the x and y coords based on the box and ref
-            UpdateCoordsWithBoxInfo(ref x, ref y, maxw * spacex, h * spacey, @ref);
+            UpdateCoordsWithBoxInfo(ref x, ref y, maxw * spacex * scalex, h * spacey * scaley, @ref);
 
             gl.PushMatrix();
 
