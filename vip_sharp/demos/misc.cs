@@ -951,18 +951,22 @@ vip_sharp.VIPRuntime.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 vip_sharp.VIPRuntime.DisplayList __ARIAL_Delete = new vip_sharp.VIPRuntime.DisplayList(()=>{
 });
+vip_sharp.VIPRuntime.BitmapRes __STRIPE = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"stripe.bmp");
 public void Run() {
 vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
 vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
 bool __b = false;
-vip_sharp.VIPRuntime.Instance.Color(10);
+vip_sharp.VIPRuntime.Instance.Color(23);
 vip_sharp.VIPRuntime.Instance.DrawString(0,0,vip_sharp.VIPRuntime.PositionRef.CC,__sData,0,__VIP_Null,1,1,1.2);
 vip_sharp.VIPRuntime.Instance.DrawString(0,2,vip_sharp.VIPRuntime.PositionRef.CC,__sData2,0,__VIP_Null,1,1,1.2);
 vip_sharp.VIPRuntime.Instance.Color(5);
 vip_sharp.VIPRuntime.Instance.DrawString(-3,6,vip_sharp.VIPRuntime.PositionRef.LC,"multiline test 2 | worked yay!",0,__ARIAL_Null,0.3,0.6,1.2);
-vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
+vip_sharp.VIPRuntime.Instance.Translate(2, 2);
+vip_sharp.VIPRuntime.Instance.Rotate(50);
+vip_sharp.VIPRuntime.Instance.Scale(4);
+vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,__STRIPE);
 if(__b) {
-vip_sharp.VIPRuntime.Instance.DrawString(2,-3.5,vip_sharp.VIPRuntime.PositionRef.CC,"ON",0,__ARIAL_Null,0.4,0.7,1.2);
+vip_sharp.VIPRuntime.Instance.DrawString(1,-3,vip_sharp.VIPRuntime.PositionRef.LC,"WOOHOO",0,__ARIAL_Null,0.4,0.7,1.2);
 }
 }
 }

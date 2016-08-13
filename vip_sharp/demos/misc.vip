@@ -1,22 +1,27 @@
 use "libraries\vip.fnt"
 use "libraries\arial.fnt"
 
+Bitmap_Res(STRIPE, RGB, LINEAR, CLAMP, stripe.bmp);
+
 main
 {
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "\x1 Ja, het Werkt";
 	bool b;
 	
-	color(yellow);
+	color(gold);
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
 	String(0, 2, CC, NONE, sData2, 0, VIP_Null, 1, 1, 1.2);
 	
 	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
-	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, HOVER);
+	translate(2,2);
+	rotate(50);
+	scale(4);
+	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, ALWAYS, STRIPE);
 	if(b)
 	{
-		string(2,-3.5,CC,NONE, "ON", 0, ARIAL_Null, 0.4, 0.7, 1.2);
+		string(1,-3,LC,NONE, "WOOHOO", 0, ARIAL_Null, 0.4, 0.7, 1.2);
 	}
 }

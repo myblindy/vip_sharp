@@ -801,6 +801,11 @@ namespace vip_sharp
             node.TrueValue.Accept(this); Code.Append(',');
             node.FalseValue.Accept(this); Code.Append(',');
             Code.Append($"{VIPRuntimeClass}.HotSpotHoverBox.{Enum.GetName(typeof(HotSpotHoverBox), node.HoverBox)}");
+            if (node.DisplayObject != null)
+            {
+                Code.Append(',');
+                node.DisplayObject.Accept(this);
+            }
             Code.AppendLine(");");
         }
     }

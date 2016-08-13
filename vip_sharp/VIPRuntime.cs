@@ -178,7 +178,7 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> vertexes)
+        public void Bitmap(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref)
         {
             gl.Enable(GL.TEXTURE_2D);
             gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
@@ -192,23 +192,56 @@ namespace vip_sharp
 
             gl.Begin(GL.QUADS);
 
-            var texvals = DoublesFromStructure(vertexes[0]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
-            gl.Vertex2d(x - w / 2, y - h / 2);
+            gl.TexCoord2d(0, 0);
+            gl.Vertex2d(x, y);
 
-            texvals = DoublesFromStructure(vertexes[1]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
-            gl.Vertex2d(x - w / 2, y + h / 2);
+            gl.TexCoord2d(0, 1);
+            gl.Vertex2d(x, y + h);
 
-            texvals = DoublesFromStructure(vertexes[2]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
-            gl.Vertex2d(x + w / 2, y + h / 2);
+            gl.TexCoord2d(1, 1);
+            gl.Vertex2d(x + w, y + h);
 
-            texvals = DoublesFromStructure(vertexes[3]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
-            gl.Vertex2d(x + w / 2, y - h / 2);
+            gl.TexCoord2d(1, 0);
+            gl.Vertex2d(x + w, y);
 
             gl.End();
+
+            gl.Disable(GL.TEXTURE_2D);
+        }
+
+        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv)
+        {
+            gl.Enable(GL.TEXTURE_2D);
+            gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
+            gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
+                blend == BitmapBlend.Modulate ? GL.MODULATE :
+                blend == BitmapBlend.Decal ? GL.DECAL :
+                blend == BitmapBlend.Blend ? GL.BLEND :
+                GL.REPLACE);
+
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
+            gl.Begin(GL.QUADS);
+
+            var texvals = DoublesFromStructure(uv[0]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x, y);
+
+            texvals = DoublesFromStructure(uv[1]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x, y + h);
+
+            texvals = DoublesFromStructure(uv[2]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x + w, y + h);
+
+            texvals = DoublesFromStructure(uv[3]);
+            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.Vertex2d(x + w, y);
+
+            gl.End();
+
+            gl.Disable(GL.TEXTURE_2D);
         }
 
         public void Draw(IVIPObject obj)
@@ -308,8 +341,8 @@ namespace vip_sharp
 
         public void Color(int c) => gl.Color3d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
         public void Color(int c, double a) => gl.Color4d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, a);
-        public void Color(double r, double g, double b) => gl.Color3d(r / 100 * 255, g / 100 * 255, b / 100 * 255);
-        public void Color(double r, double g, double b, double a) => gl.Color4d(r / 100 * 255, g / 100 * 255, b / 100 * 255, a / 100 * 255);
+        public void Color(double r, double g, double b) => gl.Color3d(r / 100, g / 100, b / 100);
+        public void Color(double r, double g, double b, double a) => gl.Color4d(r / 100, g / 100, b / 100, a / 100);
 
         public void MatrixSave() => gl.PushMatrix();
         public void MatrixRestore() => gl.PopMatrix();
@@ -399,19 +432,31 @@ namespace vip_sharp
         }
 
         public void HotSpot<T>(double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
-            HotSpotType type, T trueval, T falseval, HotSpotHoverBox hoverbox)
+            HotSpotType type, T trueval, T falseval, HotSpotHoverBox hoverbox, BitmapRes bmp = null)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
 
-            var hover = VIPSystemClass.MouseX >= x && VIPSystemClass.MouseX <= x + w
-                && VIPSystemClass.MouseY >= y && VIPSystemClass.MouseY <= y + h;
+            // get the model view matrix 
+            float[] mat = new float[16];
+            gl.GetFloatv(GL.MODELVIEW_MATRIX, mat);
+
+            // use it to convert the mouse position to transformed space
+            var matrix = new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
+            matrix.Invert();
+            var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
+            pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
+
+            var hover = pt.X >= x && pt.X <= x + w && pt.Y >= y && pt.Y <= y + h;
             var sel = VIPSystemClass.LeftButtonDown && hover;
             var = sel ? trueval : falseval;
+
+            if (bmp != null)
+                Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL);
 
             if (hoverbox == HotSpotHoverBox.Always || (hoverbox == HotSpotHoverBox.Hover && hover))
             {
                 ColorSave();
-                Color(1, 1, 0);
+                Color(100, 100, 0);
                 Quad(x, y, x + w, y, x + w, y + h, x, y + h);
                 ColorRestore();
             }

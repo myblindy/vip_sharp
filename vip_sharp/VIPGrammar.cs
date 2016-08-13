@@ -146,7 +146,9 @@ namespace vip_sharp
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
             hotspotcommand.Rule = ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
-                + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")" + ";";
+                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")" + ";"                                                 // no last argument
+                | ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
+                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ")" + ";";                       // last argument quoted identifier (bitmap or list)
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -818,11 +820,13 @@ namespace vip_sharp
             HoverBox = nodes[11].Token.ValueString.EqualsI("never") ? HotSpotHoverBox.Never
                 : nodes[11].Token.ValueString.EqualsI("always") ? HotSpotHoverBox.Always
                 : HotSpotHoverBox.Hover;
+            if (nodes.Count >= 13)
+                DisplayObject = (VIPQualifiedIdentifierNode)nodes[12].AstNode;
         }
 
         public VIPExpressionNode X, Y, W, H, TrueValue, FalseValue;
         public string Ref;
-        public VIPQualifiedIdentifierNode Var;
+        public VIPQualifiedIdentifierNode Var, DisplayObject;
         public HotSpotType Type;
         public HotSpotTrigger Trigger;
         public HotSpotHoverBox HoverBox;

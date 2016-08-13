@@ -4,4 +4,5 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
 This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
 
-misc.cs(963,29): error CS1061: 'vip_sharp.VIPUtils' does not contain a definition for 'HotSpot' and no extension method 'HotSpot' accepting a first argument of type 'vip_sharp.VIPUtils' could be found (are you missing a using directive or an assembly reference?)
+misc.cs(967,1): error CS1501: No overload for method 'HotSpot' takes 12 arguments
+g:\marius\c#\vip_sharp\vip_sharp\bin\Debug\vip_sharp.exe: (Location of symbol related to previous error)
