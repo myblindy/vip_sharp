@@ -474,8 +474,12 @@ namespace vip_sharp
             code.Append($", {VIPRuntimeClass}.BitmapBlend.{blend}, ");
             node.X.Accept(this); code.Append(','); node.Y.Accept(this); code.Append(',');
             node.W.Accept(this); code.Append(','); node.H.Accept(this); code.Append(',');
-            code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
-            node.Vertices.Accept(this);
+            code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref}");
+            if (node.UVCoords != null)
+            {
+                code.Append(',');
+                node.UVCoords.Accept(this);
+            }
             code.AppendLine(");");
         }
 

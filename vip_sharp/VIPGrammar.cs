@@ -120,10 +120,14 @@ namespace vip_sharp
             functiondefinition.Rule = ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
             returncommand.Rule = "return" + expr + ";";
             bitmapcommand.Rule = ToTerm("bitmap") + "("
-                + qualifiedidentifier + ","                                                     // handle
-                + plainidentifier + ","                                                         // modulation
-                + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ","     // x,y,w,h,ref
-                + qualifiedidentifier + ")" + ";";                                              // vertices
+                    + qualifiedidentifier + ","                                                                     // handle
+                    + plainidentifier + ","                                                                         // modulation
+                    + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ","                     // x,y,w,h,ref
+                    + qualifiedidentifier + ")" + ";"                                                               // uv coords
+                | ToTerm("bitmap") + "("
+                    + qualifiedidentifier + ","                                                                     // handle
+                    + plainidentifier + ","                                                                         // modulation
+                    + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ")" + ";";              // x,y,w,h,ref
             ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + "{" + commands + "}";
             drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")" + ";";
             functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")" + ";";
@@ -869,14 +873,15 @@ namespace vip_sharp
             W = (VIPExpressionNode)nodes[5].AstNode;
             H = (VIPExpressionNode)nodes[6].AstNode;
             Ref = ((VIPPlainIdentifierNode)nodes[7].AstNode).Name;
-            Vertices = (VIPQualifiedIdentifierNode)nodes[8].AstNode;
+            if (nodes.Count >= 9)
+                UVCoords = (VIPQualifiedIdentifierNode)nodes[8].AstNode;
         }
 
         public VIPQualifiedIdentifierNode Handle;
         public string Blend;
         public VIPExpressionNode X, Y, W, H;
         public string Ref;
-        public VIPQualifiedIdentifierNode Vertices;
+        public VIPQualifiedIdentifierNode UVCoords;
     }
 
     public class VIPAssignmentCommandNode : VIPNode
