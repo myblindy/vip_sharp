@@ -23,10 +23,15 @@ main
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
 	// normal switch
+	matrix(save);
+	rotate(-25);
+	
 	bool up;    hotspot(9,9,5,5,CL, up,   SELECTED, MOMENTARY, true, false, HOVER); if(up)   { swstate = true; }
 	bool down;  hotspot(9,9,5,5,CU, down, SELECTED, MOMENTARY, true, false, HOVER); if(down) { swstate = false; }
-	if(swstate)  { bitmap(SWITCH, REPLACE, 9,9,5,5,CL,UpUV);   Color(GREEN); String(6,9,RC,NONE,"State:  ON",0,ARIAL_Null,0.4,0.7,1.2); }
-	if(!swstate) { bitmap(SWITCH, REPLACE, 9,9,5,5,CU,DownUV); Color(RED);   String(6,9,RC,NONE,"State: OFF",0,ARIAL_Null,0.4,0.7,1.2); }
+	if(swstate) { bitmap(SWITCH, REPLACE, 9,9,5,5,CL,UpUV);   Color(GREEN); String(6,9,RC,NONE,"State:  ON",0,ARIAL_Null,0.4,0.7,1.2); }
+	else        { bitmap(SWITCH, REPLACE, 9,9,5,5,CU,DownUV); Color(RED);   String(6,9,RC,NONE,"State: OFF",0,ARIAL_Null,0.4,0.7,1.2); }
+	
+	matrix(restore);
 	
 	// sideways button
 	translate(2,2);rotate(50);scale(4);color(WHITE);

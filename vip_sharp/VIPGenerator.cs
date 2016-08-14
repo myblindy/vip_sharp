@@ -495,6 +495,13 @@ namespace vip_sharp
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
             code.AppendLine("}");
+            if (node.ElseCommands != null)
+            {
+                code.AppendLine("else {");
+                foreach (var cmd in node.ElseCommands)
+                    cmd.Accept(this);
+                code.AppendLine("}");
+            }
         }
 
         public void Visit(VIPObjectDefinitionNode node)

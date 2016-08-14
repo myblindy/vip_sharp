@@ -968,6 +968,8 @@ vip_sharp.VIPRuntime.Instance.DrawString(0,0,vip_sharp.VIPRuntime.PositionRef.CC
 vip_sharp.VIPRuntime.Instance.DrawString(0,2,vip_sharp.VIPRuntime.PositionRef.CC,__sData2,0,__VIP_Null,1,1,1.2);
 vip_sharp.VIPRuntime.Instance.Color(5);
 vip_sharp.VIPRuntime.Instance.DrawString(-3,6,vip_sharp.VIPRuntime.PositionRef.LC,"multiline test 2 | worked yay!",0,__ARIAL_Null,0.3,0.6,1.2);
+vip_sharp.VIPRuntime.Instance.MatrixSave();
+vip_sharp.VIPRuntime.Instance.Rotate(-25);
 bool __up = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,ref __up,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
 if(__up) {
@@ -983,11 +985,12 @@ vip_sharp.VIPRuntime.Instance.Bitmap(__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.
 vip_sharp.VIPRuntime.Instance.Color(6);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State:  ON",0,__ARIAL_Null,0.4,0.7,1.2);
 }
-if(!__swstate) {
+else {
 vip_sharp.VIPRuntime.Instance.Bitmap(__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,__DownUV);
 vip_sharp.VIPRuntime.Instance.Color(5);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State: OFF",0,__ARIAL_Null,0.4,0.7,1.2);
 }
+vip_sharp.VIPRuntime.Instance.MatrixRestore();
 vip_sharp.VIPRuntime.Instance.Translate(2, 2);
 vip_sharp.VIPRuntime.Instance.Rotate(50);
 vip_sharp.VIPRuntime.Instance.Scale(4);

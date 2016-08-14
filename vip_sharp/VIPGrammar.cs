@@ -128,7 +128,8 @@ namespace vip_sharp
                     + qualifiedidentifier + ","                                                                     // handle
                     + plainidentifier + ","                                                                         // modulation
                     + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ")" + ";";              // x,y,w,h,ref
-            ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + "{" + commands + "}";
+            ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + "{" + commands + "}"
+                | ToTerm("if") + "(" + expr + ")" + "{" + commands + "}" + "else" + "{" + commands + "}";
             drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")" + ";";
             functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")" + ";";
             colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";"
@@ -906,9 +907,12 @@ namespace vip_sharp
         {
             Test = (VIPExpressionNode)nodes[1].AstNode;
             AddChild(nodes[2].ChildNodes.Select(n => n.ChildNodes[0]));
+            if (nodes.Count >= 4)
+                ElseCommands = nodes[4].ChildNodes.Select(n => (VIPNode)n.ChildNodes[0].AstNode).ToArray();
         }
 
         public VIPExpressionNode Test;
+        public VIPNode[] ElseCommands;
     }
 
     public class VIPDrawCommandNode : VIPNode
