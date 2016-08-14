@@ -14,6 +14,8 @@ namespace vip_sharp
         public virtual void Append(char c) => sb.Append(c);
         public virtual void AppendLine(string s) => sb.AppendLine(s);
         public virtual void Append(double d) => sb.Append(d);
+        public virtual void Remove(int start, int end) => sb.Remove(start, end);
+        public virtual int Length => sb.Length;
 
         public override string ToString() => sb.ToString();
     }
@@ -27,6 +29,8 @@ namespace vip_sharp
         public override void Append(char c) => CurrentBuilder.Append(c);
         public override void AppendLine(string s) => CurrentBuilder.AppendLine(s);
         public override void Append(double d) => CurrentBuilder.Append(d);
+        public override void Remove(int start, int end) => CurrentBuilder.Remove(start, end);
+        public override int Length => CurrentBuilder.Length;
 
         public MyStringBuilder InsertContinuation()
         {
@@ -35,7 +39,46 @@ namespace vip_sharp
             return sb;
         }
 
+        public void RemoveRange(Range r)
+        {
+            r.FromSB.Remove(r.FromChar, r.FromSB.Length - r.FromChar);
+            r.ToSB.Remove(0, r.ToChar);
+
+            // remove anything inbetween
+            int idx = 0, from = -1, to = -1;
+            foreach (var sb in Builders)
+            {
+                if (sb == r.FromSB)
+                    from = idx;
+                else if (sb == r.ToSB)
+                {
+                    to = idx;
+                    break;
+                }
+                ++idx;
+            }
+            Builders.RemoveRange(from, to - from);
+        }
+
         public override string ToString() =>
             Builders.Select(b => b.ToString()).Aggregate("", (a, b) => a + b);
+
+        public class Range
+        {
+            public MyStringBuilder FromSB, ToSB;
+            public int FromChar, ToChar;
+
+            public void MarkBeginning(ContinuationStringBuilder csb)
+            {
+                FromSB = csb.CurrentBuilder;
+                FromChar = csb.CurrentBuilder.Length;
+            }
+
+            public void MarkEnding(ContinuationStringBuilder csb)
+            {
+                ToSB = csb.CurrentBuilder;
+                ToChar = csb.CurrentBuilder.Length;
+            }
+        }
     }
 }

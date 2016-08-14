@@ -18,6 +18,8 @@ namespace vip_sharp
         private bool BuildConstructor = false;
         private bool InObjectDefinition = false;
 
+        private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
+
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
         private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
         private const string VIPArrayClass = "vip_sharp.BipolarArray";
@@ -497,6 +499,9 @@ namespace vip_sharp
 
         public void Visit(VIPObjectDefinitionNode node)
         {
+            var r = new ContinuationStringBuilder.Range();
+            r.MarkBeginning(Code);
+
             LastObjectName = node.Name;
 
             Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.IVIPObject {{");
@@ -519,6 +524,9 @@ namespace vip_sharp
 
             ConstructorArgsCode = ConstructorArgsCodeStack.Pop();
             ConstructorCode = ConstructorCodeStack.Pop();
+
+            r.MarkEnding(Code);
+            ObjectRanges.Add(node.Name, r);
         }
 
         public void Visit(VIPInstanceDefinitionNode node)
