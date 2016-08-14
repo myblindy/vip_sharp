@@ -85,34 +85,46 @@ namespace vip_sharp
                         {
                             sb.Append(" .AND. ");
                             idx += 4;
+                            continue;
                         }
-                        else if (string.Compare(line, idx, ".or.", 0, 4, true) == 0)
+                        if (string.Compare(line, idx, ".or.", 0, 4, true) == 0)
                         {
                             sb.Append(" .OR. ");
                             idx += 3;
+                            continue;
+                        }
+                        if (line[idx] == '"' && idx + 1 < line.Length)
+                        {
+                            var end = line.IndexOf('"', idx + 1);
+                            if (end > idx)
+                            {
+                                sb.Append(line.Substring(idx, end - idx + 1));
+                                idx += end - idx;
+                                continue;
+                            }
+                        }
+                        if (line[idx] == '/' && idx + 1 < line.Length && line[idx + 1] == '/')
+                            break;
+
+                        // is this a define?
+                        var len = 0;
+                        while (idx + len < line.Length && (char.IsLetterOrDigit(line[idx + len]) || line[idx + len] == '_'))
+                            len++;
+                        var word = line.Substring(idx, len);
+
+                        string val;
+                        if (len > 0 && Defines.TryGetValue(word, out val))
+                        {
+                            sb.Append(val);
+                            idx += len - 1;
+                        }
+                        else if (len > 0)
+                        {
+                            sb.Append(word);
+                            idx += len - 1;
                         }
                         else
-                        {
-                            // is this a define?
-                            var len = 0;
-                            while (idx + len < line.Length && (char.IsLetterOrDigit(line[idx + len]) || line[idx + len] == '_'))
-                                len++;
-                            var word = line.Substring(idx, len);
-
-                            string val;
-                            if (len > 0 && Defines.TryGetValue(word, out val))
-                            {
-                                sb.Append(val);
-                                idx += len - 1;
-                            }
-                            else if (len > 0)
-                            {
-                                sb.Append(word);
-                                idx += len - 1;
-                            }
-                            else
-                                sb.Append(line[idx]);
-                        }
+                            sb.Append(line[idx]);
                     }
                 }
 
