@@ -32,11 +32,12 @@ namespace vip_sharp
             Application.Run(frm);
         }
 
-        public interface IVIPObject
+        public abstract class VIPObject
         {
-            double GetX();
-            double GetY();
-            void Run();
+            public double X { get; set; }
+            public double Y { get; set; }
+            public double s { get; set; }
+            public abstract void Run();
         }
 
         public class VIPSystemClassType
@@ -244,10 +245,10 @@ namespace vip_sharp
             gl.Disable(GL.TEXTURE_2D);
         }
 
-        public void Draw(IVIPObject obj)
+        public void Draw(VIPObject obj)
         {
             gl.PushMatrix();
-            gl.Translated(obj.GetX(), obj.GetY(), 0);
+            gl.Translated(obj.X, obj.Y, 0);
             obj.Run();
             gl.PopMatrix();
         }

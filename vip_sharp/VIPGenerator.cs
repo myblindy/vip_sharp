@@ -17,6 +17,7 @@ namespace vip_sharp
         private bool BuildConstructorArgs = false;
         private bool BuildConstructor = false;
         private bool InObjectDefinition = false;
+        private HashSet<string> GlobalSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
 
@@ -45,6 +46,8 @@ namespace vip_sharp
         public VIPGenerator()
         {
         }
+
+        private void AddGlobalSymbol(string name) => GlobalSymbols.Add(name);
 
         private string GetValue(VIPNode node)
         {
@@ -84,6 +87,9 @@ namespace vip_sharp
             Code.Append("public ");
             node.Type.Accept(this);
             Code.AppendLine($" __{node.Identifier};");
+
+            if (!InObjectDefinition)
+                AddGlobalSymbol(node.Identifier);
         }
 
         public void Visit(VIPPlainIdentifierNode node)
@@ -91,23 +97,35 @@ namespace vip_sharp
             Code.Append($"__{node.Name}");
         }
 
+        void OutputQualifiedIdentifierPart(MyStringBuilder code, string name, VIPExpressionNode idx)
+        {
+            var prefix = ValueTypes.Contains(name) ? "" : "__";
+            var n = name.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + name;
+            code.Append(n);
+            if (idx != null)
+            {
+                code.Append('[');
+                idx.Accept(this);
+                code.Append(']');
+            }
+        }
+
         public void Visit(VIPQualifiedIdentifierNode node)
         {
             var code = BuildConstructor ? ConstructorCode : Code;
+
+            if (node.Parts.Length == 1 && GlobalSymbols.Contains(node.Parts[0].Item1))
+            {
+                code.Append($"{VIPRuntimeInstance}.MainClass.");
+                OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
+                return;
+            }
 
             bool first = true;
             foreach (var part in node.Parts)
             {
                 if (first) first = false; else code.Append('.');
-                var prefix = ValueTypes.Contains(part.Item1) ? "" : "__";
-                var name = part.Item1.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + part.Item1;
-                code.Append(name);
-                if (part.Item2 != null)
-                {
-                    code.Append('[');
-                    part.Item2.Accept(this);
-                    code.Append(']');
-                }
+                OutputQualifiedIdentifierPart(code, part.Item1, part.Item2);
             }
         }
 
@@ -128,7 +146,7 @@ namespace vip_sharp
 
             if (node.ArraySize != null || node.ArraySizeAuto)
             {
-                Code.Append($"{VIPArrayClass}<{type}> __{node.Name}");
+                Code.Append($"public {VIPArrayClass}<{type}> __{node.Name}");
 
                 if (InObjectDefinition)
                 {
@@ -174,7 +192,7 @@ namespace vip_sharp
                 if (node.InitValues != null)
                 {
                     var fields = Typedefs[node.Type.Parts].Fields;
-                    Code.Append($"{type} __{node.Name}");
+                    Code.Append($"public {type} __{node.Name}");
 
                     if (InObjectDefinition)
                     {
@@ -195,7 +213,7 @@ namespace vip_sharp
                 }
                 else
                 {
-                    Code.Append($"{type} __{node.Name}");
+                    Code.Append($"public {type} __{node.Name}");
 
                     if (InObjectDefinition)
                     {
@@ -208,7 +226,7 @@ namespace vip_sharp
             }
             else
             {
-                Code.Append($"{type} __{node.Name}");
+                Code.Append($"public {type} __{node.Name}");
 
                 if (InObjectDefinition)
                 {
@@ -230,6 +248,9 @@ namespace vip_sharp
                 }
                 initcode.AppendLine(";");
             }
+
+            if (!InObjectDefinition)
+                AddGlobalSymbol(node.Name);
         }
 
         public void Visit(VIPVariableDefinitionsNode node)
@@ -238,6 +259,9 @@ namespace vip_sharp
 
         public void Visit(VIPTypeDefinitionNode node)
         {
+            var iod = InObjectDefinition;
+            InObjectDefinition = true;
+
             Typedefs.Add(new[] { node.Name }, new TypedefDataClass
             {
                 Fields = node.ChildNodes.Cast<VIPVariableDefinitionNode>().Select(n => n.Identifier).ToArray()
@@ -247,6 +271,8 @@ namespace vip_sharp
             foreach (VIPNode defnode in node.ChildNodes)
                 defnode.Accept(this);
             Code.AppendLine("}");
+
+            InObjectDefinition = iod;
         }
 
         public void Visit(VIPMainNode node)
@@ -393,6 +419,9 @@ namespace vip_sharp
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
             Code.AppendLine("}");
+
+            if (!InObjectDefinition)
+                GlobalSymbols.Add(node.Name);
         }
 
         public void Visit(VIPFunctionDefinitionArgumentListNode node)
@@ -453,9 +482,12 @@ namespace vip_sharp
                 : "MipMap";
             var clamp = node.ClampMode.EqualsI("CLAMP") ? "Clamp" : "Repeat";
 
-            Code.AppendLine($"{VIPRuntimeClass}.BitmapRes __{node.Handle} = new {VIPRuntimeClass}.BitmapRes(" +
+            Code.AppendLine($"public {VIPRuntimeClass}.BitmapRes __{node.Handle} = new {VIPRuntimeClass}.BitmapRes(" +
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
+
+            if (!InObjectDefinition)
+                AddGlobalSymbol(node.Handle);
         }
 
         public void Visit(VIPPathIdentifierNode node)
@@ -511,10 +543,7 @@ namespace vip_sharp
 
             LastObjectName = node.Name;
 
-            Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.IVIPObject {{");
-            Code.AppendLine("public double X=0, Y=0;");
-            Code.AppendLine("public double GetX() { return X; }");
-            Code.AppendLine("public double GetY() { return Y; }");
+            Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.VIPObject {{");
 
             Code.Append($"public __{node.Name}(");
             ConstructorArgsCodeStack.Push(ConstructorArgsCode); ConstructorArgsCode = Code.InsertContinuation();
@@ -562,6 +591,9 @@ namespace vip_sharp
             }
 
             Code.AppendLine("};");
+
+            if (!InObjectDefinition)
+                GlobalSymbols.Add(node.Name);
         }
 
         public void Visit(VIPNamedArgumentListNode node)
@@ -670,7 +702,7 @@ namespace vip_sharp
         public void Visit(VIPObjectEntryDefinition node)
         {
             InObjectDefinition = false;
-            Code.AppendLine("public void Run() {");
+            Code.AppendLine("public override void Run() {");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             Code.AppendLine("}");
@@ -757,6 +789,9 @@ namespace vip_sharp
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             Code.AppendLine("});");
+
+            if (!InObjectDefinition)
+                GlobalSymbols.Add(node.Name);
         }
 
         public void Visit(VIPShapeCommandNode node)

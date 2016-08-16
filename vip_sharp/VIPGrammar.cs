@@ -86,11 +86,11 @@ namespace vip_sharp
             main.Rule = (ToTerm("main") + "{" + commands + "}") | ("main" + commands + "go");
 
             defs.Rule = MakeStarRule(defs, null, def);
-            def.Rule = listdefinition | macrodefinition | structdefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
+            def.Rule = listdefinition | macrodefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
                 | functiondefinition | objectdefinition | instancedefinition;
 
             objectdefs.Rule = MakeStarRule(objectdefs, null, objectdef);
-            objectdef.Rule = listdefinition | objectinitdefinition | objectentrydefinition | macrodefinition | structdefinition | bitmapresdefinition
+            objectdef.Rule = objectinitdefinition | objectentrydefinition | listdefinition | macrodefinition | structdefinition | bitmapresdefinition
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
 
             commands.Rule = MakeStarRule(commands, null, command);
