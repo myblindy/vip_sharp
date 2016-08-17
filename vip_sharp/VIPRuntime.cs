@@ -26,7 +26,7 @@ namespace vip_sharp
             rc = RenderingContext.CreateContext(frm);
 
             var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
-            dynamic libmainclass = Activator.CreateInstance(libassembly.GetType("__MainClass"));
+            dynamic libmainclass = Activator.CreateInstance(libassembly.GetType("MainClass"));
             frm.LibMainClass = libmainclass;
 
             Application.Run(frm);

@@ -1,0 +1,9 @@
+Microsoft (R) Visual C# Compiler version 4.6.1038.0
+for C# 5
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
+
+init_test.cs(15,40): error CS1061: 'MainClass' does not contain a definition for '__dR' and no extension method '__dR' accepting a first argument of type 'MainClass' could be found (are you missing a using directive or an assembly reference?)
+init_test.cs(16,40): error CS1061: 'MainClass' does not contain a definition for '__dG' and no extension method '__dG' accepting a first argument of type 'MainClass' could be found (are you missing a using directive or an assembly reference?)
+init_test.cs(17,40): error CS1061: 'MainClass' does not contain a definition for '__dB' and no extension method '__dB' accepting a first argument of type 'MainClass' could be found (are you missing a using directive or an assembly reference?)

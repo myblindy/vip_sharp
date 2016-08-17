@@ -1,5 +1,7 @@
 using System;
-public class __MainClass {
+public static class GlobalState { public static MainClass MainClass; }
+public class MainClass {
+public MainClass() { GlobalState.MainClass = this; }
 vip_sharp.VIPRuntime.DisplayList __VIP_Null = new vip_sharp.VIPRuntime.DisplayList(()=>{
 vip_sharp.VIPRuntime.Instance.LineWidth(8);
 });
@@ -951,15 +953,15 @@ vip_sharp.VIPRuntime.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 vip_sharp.VIPRuntime.DisplayList __ARIAL_Delete = new vip_sharp.VIPRuntime.DisplayList(()=>{
 });
-vip_sharp.VIPRuntime.BitmapRes __STRIPE = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"stripe.bmp");
-vip_sharp.VIPRuntime.BitmapRes __SWITCH = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"sw.png");
+public vip_sharp.VIPRuntime.BitmapRes __STRIPE = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"stripe.bmp");
+public vip_sharp.VIPRuntime.BitmapRes __SWITCH = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"sw.png");
 public class __TVector { 
 public double __X;
 public double __Y;
 }
-vip_sharp.BipolarArray<__TVector> __UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0.33,__Y = 1},new __TVector {__X = 0.33,__Y = 0}};
-vip_sharp.BipolarArray<__TVector> __DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 1,__Y = 1},new __TVector {__X = 1,__Y = 0}};
-bool __swstate = false;
+public vip_sharp.BipolarArray<__TVector> __UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0.33,__Y = 1},new __TVector {__X = 0.33,__Y = 0}};
+public vip_sharp.BipolarArray<__TVector> __DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 1,__Y = 1},new __TVector {__X = 1,__Y = 0}};
+public bool __swstate = false;
 public void Run() {
 vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
 vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
@@ -973,20 +975,20 @@ vip_sharp.VIPRuntime.Instance.Rotate(-25);
 bool __up = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,ref __up,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
 if(__up) {
-__swstate = true;
+GlobalState.MainClass.__swstate = true;
 }
 bool __down = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,ref __down,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
 if(__down) {
-__swstate = false;
+GlobalState.MainClass.__swstate = false;
 }
-if(__swstate) {
-vip_sharp.VIPRuntime.Instance.Bitmap(__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,__UpUV);
+if(GlobalState.MainClass.__swstate) {
+vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,GlobalState.MainClass.__UpUV);
 vip_sharp.VIPRuntime.Instance.Color(6);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State:  ON",0,__ARIAL_Null,0.4,0.7,1.2);
 }
 else {
-vip_sharp.VIPRuntime.Instance.Bitmap(__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,__DownUV);
+vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,GlobalState.MainClass.__DownUV);
 vip_sharp.VIPRuntime.Instance.Color(5);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State: OFF",0,__ARIAL_Null,0.4,0.7,1.2);
 }
@@ -996,7 +998,7 @@ vip_sharp.VIPRuntime.Instance.Rotate(50);
 vip_sharp.VIPRuntime.Instance.Scale(4);
 vip_sharp.VIPRuntime.Instance.Color(4);
 bool __b = false;
-vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,__STRIPE);
+vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,GlobalState.MainClass.__STRIPE);
 if(__b) {
 vip_sharp.VIPRuntime.Instance.DrawString(1,-3,vip_sharp.VIPRuntime.PositionRef.LC,"WOOHOO",0,__ARIAL_Null,0.4,0.7,1.2);
 }

@@ -4,4 +4,30 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
 This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
 
-error CS0016: Could not write to output file 'g:\marius\c#\vip_sharp\vip_sharp\demos\misc.dll' -- 'The process cannot access the file because it is being used by another process. '
+misc.cs(963,20): error CS1513: } expected
+misc.cs(966,36): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(967,41): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(967,81): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(967,129): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(967,182): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(968,41): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(968,81): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(968,130): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(968,183): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(969,36): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(970,41): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(970,82): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(970,170): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(971,41): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(972,37): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(974,38): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+misc.cs(974,82): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(974,131): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(974,176): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(974,219): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+misc.cs(974,273): error CS1519: Invalid token ')' in class, struct, or interface member declaration
+misc.cs(975,48): error CS1519: Invalid token ')' in class, struct, or interface member declaration
+misc.cs(976,51): error CS1519: Invalid token '=' in class, struct, or interface member declaration
+misc.cs(978,8): error CS1518: Expected class, delegate, enum, interface, or struct
+misc.cs(998,8): error CS1518: Expected class, delegate, enum, interface, or struct
+misc.cs(1003,1): error CS1022: Type or namespace definition, or end-of-file expected
