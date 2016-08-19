@@ -59,5 +59,22 @@ Main {
             Assert.IsTrue(vip.__a == -5);
             Assert.IsTrue(vip.__b == 35);
         }
+
+        [TestMethod]
+        public void Format()
+        {
+            var vip = PrepareSource(@"
+char val[8];
+double x;
+
+Main { 
+    x = 20.556;
+	Format(val, "" % .2f"", x);
+}");
+            vip.Run();
+
+            Assert.IsTrue(vip.__x == 20.556);
+            Assert.IsTrue((vip_sharp.BipolarArray<char>)vip.__val == "  20.56");
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace vip_sharp
     {
         public static string Compile(string filename)
         {
-            var vipcompilerpath = Application.ExecutablePath;
+            var vipcompilerpath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
 
             // compile the grammar to C# code
             var grammar = new VIPGrammar();

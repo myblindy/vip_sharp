@@ -186,6 +186,8 @@ namespace vip_sharp
                     node.InitValue.Accept(this);
                     initcode.Append(')');
                 }
+                else
+                    initcode.Append(')');
                 initcode.AppendLine(";");
             }
             else if (!IsValueType(node.Type))
@@ -881,6 +883,15 @@ namespace vip_sharp
                 Code.Append(',');
                 node.DisplayObject.Accept(this);
             }
+            Code.AppendLine(");");
+        }
+
+        public void Visit(VIPFormatCommandNode node)
+        {
+            Code.Append($"{VIPRuntimeInstance}.Format(");
+            node.Result.Accept(this); Code.Append(',');
+            node.Format.Accept(this); Code.Append(',');
+            node.Value.Accept(this);
             Code.AppendLine(");");
         }
     }

@@ -97,11 +97,13 @@
     <Compile Include="VIPGenerator.cs" />
     <Compile Include="VIPGrammar.cs" />
     <Compile Include="VIPPreprocessor.cs" />
-    <Compile Include="VIPRuntime.cs" />
+    <Compile Include="VIPRuntime.Utils.Publics.cs" />
+    <Compile Include="VIPRuntime.Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <Compile Include="VIPRuntime.Utils.Publics.PrintF.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VIPForm.resx">

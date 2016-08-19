@@ -974,15 +974,15 @@ vip_sharp.VIPRuntime.Instance.MatrixSave();
 vip_sharp.VIPRuntime.Instance.Rotate(-25);
 bool __up = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,ref __up,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
-if(__up) {
+if(Convert.ToBoolean(__up)) {
 GlobalState.MainClass.__swstate = true;
 }
 bool __down = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,ref __down,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
-if(__down) {
+if(Convert.ToBoolean(__down)) {
 GlobalState.MainClass.__swstate = false;
 }
-if(GlobalState.MainClass.__swstate) {
+if(Convert.ToBoolean(GlobalState.MainClass.__swstate)) {
 vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__SWITCH, vip_sharp.VIPRuntime.BitmapBlend.Replace, 9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,GlobalState.MainClass.__UpUV);
 vip_sharp.VIPRuntime.Instance.Color(6);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State:  ON",0,__ARIAL_Null,0.4,0.7,1.2);
@@ -999,7 +999,7 @@ vip_sharp.VIPRuntime.Instance.Scale(4);
 vip_sharp.VIPRuntime.Instance.Color(4);
 bool __b = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,GlobalState.MainClass.__STRIPE);
-if(__b) {
+if(Convert.ToBoolean(__b)) {
 vip_sharp.VIPRuntime.Instance.DrawString(1,-3,vip_sharp.VIPRuntime.PositionRef.LC,"WOOHOO",0,__ARIAL_Null,0.4,0.7,1.2);
 }
 }

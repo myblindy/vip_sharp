@@ -19,8 +19,11 @@ namespace vip_sharp
         public BipolarArray(string init)
         {
             Array = new T[init.Length + 1];             // null character
+
+            var arr = (char[])(object)Array;
+
             for (int i = 0; i < init.Length; ++i)
-                ((dynamic)Array)[i] = init[i];
+                arr[i] = init[i];
         }
         public BipolarArray(int n1, string init = null) : this(n1, 1, 1, init) { }
         public BipolarArray(int n1, int n2, string init = null) : this(n1, n2, 1, init) { }
@@ -29,8 +32,12 @@ namespace vip_sharp
             Array = new T[n1 * n2 * n3];
             N1 = n1; N2 = n2; N3 = n3;
             if (init != null)
+            {
+                var arr = (char[])(object)Array;
+
                 for (int i = 0; i < init.Length; ++i)
-                    ((dynamic)Array)[i] = init[i];
+                    arr[i] = init[i];
+            }
         }
 
         public T this[int n]
@@ -60,5 +67,32 @@ namespace vip_sharp
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void Add(T val) => Array[InitIdx++] = val;
+
+        public void Set(string s)
+        {
+            var arr = (char[])(object)Array;
+
+            for (int i = 0; i < s.Length; ++i)
+                arr[i] = s[i];
+            arr[s.Length] = (char)0;
+        }
+
+        public static bool operator ==(BipolarArray<T> _ba, string s)
+        {
+            if ((ReferenceEquals(s, null) || ReferenceEquals(_ba, null)) && !ReferenceEquals(s, _ba)) return false;
+            var ba = (object)_ba as BipolarArray<char>;
+            if (ReferenceEquals(ba, null)) return false;
+
+            int i;
+            var slen = s.Length;
+            var arrlen = ba.Array.Length;
+            for (i = 0; i < slen; ++i)
+                if (i >= arrlen || s[i] != ba[i])
+                    return false;
+
+            return ba[i] == 0;
+        }
+
+        public static bool operator !=(BipolarArray<T> _ba, string s) => !(_ba == s);
     }
 }
