@@ -19,13 +19,15 @@ namespace vip_sharp
         int Frames = 0;
         DateTime LastFPSCountedAt = DateTime.Now;
         DateTime LastRenderedAt = DateTime.Now;
+        bool AutoRender;
 
         const double MinX = -15, MaxX = 15, MinY = -15, MaxY = 15;
 
-        public VIPForm()
+        public VIPForm(bool autorender = true)
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             InitializeComponent();
+            AutoRender = autorender;
 
             // events
             MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };
@@ -67,8 +69,9 @@ namespace vip_sharp
 
         private void Application_Idle(object sender, EventArgs e)
         {
-            while (IsApplicationIdle())
-                Render();
+            if (AutoRender)
+                while (IsApplicationIdle())
+                    Render();
         }
 
         protected override void OnSizeChanged(EventArgs e)
