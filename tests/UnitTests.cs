@@ -74,7 +74,7 @@ Main {
             vip.Run();
 
             Assert.IsTrue(vip.__x == 20.556);
-            Assert.IsTrue((vip_sharp.BipolarArray<char>)vip.__val == "  20.56");
+            Assert.IsTrue(vip.__val == "  20.56");
         }
     }
 }

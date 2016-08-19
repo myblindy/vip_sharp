@@ -20,6 +20,7 @@ namespace vip_sharp
         private bool InGlobalDefinition = true;
         private HashSet<string> GlobalSymbols = new HashSet<string>();
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
+        private uint LastObjectID = 0;
 
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
         private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
@@ -866,7 +867,7 @@ namespace vip_sharp
 
         public void Visit(VIPHotSpotCommandNode node)
         {
-            Code.Append($"{VIPRuntimeInstance}.HotSpot(");
+            Code.Append($"{VIPRuntimeInstance}.HotSpot({++LastObjectID}, this,");
             node.X.Accept(this); Code.Append(',');
             node.Y.Accept(this); Code.Append(',');
             node.W.Accept(this); Code.Append(',');

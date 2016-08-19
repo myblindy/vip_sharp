@@ -27,7 +27,7 @@ namespace vip_sharp
         public enum BitmapClamp { Clamp, Repeat }
         public enum BitmapBlend { Blend, Modulate, Decal, Replace }
         public enum PositionRef { CTR, CC = CTR, CU, CL, LL, LC, LU, RU, RL, RC }
-        public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover }
+        public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover, DoubleClicked }
         public enum HotSpotType { Momentary, Alternate }
         public enum HotSpotHoverBox { Never, Always, Hover }
 
@@ -156,19 +156,19 @@ namespace vip_sharp
             gl.Begin(GL.QUADS);
 
             var texvals = DoublesFromStructure(uv[0]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
             gl.Vertex2d(x, y);
 
             texvals = DoublesFromStructure(uv[1]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
             gl.Vertex2d(x, y + h);
 
             texvals = DoublesFromStructure(uv[2]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
             gl.Vertex2d(x + w, y + h);
 
             texvals = DoublesFromStructure(uv[3]);
-            gl.TexCoord2d(texvals[0], texvals[1]);
+            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
             gl.Vertex2d(x + w, y);
 
             gl.End();
@@ -330,10 +330,23 @@ namespace vip_sharp
             gl.PopMatrix();
         }
 
-        public void HotSpot<T>(double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
+        /// <summary>
+        /// Represents a VIP hotspot. 
+        /// </summary>
+        /// <remarks>
+        /// Triggers: 
+        ///  - Selected means it triggers as long as the mouse is held down inside the hotspot
+        ///  - SelectEdge means it triggers once when held down. Moving the mouse outside and back in re-triggers it.
+        /// </remarks>
+        public void HotSpot<T>(uint objid, object _this, double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
             HotSpotType type, T trueval, T falseval, HotSpotHoverBox hoverbox, BitmapRes bmp = null)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
+            // info needed to store select_edge state
+            HotspotInformationType info = null;
+            if (trigger == HotSpotTrigger.SelectEdge)
+                info = GetHotspotInformation(objid, _this);
 
             // get the model view matrix 
             float[] mat = new float[16];
@@ -347,10 +360,32 @@ namespace vip_sharp
 
             var hover = pt.X >= x && pt.X <= x + w && pt.Y >= y && pt.Y <= y + h;
             var sel = VIPSystemClass.LeftButtonDown && hover;
+            if (trigger == HotSpotTrigger.SelectEdge)
+            {
+                // handle re-entering the hover area to allow re-triggering 
+                if (hover && !info.LastHover)
+                {
+                    info.LastHover = true;
+                    info.LastPressed = false;
+                }
+                else if (!hover && info.LastHover)
+                    info.LastHover = false;
+
+                // trigger only once per mouse down
+                if (!info.LastPressed && sel)
+                    info.LastPressed = true;
+                else if (info.LastPressed && sel)
+                    sel = false;
+                else if (!VIPSystemClass.LeftButtonDown)
+                    info.LastPressed = false;
+            }
             var = sel ? trueval : falseval;
 
             if (bmp != null)
-                Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL);
+                if (sel)
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL, new BipolarArray<VertexType>(4) { new VertexType(0, 1), new VertexType(0, 0), new VertexType(.5f, 0), new VertexType(.5f, 1) });
+                else
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL, new BipolarArray<VertexType>(4) { new VertexType(.5f, 1), new VertexType(.5f, 0), new VertexType(1, 0), new VertexType(1, 1) });
 
             if (hoverbox == HotSpotHoverBox.Always || (hoverbox == HotSpotHoverBox.Hover && hover))
             {

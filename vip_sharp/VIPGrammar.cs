@@ -821,6 +821,7 @@ namespace vip_sharp
             Trigger = nodes[7].Token.ValueString.EqualsI("selected") ? HotSpotTrigger.Selected
                   : nodes[7].Token.ValueString.EqualsI("select_edge") ? HotSpotTrigger.SelectEdge
                   : nodes[7].Token.ValueString.EqualsI("release_edge") ? HotSpotTrigger.ReleaseEdge
+                  : nodes[7].Token.ValueString.EqualsI("double_clicked") ? HotSpotTrigger.DoubleClicked
                   : HotSpotTrigger.Hover;
             Type = nodes[8].Token.ValueString.EqualsI("momentary") ? HotSpotType.Momentary : HotSpotType.Alternate;
             TrueValue = (VIPExpressionNode)nodes[9].AstNode;

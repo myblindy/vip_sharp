@@ -40,6 +40,27 @@ namespace vip_sharp
             public abstract void Run();
         }
 
+        private class HotspotInformationType
+        {
+            public bool LastPressed;
+            public bool LastHover;
+        }
+        private Dictionary<Tuple<uint, object>, HotspotInformationType> HotspotInformation = new Dictionary<Tuple<uint, object>, HotspotInformationType>();
+        private HotspotInformationType GetHotspotInformation(uint id, object obj)
+        {
+            HotspotInformationType t;
+            var key = Tuple.Create(id, obj);
+            if (!HotspotInformation.TryGetValue(key, out t))
+                HotspotInformation.Add(key, t = new HotspotInformationType());
+            return t;
+        }
+
+        private class VertexType
+        {
+            public double X, Y;
+            public VertexType(double x, double y) { X = x; Y = y; }
+        }
+
         private Tuple<double, double, double>[] StandardColors = new[]
         {
             Tuple.Create(0.000, 0.000, 0.000),          //BLACK
@@ -76,8 +97,7 @@ namespace vip_sharp
             var lst = new List<double>();
 
             foreach (var field in typeof(T).GetFields())
-                if (field.FieldType == typeof(double))
-                    lst.Add((double)field.GetValue(o));
+                lst.Add(Convert.ToDouble(field.GetValue(o)));
 
             return lst;
         }

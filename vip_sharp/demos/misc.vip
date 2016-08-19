@@ -5,10 +5,11 @@ Bitmap_Res(STRIPE, RGB, LINEAR, CLAMP, stripe.bmp);
 Bitmap_Res(SWITCH, RGB, LINEAR, CLAMP, sw.png);
 
 typedef TVector { double X; double Y; }
-TVector UpUV[4] =   {    0,0,    0,1, 0.33,1, 0.33,0 };
-TVector DownUV[4] = { 0.66,0, 0.66,1,    1,1,    1,0 };
+TVector UpUV[4] =   {    0,1,    0,0, 0.33,0, 0.33,1 };
+TVector DownUV[4] = { 0.66,1, 0.66,0,    1,0,    1,1 };
 
 bool swstate = false;
+double cnt;
 
 main
 {
@@ -33,9 +34,17 @@ main
 	
 	matrix(restore);
 	
-	// sideways button
-	translate(2,2);rotate(50);scale(4);color(WHITE);
+	// counter
+	color(WHITE);
 	bool b;
+	hotspot(0, -3, 3, 3, CC, b, SELECT_EDGE, MOMENTARY, true, false, ALWAYS, STRIPE);
+	if(b) { cnt = cnt + 0.15; }
+	char cntbuffer[15];
+	format(cntbuffer, "cnt: %.02f", cnt);
+	string(0, -5, LC, NONE, cntbuffer, 0, ARIAL_Null, 0.4, 0.7, 1.2);
+	
+	// sideways button
+	translate(2,2);rotate(50);scale(4);
 	hotspot(0, -3, 1, 1, CC, b, SELECTED, MOMENTARY, true, false, ALWAYS, STRIPE);
 	if(b)
 	{

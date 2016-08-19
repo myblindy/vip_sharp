@@ -959,9 +959,10 @@ public class __TVector {
 public double __X;
 public double __Y;
 }
-public vip_sharp.BipolarArray<__TVector> __UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0.33,__Y = 1},new __TVector {__X = 0.33,__Y = 0}};
-public vip_sharp.BipolarArray<__TVector> __DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 1,__Y = 1},new __TVector {__X = 1,__Y = 0}};
+public vip_sharp.BipolarArray<__TVector> __UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0.33,__Y = 0},new __TVector {__X = 0.33,__Y = 1}};
+public vip_sharp.BipolarArray<__TVector> __DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 1,__Y = 0},new __TVector {__X = 1,__Y = 1}};
 public bool __swstate = false;
+public double __cnt = 0;
 public void Run() {
 vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
 vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");
@@ -973,12 +974,12 @@ vip_sharp.VIPRuntime.Instance.DrawString(-3,6,vip_sharp.VIPRuntime.PositionRef.L
 vip_sharp.VIPRuntime.Instance.MatrixSave();
 vip_sharp.VIPRuntime.Instance.Rotate(-25);
 bool __up = false;
-vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,ref __up,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
+vip_sharp.VIPRuntime.Instance.HotSpot(1, this,9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CL,ref __up,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
 if(Convert.ToBoolean(__up)) {
 GlobalState.MainClass.__swstate = true;
 }
 bool __down = false;
-vip_sharp.VIPRuntime.Instance.HotSpot(9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,ref __down,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
+vip_sharp.VIPRuntime.Instance.HotSpot(2, this,9,9,5,5,vip_sharp.VIPRuntime.PositionRef.CU,ref __down,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Hover);
 if(Convert.ToBoolean(__down)) {
 GlobalState.MainClass.__swstate = false;
 }
@@ -993,12 +994,19 @@ vip_sharp.VIPRuntime.Instance.Color(5);
 vip_sharp.VIPRuntime.Instance.DrawString(6,9,vip_sharp.VIPRuntime.PositionRef.RC,"State: OFF",0,__ARIAL_Null,0.4,0.7,1.2);
 }
 vip_sharp.VIPRuntime.Instance.MatrixRestore();
+vip_sharp.VIPRuntime.Instance.Color(4);
+bool __b = false;
+vip_sharp.VIPRuntime.Instance.HotSpot(3, this,0,-3,3,3,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.SelectEdge,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,GlobalState.MainClass.__STRIPE);
+if(Convert.ToBoolean(__b)) {
+GlobalState.MainClass.__cnt = GlobalState.MainClass.__cnt+0.15;
+}
+vip_sharp.BipolarArray<char> __cntbuffer= new vip_sharp.BipolarArray<char>(15);
+vip_sharp.VIPRuntime.Instance.Format(__cntbuffer,"cnt: %.02f",GlobalState.MainClass.__cnt);
+vip_sharp.VIPRuntime.Instance.DrawString(0,-5,vip_sharp.VIPRuntime.PositionRef.LC,__cntbuffer,0,__ARIAL_Null,0.4,0.7,1.2);
 vip_sharp.VIPRuntime.Instance.Translate(2, 2);
 vip_sharp.VIPRuntime.Instance.Rotate(50);
 vip_sharp.VIPRuntime.Instance.Scale(4);
-vip_sharp.VIPRuntime.Instance.Color(4);
-bool __b = false;
-vip_sharp.VIPRuntime.Instance.HotSpot(0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,GlobalState.MainClass.__STRIPE);
+vip_sharp.VIPRuntime.Instance.HotSpot(4, this,0,-3,1,1,vip_sharp.VIPRuntime.PositionRef.CC,ref __b,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HotSpotHoverBox.Always,GlobalState.MainClass.__STRIPE);
 if(Convert.ToBoolean(__b)) {
 vip_sharp.VIPRuntime.Instance.DrawString(1,-3,vip_sharp.VIPRuntime.PositionRef.LC,"WOOHOO",0,__ARIAL_Null,0.4,0.7,1.2);
 }

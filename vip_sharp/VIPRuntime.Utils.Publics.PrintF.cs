@@ -644,26 +644,26 @@ namespace printf
                                             bool PositiveSign, bool PositiveSpace,
                                             char Padding, object Value)
         {
-            string w = String.Empty;
+            string w = string.Empty;
             string lengthFormat = "{0" + (FieldLength != int.MinValue ?
                                             "," + (Left2Right ?
                                                     "-" :
-                                                    String.Empty) + FieldLength.ToString() :
-                                            String.Empty) + "}";
+                                                    string.Empty) + FieldLength.ToString() :
+                                            string.Empty) + "}";
             string numberFormat = "{0:" + NativeFormat + (FieldPrecision != int.MinValue ?
                                             FieldPrecision.ToString() :
                                             "0") + "}";
 
             if (IsNumericType(Value))
             {
-                w = String.Format(numberFormat, Value);
+                w = string.Format(numberFormat, Value);
 
                 if (Left2Right || Padding == ' ')
                 {
                     if (IsPositive(Value, true))
                         w = (PositiveSign ?
-                                "+" : (PositiveSpace ? " " : String.Empty)) + w;
-                    w = String.Format(lengthFormat, w);
+                                "+" : (PositiveSpace ? " " : string.Empty)) + w;
+                    w = string.Format(lengthFormat, w);
                 }
                 else
                 {
@@ -675,7 +675,7 @@ namespace printf
                         w = (PositiveSign ?
                                 "+" : (PositiveSpace ?
                                         " " : (FieldLength != int.MinValue ?
-                                                Padding.ToString() : String.Empty))) + w;
+                                                Padding.ToString() : string.Empty))) + w;
                     else
                         w = "-" + w;
                 }
