@@ -533,9 +533,9 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append("if(");
+            code.Append("if(Convert.ToBoolean(");
             node.Test.Accept(this);
-            code.AppendLine(") {");
+            code.AppendLine(")) {");
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
             code.AppendLine("}");

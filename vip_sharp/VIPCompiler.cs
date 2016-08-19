@@ -32,7 +32,7 @@ namespace vip_sharp
             File.WriteAllText(cspath, generator.Code.ToString());
 
             var csc = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe");
-            var cscargs = $"/out:{cslibpath} /reference:{vipcompilerpath} /target:library /platform:x86 {cspath}";
+            var cscargs = $"/out:\"{cslibpath}\" /reference:\"{vipcompilerpath}\" /target:library /platform:x86 \"{cspath}\"";
             var p = Process.Start(new ProcessStartInfo(csc, cscargs) { RedirectStandardError = true, RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true });
             p.WaitForExit();
             if (p.ExitCode != 0)
