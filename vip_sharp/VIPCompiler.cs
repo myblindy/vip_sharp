@@ -13,9 +13,19 @@ namespace vip_sharp
 {
     public static class VIPCompiler
     {
+        // Since Uri.LocalPath chokes on # in the path, I have to write my own
+        private static string GetLocalPath(string abspath)
+        {
+            if (abspath.StartsWith("file:///"))
+                abspath = abspath.Substring(8);
+            else if (abspath.StartsWith("file://"))
+                abspath = abspath.Substring(7);
+            return abspath.Replace('/', '\\');
+        }
+
         public static string Compile(string filename)
         {
-            var vipcompilerpath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+            var vipcompilerpath = GetLocalPath(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
 
             // compile the grammar to C# code
             var grammar = new VIPGrammar();
