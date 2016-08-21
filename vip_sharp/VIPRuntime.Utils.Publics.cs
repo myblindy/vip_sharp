@@ -426,6 +426,7 @@ namespace vip_sharp
                 if (!double.IsNaN(info.LastAngle))
                 {
                     var delta = angle - info.LastAngle;
+                    if (delta > 180) delta -= 360; else if (delta < -180) delta += 360;
                     var newvar = Convert.ToDouble(var) + delta / (anglemax - anglemin) * (valuemax - valuemin);
                     if (newvar < valuemin) newvar = valuemin; else if (newvar > valuemax) newvar = valuemax;
                     var = (T)Convert.ChangeType(newvar, typeof(T));
