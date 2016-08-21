@@ -26,7 +26,7 @@ namespace vip_sharp
             rc = RenderingContext.CreateContext(frm);
 
             var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
-            dynamic libmainclass = Activator.CreateInstance(libassembly.GetType("MainClass"));
+            dynamic libmainclass = libassembly.CreateInstance("MainClass");
             frm.LibMainClass = libmainclass;
 
             Application.Run(frm);
@@ -40,18 +40,19 @@ namespace vip_sharp
             public abstract void Run();
         }
 
-        private class HotspotInformationType
+        private class ObjectInformationType
         {
             public bool LastPressed;
             public bool LastHover;
+            public double LastAngle;
         }
-        private Dictionary<Tuple<uint, object>, HotspotInformationType> HotspotInformation = new Dictionary<Tuple<uint, object>, HotspotInformationType>();
-        private HotspotInformationType GetHotspotInformation(uint id, object obj)
+        private Dictionary<Tuple<uint, object>, ObjectInformationType> ObjectInformation = new Dictionary<Tuple<uint, object>, ObjectInformationType>();
+        private ObjectInformationType GetObjectInformation(uint id, object obj)
         {
-            HotspotInformationType t;
+            ObjectInformationType t;
             var key = Tuple.Create(id, obj);
-            if (!HotspotInformation.TryGetValue(key, out t))
-                HotspotInformation.Add(key, t = new HotspotInformationType());
+            if (!ObjectInformation.TryGetValue(key, out t))
+                ObjectInformation.Add(key, t = new ObjectInformationType());
             return t;
         }
 
@@ -133,6 +134,16 @@ namespace vip_sharp
                     x -= w; y -= h;
                     break;
             }
+        }
+
+        private System.Windows.Media.Matrix GetModelViewMatrix()
+        {
+            // get the model view matrix 
+            float[] mat = new float[16];
+            gl.GetFloatv(GL.MODELVIEW_MATRIX, mat);
+
+            // use it to convert the mouse position to transformed space
+            return new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
         }
     }
 }

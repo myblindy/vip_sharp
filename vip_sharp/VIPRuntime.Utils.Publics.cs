@@ -29,7 +29,7 @@ namespace vip_sharp
         public enum PositionRef { CTR, CC = CTR, CU, CL, LL, LC, LU, RU, RL, RC }
         public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover, DoubleClicked }
         public enum HotSpotType { Momentary, Alternate }
-        public enum HotSpotHoverBox { Never, Always, Hover }
+        public enum HoverBox { Never, Always, Hover }
 
         public class BitmapRes
         {
@@ -339,21 +339,17 @@ namespace vip_sharp
         ///  - SelectEdge means it triggers once when held down. Moving the mouse outside and back in re-triggers it.
         /// </remarks>
         public void HotSpot<T>(uint objid, object _this, double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
-            HotSpotType type, T trueval, T falseval, HotSpotHoverBox hoverbox, BitmapRes bmp = null)
+            HotSpotType type, T trueval, T falseval, HoverBox hoverbox, BitmapRes bmp = null)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
 
             // info needed to store select_edge state
-            HotspotInformationType info = null;
+            ObjectInformationType info = null;
             if (trigger == HotSpotTrigger.SelectEdge)
-                info = GetHotspotInformation(objid, _this);
+                info = GetObjectInformation(objid, _this);
 
-            // get the model view matrix 
-            float[] mat = new float[16];
-            gl.GetFloatv(GL.MODELVIEW_MATRIX, mat);
-
-            // use it to convert the mouse position to transformed space
-            var matrix = new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
+            // get the model view matrix and use it to convert the mouse position to transformed space
+            var matrix = GetModelViewMatrix();
             matrix.Invert();
             var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
             pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
@@ -387,11 +383,75 @@ namespace vip_sharp
                 else
                     Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL, new BipolarArray<VertexType>(4) { new VertexType(.5f, 1), new VertexType(.5f, 0), new VertexType(1, 0), new VertexType(1, 1) });
 
-            if (hoverbox == HotSpotHoverBox.Always || (hoverbox == HotSpotHoverBox.Hover && hover))
+            if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
             {
                 ColorSave();
                 Color(100, 100, 0);
                 Quad(x, y, x + w, y, x + w, y + h, x, y + h);
+                ColorRestore();
+            }
+        }
+
+        public void RotaryKnob<T>(uint objid, object _this, double x, double y, double r, ref T var,
+            double anglemin, double anglemax, double valuemin, double valuemax,
+            HoverBox hoverbox, double wheeldelta, DisplayList list = null)
+        {
+            Func<double, double> normangle = a =>
+              {
+                  while (a < 0) a += 360;
+                  while (a >= 360) a -= 360;
+                  return a;
+              };
+
+            var info = GetObjectInformation(objid, _this);
+
+            // get the model view matrix and use it to convert the mouse position to transformed space
+            var matrix = GetModelViewMatrix();
+            matrix.Invert();
+            var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
+            pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
+
+            anglemin = normangle(anglemin);
+            anglemax = normangle(anglemax);
+            var revangle = anglemin > anglemax;
+            if (revangle)
+                anglemax += 360;
+
+            var hover = (pt.X - x) * (pt.X - x) + (pt.Y - y) * (pt.Y - y) <= r * r;
+            if (hover && VIPSystemClass.LeftButtonDown)
+                info.LastPressed = true;
+            if (info.LastPressed && VIPSystemClass.LeftButtonDown)
+            {
+                var angle = normangle(Math.Atan2(pt.X - x, pt.Y - y) / 2 / Math.PI * 360);
+                if (!double.IsNaN(info.LastAngle))
+                {
+                    var delta = angle - info.LastAngle;
+                    var newvar = Convert.ToDouble(var) + delta / (anglemax - anglemin) * (valuemax - valuemin);
+                    if (newvar < valuemin) newvar = valuemin; else if (newvar > valuemax) newvar = valuemax;
+                    var = (T)Convert.ChangeType(newvar, typeof(T));
+                }
+                info.LastAngle = angle;
+            }
+            else if (!VIPSystemClass.LeftButtonDown)
+            {
+                info.LastAngle = double.NaN;
+                info.LastPressed = false;
+            }
+
+            if (list != null)
+            {
+                MatrixSave();
+                gl.Translated(x, y, 0);
+                Rotate(180 + (Math.Max(Convert.ToDouble(var), valuemin) - valuemin) / (valuemax - valuemin) * (anglemax - anglemin) + anglemin);
+                gl.CallList(list.ListID);
+                MatrixRestore();
+            }
+
+            if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
+            {
+                ColorSave();
+                Color(100, 100, 0);
+                Circle(x, y, r, 12, false);
                 ColorRestore();
             }
         }

@@ -77,6 +77,19 @@ namespace vip_sharp
             arr[s.Length] = (char)0;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj != null)
+                if (obj is string)
+                    return this == (string)obj;
+                else if (obj is BipolarArray<T>)
+                    return Array.SequenceEqual(((BipolarArray<T>)obj).Array);
+
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode() => Array.GetHashCode();
+
         public static bool operator ==(BipolarArray<T> _ba, string s)
         {
             if ((ReferenceEquals(s, null) || ReferenceEquals(_ba, null)) && !ReferenceEquals(s, _ba)) return false;

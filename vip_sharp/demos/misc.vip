@@ -3,6 +3,9 @@ use "libraries\arial.fnt"
 
 Bitmap_Res(STRIPE, RGB, LINEAR, CLAMP, stripe.bmp);
 Bitmap_Res(SWITCH, RGB, LINEAR, CLAMP, sw.png);
+Bitmap_Res(KNOB, RGB, LINEAR, CLAMP, knob.png);
+
+List KNOBLIST { Bitmap(KNOB, REPLACE, 0,0,4,4,CC); }
 
 typedef TVector { double X; double Y; }
 TVector UpUV[4] =   {    0,1,    0,0, 0.33,0, 0.33,1 };
@@ -10,11 +13,13 @@ TVector DownUV[4] = { 0.66,1, 0.66,0,    1,0,    1,1 };
 
 bool swstate = false;
 double cnt;
+double knobvar;
 
 main
 {
 	char	sData2[15]	= "Werkt Het ?";
 	char	sData[]		= "\x1 Ja, het Werkt";
+	char 	tmpbuffer[15];
 	
 	color(gold);
 	String(0, 0, CC, NONE, sData, 0, VIP_Null, 1, 1, 1.2);
@@ -23,6 +28,11 @@ main
 	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
+	// knob
+	rotary_knob(11, -11, 2, knobvar, -20, 20, -50, 50, HOVER, 0, KNOBLIST);
+	format(tmpbuffer, "%.02f", knobvar);
+	string(11, -8, CC, NONE, tmpbuffer, 0, ARIAL_Null, 0.4, 0.7, 1.2);
+
 	// normal switch
 	matrix(save);
 	rotate(-25);
@@ -39,9 +49,8 @@ main
 	bool b;
 	hotspot(0, -3, 3, 3, CC, b, SELECT_EDGE, MOMENTARY, true, false, ALWAYS, STRIPE);
 	if(b) { cnt = cnt + 0.15; }
-	char cntbuffer[15];
-	format(cntbuffer, "cnt: %.02f", cnt);
-	string(0, -5, LC, NONE, cntbuffer, 0, ARIAL_Null, 0.4, 0.7, 1.2);
+	format(tmpbuffer, "cnt: %.02f", cnt);
+	string(0, -5, LC, NONE, tmpbuffer, 0, ARIAL_Null, 0.4, 0.7, 1.2);
 	
 	// sideways button
 	translate(2,2);rotate(50);scale(4);

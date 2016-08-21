@@ -79,8 +79,10 @@ namespace vip_sharp
 
         public void Visit(VIPDefsNode node)
         {
+            InObjectDefinition = true;
             foreach (VIPNode typedef in node.ChildNodes)
                 typedef.Accept(this);
+            InObjectDefinition = false;
         }
 
         public void Visit(VIPVariableDefinitionNode node)
@@ -113,7 +115,7 @@ namespace vip_sharp
 
         public void Visit(VIPQualifiedIdentifierNode node)
         {
-            var code = BuildConstructor ? ConstructorCode : Code;
+            var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
 
             if (node.Parts.Length == 1 && GlobalSymbols.Contains(node.Parts[0].Item1))
             {
@@ -132,10 +134,12 @@ namespace vip_sharp
 
         public void Visit(VIPExpressionListNode node)
         {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
             bool first = true;
             foreach (VIPNode exprnode in node.ChildNodes)
             {
-                if (first) first = false; else Code.Append(',');
+                if (first) first = false; else code.Append(',');
                 exprnode.Accept(this);
             }
         }
@@ -334,7 +338,10 @@ namespace vip_sharp
             Code.AppendLine("using System;");
             Code.AppendLine("public static class GlobalState { public static MainClass MainClass; }");
             Code.AppendLine("public class MainClass {");
-            Code.AppendLine("public MainClass() { GlobalState.MainClass = this; }");
+            Code.AppendLine("public MainClass() {");
+            Code.AppendLine("GlobalState.MainClass = this;");
+            ConstructorCode = Code.InsertContinuation();
+            Code.AppendLine("}");
             foreach (VIPNode entry in node.ChildNodes)
                 entry.Accept(this);
             Code.AppendLine("}");
@@ -488,6 +495,7 @@ namespace vip_sharp
 
         public void Visit(VIPBitmapResDefinitionNode node)
         {
+            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
             var type = node.Type.EqualsI("RGB") ? "RGB"
                 : node.Type.EqualsI("RGBA") ? "RGBA"
                 : node.Type.EqualsI("HARD_MASK") ? "HardMask"
@@ -497,7 +505,15 @@ namespace vip_sharp
                 : "MipMap";
             var clamp = node.ClampMode.EqualsI("CLAMP") ? "Clamp" : "Repeat";
 
-            Code.AppendLine($"public {VIPRuntimeClass}.BitmapRes __{node.Handle} = new {VIPRuntimeClass}.BitmapRes(" +
+            Code.Append($"public {VIPRuntimeClass}.BitmapRes __{node.Handle}");
+
+            if (InObjectDefinition)
+            {
+                Code.AppendLine(";");
+                initcode.Append($"__{node.Handle}");
+            }
+
+            initcode.AppendLine($"= new {VIPRuntimeClass}.BitmapRes(" +
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
 
@@ -808,11 +824,23 @@ namespace vip_sharp
         public void Visit(VIPListDefinition node)
         {
             var igd = InGlobalDefinition; InGlobalDefinition = false;
-            Code.AppendLine($"{VIPRuntimeClass}.DisplayList __{node.Name} = new {VIPRuntimeClass}.DisplayList(()=>{{");
+            var bc = BuildConstructor; BuildConstructor = true;
+            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+
+            Code.Append($"public {VIPRuntimeClass}.DisplayList __{node.Name}");
+
+            if (InObjectDefinition)
+            {
+                Code.AppendLine(";");
+                initcode.Append($"__{node.Name}");
+            }
+
+            initcode.AppendLine($" = new { VIPRuntimeClass }.DisplayList(() => {{");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
-            Code.AppendLine("});");
+            initcode.AppendLine("});");
             InGlobalDefinition = igd;
+            BuildConstructor = bc;
 
             if (!InGlobalDefinition)
                 GlobalSymbols.Add(node.Name);
@@ -878,7 +906,7 @@ namespace vip_sharp
             Code.Append($"{VIPRuntimeClass}.HotSpotType.{Enum.GetName(typeof(HotSpotType), node.Type)},");
             node.TrueValue.Accept(this); Code.Append(',');
             node.FalseValue.Accept(this); Code.Append(',');
-            Code.Append($"{VIPRuntimeClass}.HotSpotHoverBox.{Enum.GetName(typeof(HotSpotHoverBox), node.HoverBox)}");
+            Code.Append($"{VIPRuntimeClass}.HoverBox.{Enum.GetName(typeof(HoverBox), node.HoverBox)}");
             if (node.DisplayObject != null)
             {
                 Code.Append(',');
@@ -893,6 +921,27 @@ namespace vip_sharp
             node.Result.Accept(this); Code.Append(',');
             node.Format.Accept(this); Code.Append(',');
             node.Value.Accept(this);
+            Code.AppendLine(");");
+        }
+
+        public void Visit(VIPRotaryKnobCommandNode node)
+        {
+            Code.Append($"{VIPRuntimeInstance}.RotaryKnob({++LastObjectID}, this,");
+            node.X.Accept(this); Code.Append(',');
+            node.Y.Accept(this); Code.Append(',');
+            node.R.Accept(this); Code.Append(',');
+            Code.Append("ref "); node.Var.Accept(this); Code.Append(',');
+            node.StartAngle.Accept(this); Code.Append(',');
+            node.EndAngle.Accept(this); Code.Append(',');
+            node.MinValue.Accept(this); Code.Append(',');
+            node.MaxValue.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.HoverBox.{Enum.GetName(typeof(HoverBox), node.HoverBox)},");
+            node.WheelDelta.Accept(this);
+            if (node.DisplayObject != null)
+            {
+                Code.Append(',');
+                node.DisplayObject.Accept(this);
+            }
             Code.AppendLine(");");
         }
     }
