@@ -145,5 +145,20 @@ namespace vip_sharp
             // use it to convert the mouse position to transformed space
             return new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
         }
+
+        private class LightDescription
+        {
+            internal double LightIntensity = 1;
+            internal double[] LightValues = new double[4];
+        }
+        Stack<LightDescription> LightStack = new Stack<LightDescription>(Enumerable.Repeat(new LightDescription(), 1));
+
+        private void UpdateAmbientColor()
+        {
+            var ld = LightStack.Peek();
+            var light = new[] { (float)(ld.LightValues[0] * ld.LightIntensity), (float)(ld.LightValues[1] * ld.LightIntensity),
+                (float)(ld.LightValues[2] * ld.LightIntensity), (float)(ld.LightValues[3] * ld.LightIntensity) };
+            gl.LightModelfv(GL.LIGHT_MODEL_AMBIENT, light);
+        }
     }
 }

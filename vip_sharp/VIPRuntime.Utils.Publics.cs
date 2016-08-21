@@ -272,9 +272,52 @@ namespace vip_sharp
         }
 
         public void Color(int c) => gl.Color3d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
-        public void Color(int c, double a) => gl.Color4d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, a);
+        public void Color(int c, double a) => gl.Color4d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, a / 100);
         public void Color(double r, double g, double b) => gl.Color3d(r / 100, g / 100, b / 100);
         public void Color(double r, double g, double b, double a) => gl.Color4d(r / 100, g / 100, b / 100, a / 100);
+
+        public void LightColor(int c)
+        {
+            var ld = LightStack.Peek();
+            ld.LightValues[0] = StandardColors[c].Item1;
+            ld.LightValues[1] = StandardColors[c].Item2;
+            ld.LightValues[2] = StandardColors[c].Item3;
+            ld.LightValues[3] = 1;
+            UpdateAmbientColor();
+        }
+        public void LightColor(int c, double a)
+        {
+            var ld = LightStack.Peek();
+            ld.LightValues[0] = StandardColors[c].Item1;
+            ld.LightValues[1] = StandardColors[c].Item2;
+            ld.LightValues[2] = StandardColors[c].Item3;
+            ld.LightValues[3] = a;
+            UpdateAmbientColor();
+        }
+        public void LightColor(double r, double g, double b)
+        {
+            var ld = LightStack.Peek();
+            ld.LightValues[0] = r / 100;
+            ld.LightValues[1] = g / 100;
+            ld.LightValues[2] = b / 100;
+            ld.LightValues[3] = 1;
+            UpdateAmbientColor();
+        }
+        public void LightColor(double r, double g, double b, double a)
+        {
+            var ld = LightStack.Peek();
+            ld.LightValues[0] = r / 100;
+            ld.LightValues[1] = g / 100;
+            ld.LightValues[2] = b / 100;
+            ld.LightValues[3] = a / 100;
+            UpdateAmbientColor();
+        }
+        public void Light(double intensity)
+        {
+            var ld = LightStack.Peek();
+            ld.LightIntensity = intensity;
+            UpdateAmbientColor();
+        }
 
         public void MatrixSave() => gl.PushMatrix();
         public void MatrixRestore() => gl.PopMatrix();
@@ -282,6 +325,28 @@ namespace vip_sharp
 
         public void ColorSave() => gl.PushAttrib(GL.CURRENT_BIT);
         public void ColorRestore() => gl.PopAttrib();
+
+        public void LightSave()
+        {
+            LightStack.Push(new LightDescription());
+            UpdateAmbientColor();
+        }
+        public void LightRestore()
+        {
+            LightStack.Pop();
+            UpdateAmbientColor();
+        }
+
+        public void LightOn()
+        {
+            gl.Enable(GL.LIGHTING);
+            gl.Enable(GL.COLOR_MATERIAL);
+        }
+        public void LightOff()
+        {
+            gl.Disable(GL.LIGHTING);
+            gl.Disable(GL.COLOR_MATERIAL);
+        }
 
         public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
         {
@@ -379,9 +444,11 @@ namespace vip_sharp
 
             if (bmp != null)
                 if (sel)
-                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL, new BipolarArray<VertexType>(4) { new VertexType(0, 1), new VertexType(0, 0), new VertexType(.5f, 0), new VertexType(.5f, 1) });
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL,
+                        new BipolarArray<VertexType>(4) { new VertexType(0, 1), new VertexType(0, 0), new VertexType(.5f, 0), new VertexType(.5f, 1) });
                 else
-                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL, new BipolarArray<VertexType>(4) { new VertexType(.5f, 1), new VertexType(.5f, 0), new VertexType(1, 0), new VertexType(1, 1) });
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL,
+                        new BipolarArray<VertexType>(4) { new VertexType(.5f, 1), new VertexType(.5f, 0), new VertexType(1, 0), new VertexType(1, 1) });
 
             if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
             {

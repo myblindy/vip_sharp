@@ -944,5 +944,61 @@ namespace vip_sharp
             }
             Code.AppendLine(");");
         }
+
+        public void Visit(VIPLightCommandNode node)
+        {
+            if (node.On)
+                Code.AppendLine($"{VIPRuntimeInstance}.LightOn();");
+            else if (node.Off)
+                Code.AppendLine($"{VIPRuntimeInstance}.LightOff();");
+            else
+            {
+                Code.Append($"{VIPRuntimeInstance}.Light(");
+                node.Intensity.Accept(this);
+                Code.AppendLine(");");
+            }
+        }
+
+        public void Visit(VIPLightColorCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            if (node.Save)
+                code.AppendLine($"{VIPRuntimeInstance}.LightSave();");
+            else if (node.Restore)
+                code.AppendLine($"{VIPRuntimeInstance}.LightRestore();");
+            else if (node.R != null && node.G != null && node.B != null)
+            {
+                code.Append($"{VIPRuntimeInstance}.LightColor(");
+                node.R.Accept(this);
+                code.Append(',');
+                node.G.Accept(this);
+                code.Append(',');
+                node.B.Accept(this);
+                if (node.A != null)
+                {
+                    code.Append(',');
+                    node.A.Accept(this);
+                }
+                code.AppendLine(");");
+            }
+            else if (node.ArrayName != null)
+            {
+                code.Append($"{VIPRuntimeInstance}.LightColor(");
+                node.ArrayName.Accept(this);
+                code.AppendLine(");");
+            }
+            else
+            {
+                code.Append($"{VIPRuntimeInstance}.LightColor(");
+                node.C.Accept(this);
+                if (node.A != null)
+                {
+                    code.Append(',');
+                    node.A.Accept(this);
+                }
+                code.AppendLine(");");
+            }
+        }
     }
 }

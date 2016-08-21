@@ -29,6 +29,7 @@ namespace vip_sharp
             var command = new NonTerminal("command", typeof(VIPCommandNode));
             var translatecommand = new NonTerminal("translatecommand", typeof(VIPTranslateCommandNode));
             var scalecommand = new NonTerminal("scalecommand", typeof(VIPScaleCommandNode));
+            var lightcommand = new NonTerminal("lightcommand", typeof(VIPLightCommandNode));
             var fullvariabledefinition = new NonTerminal("fullvariabledefinition", typeof(VIPFullVariableDefinitionNode));
             var shapecommand = new NonTerminal("shapecommand", typeof(VIPShapeCommandNode));
             var rotatecommand = new NonTerminal("rotatecommand", typeof(VIPRotateCommandNode));
@@ -39,6 +40,7 @@ namespace vip_sharp
             var drawcommand = new NonTerminal("drawcommand", typeof(VIPDrawCommandNode));
             var functioncallcommand = new NonTerminal("functioncallcommand", typeof(VIPFunctionCallCommandNode));
             var colorcommand = new NonTerminal("colorcommand", typeof(VIPColorCommandNode));
+            var lightcolorcommand = new NonTerminal("lightcolorcommand", typeof(VIPLightColorCommandNode));
             var circlecommand = new NonTerminal("circlecommand", typeof(VIPCircleCommandNode));
             var matrixcommand = new NonTerminal("matrixcommand", typeof(VIPMatrixCommandNode));
             var stringcommand = new NonTerminal("stringcommand", typeof(VIPStringCommandNode));
@@ -97,7 +99,7 @@ namespace vip_sharp
 
             commands.Rule = MakeStarRule(commands, null, command);
             command.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
-                | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition
+                | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition | lightcommand
                 | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
@@ -161,6 +163,9 @@ namespace vip_sharp
                     + expr + "," + expr + "," + plainidentifier + "," + expr + ")" + ";"
                 | ToTerm("rotary_knob") + "(" + expr + "," + expr + "," + expr + "," + qualifiedidentifier + "," + expr + "," + expr + ","
                     + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
+            lightcommand.Rule = ToTerm("light") + "(" + expr + ")" + ";"
+                | ToTerm("light") + "(" + "on" + ")" + ";"
+                | ToTerm("light") + "(" + "off" + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -279,6 +284,8 @@ namespace vip_sharp
         void Visit(VIPHotSpotCommandNode vIPHotSpotCommandNode);
         void Visit(VIPFormatCommandNode vIPFormatCommandNode);
         void Visit(VIPRotaryKnobCommandNode vIPRotaryKnobCommandNode);
+        void Visit(VIPLightCommandNode vIPLightCommandNode);
+        void Visit(VIPLightColorCommandNode vIPLightColorCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -775,6 +782,24 @@ namespace vip_sharp
         public VIPExpressionNode Angle;
     }
 
+    public class VIPLightCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes[1].Token.ValueString.EqualsI("on"))
+                On = true;
+            else if (nodes[1].Token.ValueString.EqualsI("off"))
+                Off = true;
+            else
+                Intensity = (VIPExpressionNode)nodes[1].AstNode;
+        }
+
+        public bool On, Off;
+        public VIPExpressionNode Intensity;
+    }
+
     public class VIPCircleCommandNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
@@ -980,6 +1005,54 @@ namespace vip_sharp
     }
 
     public class VIPColorCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes[1].AstNode is VIPQualifiedIdentifierNode)
+            {
+                // save/restore?
+                var qnode = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
+                if (qnode.Parts.Length == 1)
+                    if (qnode.Parts[0].Item1.EqualsI("save"))
+                    {
+                        Save = true;
+                        return;
+                    }
+                    else if (qnode.Parts[0].Item1.EqualsI("restore"))
+                    {
+                        Restore = true;
+                        return;
+                    }
+
+                ArrayName = qnode;
+            }
+            else if (nodes.Count > 3)
+            {
+                R = (VIPExpressionNode)nodes[1].AstNode;
+                G = (VIPExpressionNode)nodes[2].AstNode;
+                B = (VIPExpressionNode)nodes[3].AstNode;
+                if (nodes.Count > 4)
+                    A = (VIPExpressionNode)nodes[4].AstNode;
+            }
+            else if (nodes.Count > 2)
+            {
+                C = (VIPExpressionNode)nodes[1].AstNode;
+                A = (VIPExpressionNode)nodes[2].AstNode;
+            }
+            else if (nodes.Count > 1)
+            {
+                C = (VIPExpressionNode)nodes[1].AstNode;
+            }
+        }
+
+        public VIPQualifiedIdentifierNode ArrayName;
+        public VIPExpressionNode R, G, B, A, C;
+        public bool Save, Restore;
+    }
+
+    public class VIPLightColorCommandNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
