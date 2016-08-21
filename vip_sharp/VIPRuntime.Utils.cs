@@ -44,7 +44,7 @@ namespace vip_sharp
         {
             public bool LastPressed;
             public bool LastHover;
-            public double LastAngle;
+            public double LastAngle = double.NaN;
         }
         private Dictionary<Tuple<uint, object>, ObjectInformationType> ObjectInformation = new Dictionary<Tuple<uint, object>, ObjectInformationType>();
         private ObjectInformationType GetObjectInformation(uint id, object obj)

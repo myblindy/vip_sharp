@@ -156,5 +156,40 @@ Main {
             Step(vip);
             Assert.IsTrue(VIPTestFramework.Equals(vip.__cnt2, 0.45));
         }
+
+        [TestMethod]
+        public void Knobs()
+        {
+            var vip = PrepareSource(@"
+double knobvar;
+Main { 
+	rotary_knob(0, 0, 10, knobvar, -20, 20, -50, 50, NEVER, 0);
+}");
+
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseX = 5;
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 0;
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__knobvar, 0));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 1;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), -28.27));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 0;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), 0));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseX = 15;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), 0));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 3;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), -28.27));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = -3;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), +28.27));
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false;
+            vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 3;
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), +28.27));
+        }
     }
 }
