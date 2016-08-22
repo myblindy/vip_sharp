@@ -6,6 +6,7 @@ Bitmap_Res(SWITCH, RGB, LINEAR, CLAMP, sw.png);
 Bitmap_Res(KNOB, RGB, LINEAR, CLAMP, knob.png);
 
 List KNOBLIST { Bitmap(KNOB, REPLACE, 0,0,4,4,CC); }
+List SLIDERLIST { Color(SAVE); Color(green); Circle(0,0,.5,10,FILL); Color(Restore); }
 
 typedef TVector { double X; double Y; }
 TVector UpUV[4] =   {    0,1,    0,0, 0.33,0, 0.33,1 };
@@ -14,6 +15,7 @@ TVector DownUV[4] = { 0.66,1, 0.66,0,    1,0,    1,1 };
 bool swstate = false;
 double cnt;
 double knobvar;
+double slidervar;
 
 main
 {
@@ -28,6 +30,12 @@ main
 	color(red);
 	String(-3, 6, LC, NONE, "multiline test 2 | worked yay!", 0, ARIAL_Null, 0.3, 0.6, 1.2);
 	
+	// slider
+	slider(-13, 10, 1, 8, CC, 45, slidervar, -5, 200, HOVER, 0, SLIDERLIST);
+	color(gold);
+	format(tmpbuffer, "%.02f", slidervar);
+	string(-12, 13, LC, NONE, tmpbuffer, 0, ARIAL_Null, 0.4, 0.7, 1.2);
+
 	// knob
 	rotary_knob(11, -11, 2, knobvar, -20, 20, -50, 50, HOVER, 0, KNOBLIST);
 	format(tmpbuffer, "%.02f", knobvar);

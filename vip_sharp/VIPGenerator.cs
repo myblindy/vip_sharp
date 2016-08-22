@@ -1000,5 +1000,27 @@ namespace vip_sharp
                 code.AppendLine(");");
             }
         }
+
+        public void Visit(VIPSliderCommandNode node)
+        {
+            Code.Append($"{VIPRuntimeInstance}.Slider({++LastObjectID}, this,");
+            node.X.Accept(this); Code.Append(',');
+            node.Y.Accept(this); Code.Append(',');
+            node.W.Accept(this); Code.Append(',');
+            node.H.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
+            node.Angle.Accept(this); Code.Append(',');
+            Code.Append("ref "); node.Var.Accept(this); Code.Append(',');
+            node.MinValue.Accept(this); Code.Append(',');
+            node.MaxValue.Accept(this); Code.Append(',');
+            Code.Append($"{VIPRuntimeClass}.HoverBox.{Enum.GetName(typeof(HoverBox), node.HoverBox)},");
+            node.WheelDelta.Accept(this);
+            if (node.DisplayObject != null)
+            {
+                Code.Append(',');
+                node.DisplayObject.Accept(this);
+            }
+            Code.AppendLine(");");
+        }
     }
 }

@@ -77,19 +77,20 @@ namespace vip_sharp
             }
         }
 
-        public void Scale(double s) => gl.Scaled(s, s, 1);
+        public void Scale(double s) => Scale(s, s);
+        public void Scale(double x, double y) => gl.Scalef((float)x, (float)y, 1);
 
-        public void Translate(double x, double y) => gl.Translated(x, y, 0);
+        public void Translate(double x, double y) => gl.Translatef((float)x, (float)y, 0);
 
-        public void Rotate(double angle) => gl.Rotated(angle, 0, 0, -1);
+        public void Rotate(double angle) => gl.Rotatef((float)angle, 0, 0, -1);
 
         public void Color<TColor>(TColor color)
         {
             var colorvals = DoublesFromStructure(color);
             if (colorvals.Count == 3)
-                gl.Color3d(colorvals[0], colorvals[1], colorvals[2]);
+                gl.Color3f((float)colorvals[0], (float)colorvals[1], (float)colorvals[2]);
             else
-                gl.Color4d(colorvals[0], colorvals[1], colorvals[2], colorvals[3]);
+                gl.Color4f((float)colorvals[0], (float)colorvals[1], (float)colorvals[2], (float)colorvals[3]);
         }
 
         public void Polygon<TVertex, TColor>(BipolarArray<TVertex> vertexes, BipolarArray<TColor> colors)
@@ -104,7 +105,7 @@ namespace vip_sharp
 
                 // vertexes
                 var vertexvals = DoublesFromStructure(vertexes[idx]);
-                gl.Vertex2d(vertexvals[0], vertexvals[1]);
+                gl.Vertex2f((float)vertexvals[0], (float)vertexvals[1]);
             }
 
             gl.End();
@@ -124,17 +125,17 @@ namespace vip_sharp
 
             gl.Begin(GL.QUADS);
 
-            gl.TexCoord2d(0, 0);
-            gl.Vertex2d(x, y);
+            gl.TexCoord2f(0, 0);
+            gl.Vertex2f((float)x, (float)y);
 
-            gl.TexCoord2d(0, 1);
-            gl.Vertex2d(x, y + h);
+            gl.TexCoord2f(0, 1);
+            gl.Vertex2f((float)x, (float)(y + h));
 
-            gl.TexCoord2d(1, 1);
-            gl.Vertex2d(x + w, y + h);
+            gl.TexCoord2f(1, 1);
+            gl.Vertex2f((float)(x + w), (float)(y + h));
 
-            gl.TexCoord2d(1, 0);
-            gl.Vertex2d(x + w, y);
+            gl.TexCoord2f(1, 0);
+            gl.Vertex2f((float)(x + w), (float)y);
 
             gl.End();
 
@@ -156,20 +157,20 @@ namespace vip_sharp
             gl.Begin(GL.QUADS);
 
             var texvals = DoublesFromStructure(uv[0]);
-            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
-            gl.Vertex2d(x, y);
+            gl.TexCoord2f((float)texvals[0], (float)(1 - texvals[1]));
+            gl.Vertex2f((float)x, (float)y);
 
             texvals = DoublesFromStructure(uv[1]);
-            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
-            gl.Vertex2d(x, y + h);
+            gl.TexCoord2f((float)texvals[0], (float)(1 - texvals[1]));
+            gl.Vertex2f((float)x, (float)(y + h));
 
             texvals = DoublesFromStructure(uv[2]);
-            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
-            gl.Vertex2d(x + w, y + h);
+            gl.TexCoord2f((float)texvals[0], (float)(1 - texvals[1]));
+            gl.Vertex2f((float)(x + w), (float)(y + h));
 
             texvals = DoublesFromStructure(uv[3]);
-            gl.TexCoord2d(texvals[0], 1 - texvals[1]);
-            gl.Vertex2d(x + w, y);
+            gl.TexCoord2f((float)texvals[0], (float)(1 - texvals[1]));
+            gl.Vertex2f((float)(x + w), (float)y);
 
             gl.End();
 
@@ -178,10 +179,10 @@ namespace vip_sharp
 
         public void Draw(VIPObject obj)
         {
-            gl.PushMatrix();
-            gl.Translated(obj.X, obj.Y, 0);
+            MatrixSave();
+            Translate(obj.X, obj.Y);
             obj.Run();
-            gl.PopMatrix();
+            MatrixRestore();
         }
 
         public void Circle(double x, double y, double r, double steps, bool filled)
@@ -189,15 +190,15 @@ namespace vip_sharp
             if (filled)
             {
                 gl.Begin(GL.TRIANGLE_FAN);
-                gl.Vertex2d(x, y);
+                gl.Vertex2f((float)x, (float)y);
             }
             else
                 gl.Begin(GL.LINE_LOOP);
 
             for (int idx = 0; idx <= steps; ++idx)
-                gl.Vertex2d(
-                    x + r * Math.Cos(idx * Math.PI * 2 / steps),
-                    y + r * Math.Sin(idx * Math.PI * 2 / steps));
+                gl.Vertex2f(
+                    (float)(x + r * Math.Cos(idx * Math.PI * 2 / steps)),
+                    (float)(y + r * Math.Sin(idx * Math.PI * 2 / steps)));
 
             gl.End();
         }
@@ -206,7 +207,7 @@ namespace vip_sharp
         {
             gl.Begin(GL.LINE_STRIP);
             for (int i = 0; i < vals.Length; i += 2)
-                gl.Vertex2d(vals[i], vals[i + 1]);
+                gl.Vertex2f((float)vals[i], (float)vals[i + 1]);
             gl.End();
         }
 
@@ -214,7 +215,7 @@ namespace vip_sharp
         {
             gl.Begin(GL.LINE_STRIP);
             for (int i = 0; i < vals.Length; i += 2)
-                gl.Vertex2d(vals[i], vals[i + 1]);
+                gl.Vertex2f((float)vals[i], (float)vals[i + 1]);
             gl.End();
         }
 
@@ -222,7 +223,7 @@ namespace vip_sharp
         {
             gl.Begin(GL.POLYGON);
             for (int i = 0; i < vals.Length; i += 2)
-                gl.Vertex2d(vals[i], vals[i + 1]);
+                gl.Vertex2f((float)vals[i], (float)vals[i + 1]);
             gl.End();
         }
 
@@ -230,26 +231,26 @@ namespace vip_sharp
         {
             gl.Begin(GL.LINE_LOOP);
             for (int i = 0; i < vals.Length; i += 2)
-                gl.Vertex2d(vals[i], vals[i + 1]);
+                gl.Vertex2f((float)vals[i], (float)vals[i + 1]);
             gl.End();
         }
 
         public void Triangle(double x1, double y1, double x2, double y2, double x3, double y3)
         {
             gl.Begin(GL.LINE_LOOP);
-            gl.Vertex2d(x1, y1);
-            gl.Vertex2d(x2, y2);
-            gl.Vertex2d(x3, y3);
+            gl.Vertex2f((float)x1, (float)y1);
+            gl.Vertex2f((float)x2, (float)y2);
+            gl.Vertex2f((float)x3, (float)y3);
             gl.End();
         }
 
         public void Quad(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         {
-            gl.Begin(GL.LINE_LOOP);
-            gl.Vertex2d(x1, y1);
-            gl.Vertex2d(x2, y2);
-            gl.Vertex2d(x3, y3);
-            gl.Vertex2d(x4, y4);
+            gl.Begin(GL.QUADS);
+            gl.Vertex2f((float)x1, (float)y1);
+            gl.Vertex2f((float)x2, (float)y2);
+            gl.Vertex2f((float)x3, (float)y3);
+            gl.Vertex2f((float)x4, (float)y4);
             gl.End();
         }
 
@@ -264,17 +265,17 @@ namespace vip_sharp
 
             var inc = (end - start) / steps;
             for (int idx = 0; idx <= steps; ++idx)
-                gl.Vertex2d(
-                    x + r * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360),
-                    y + r * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360));
+                gl.Vertex2f(
+                    (float)(x + r * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
+                    (float)(y + r * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
 
             gl.End();
         }
 
-        public void Color(int c) => gl.Color3d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
-        public void Color(int c, double a) => gl.Color4d(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, a / 100);
-        public void Color(double r, double g, double b) => gl.Color3d(r / 100, g / 100, b / 100);
-        public void Color(double r, double g, double b, double a) => gl.Color4d(r / 100, g / 100, b / 100, a / 100);
+        public void Color(int c) => gl.Color3f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
+        public void Color(int c, double a) => gl.Color4f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, (float)(a / 100));
+        public void Color(double r, double g, double b) => gl.Color3f((float)(r / 100), (float)(g / 100), (float)(b / 100));
+        public void Color(double r, double g, double b, double a) => gl.Color4f((float)(r / 100), (float)(g / 100), (float)(b / 100), (float)(a / 100));
 
         public void LightColor(int c)
         {
@@ -369,11 +370,11 @@ namespace vip_sharp
             // and update the x and y coords based on the box and ref
             UpdateCoordsWithBoxInfo(ref x, ref y, maxw * spacex * scalex, h * spacey * scaley, @ref);
 
-            gl.PushMatrix();
+            MatrixSave();
 
-            gl.Translated(x, y, 0);
-            gl.Scaled(scalex, scaley, 1);
-            gl.PushMatrix();
+            Translate(x, y);
+            Scale(scalex, scaley);
+            MatrixSave();
 
             int linecnt = 0;
 
@@ -381,18 +382,18 @@ namespace vip_sharp
                 if (c == '|')
                 {
                     // new line
-                    gl.PopMatrix();
-                    gl.Translated(0, ++linecnt * -spacey, 0);
-                    gl.PushMatrix();
+                    MatrixSave();
+                    Translate(0, ++linecnt * -spacey);
+                    MatrixRestore();
                 }
                 else
                 {
                     gl.CallList(baselist.ListID + c);
-                    gl.Translated(spacex, 0, 0);
+                    Translate(spacex, 0);
                 }
 
-            gl.PopMatrix();
-            gl.PopMatrix();
+            MatrixRestore();
+            MatrixRestore();
         }
 
         /// <summary>
@@ -454,7 +455,7 @@ namespace vip_sharp
             {
                 ColorSave();
                 Color(100, 100, 0);
-                Quad(x, y, x + w, y, x + w, y + h, x, y + h);
+                ClosedLine(x, y, x + w, y, x + w, y + h, x, y + h);
                 ColorRestore();
             }
         }
@@ -509,7 +510,7 @@ namespace vip_sharp
             if (list != null)
             {
                 MatrixSave();
-                gl.Translated(x, y, 0);
+                Translate(x, y);
                 Rotate(180 + (Math.Max(Convert.ToDouble(var), valuemin) - valuemin) / (valuemax - valuemin) * (anglemax - anglemin) + anglemin);
                 gl.CallList(list.ListID);
                 MatrixRestore();
@@ -522,6 +523,60 @@ namespace vip_sharp
                 Circle(x, y, r, 12, false);
                 ColorRestore();
             }
+        }
+
+        public void Slider<T>(uint objid, object _this, double x, double y, double w, double h,
+            PositionRef @ref, double angle, ref T var, double valuemin, double valuemax,
+            HoverBox hoverbox, double wheeldelta, DisplayList list = null)
+        {
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
+            // info needed to store select_edge state
+            ObjectInformationType info = GetObjectInformation(objid, _this);
+
+            // use the angle to rotate the actual control
+            MatrixSave();
+            Translate(x, y);
+            Rotate(angle);
+            Translate(-x, -y);
+
+            // get the model view matrix and use it to convert the mouse position to transformed space
+            var matrix = GetModelViewMatrix();
+            matrix.Invert();
+            var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
+            pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
+
+            var hover = pt.X >= x && pt.X <= x + w && pt.Y >= y && pt.Y <= y + h;
+
+            if (hover && VIPSystemClass.LeftButtonDown && !info.LastPressed)
+                info.LastPressed = true;
+            if (!VIPSystemClass.LeftButtonDown)
+                info.LastPressed = false;
+            else if (info.LastPressed)
+            {
+                var val = pt.Y - y;
+                if (val < 0) val = 0; else if (val > h) val = h;
+                var = (T)Convert.ChangeType(val / h * (valuemax - valuemin) + valuemin, typeof(T));
+            }
+
+            if (list != null)
+            {
+                MatrixSave();
+                Translate(x + w / 2, y + (Convert.ToDouble(var) - valuemin) / (valuemax - valuemin) * h);
+                gl.CallList(list.ListID);
+                MatrixRestore();
+            }
+
+            if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
+            {
+                ColorSave();
+                Color(100, 100, 0);
+                ClosedLine(x, y, x + w, y, x + w, y + h, x, y + h);
+                ColorRestore();
+            }
+
+            // restore the angle rotation
+            MatrixRestore();
         }
     }
 }

@@ -47,6 +47,7 @@ namespace vip_sharp
             var hotspotcommand = new NonTerminal("hotspotcommand", typeof(VIPHotSpotCommandNode));
             var formatcommand = new NonTerminal("formatcommand", typeof(VIPFormatCommandNode));
             var rotaryknobcommand = new NonTerminal("rotaryknobcommand", typeof(VIPRotaryKnobCommandNode));
+            var slidercommand = new NonTerminal("slidercommand", typeof(VIPSliderCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -100,7 +101,7 @@ namespace vip_sharp
             commands.Rule = MakeStarRule(commands, null, command);
             command.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition | lightcommand
-                | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand;
+                | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand | slidercommand;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
             fullvariabledefinition.Rule =
@@ -166,6 +167,10 @@ namespace vip_sharp
             lightcommand.Rule = ToTerm("light") + "(" + expr + ")" + ";"
                 | ToTerm("light") + "(" + "on" + ")" + ";"
                 | ToTerm("light") + "(" + "off" + ")" + ";";
+            slidercommand.Rule = ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
+                    expr + "," + expr + "," + plainidentifier + "," + expr + ")" + ";"
+                | ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
+                    expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + ";";
@@ -286,6 +291,7 @@ namespace vip_sharp
         void Visit(VIPRotaryKnobCommandNode vIPRotaryKnobCommandNode);
         void Visit(VIPLightCommandNode vIPLightCommandNode);
         void Visit(VIPLightColorCommandNode vIPLightColorCommandNode);
+        void Visit(VIPSliderCommandNode vIPSliderCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -897,6 +903,35 @@ namespace vip_sharp
         public VIPExpressionNode X, Y, R, StartAngle, EndAngle, MinValue, MaxValue, WheelDelta;
         public VIPQualifiedIdentifierNode Var, DisplayObject;
         public HoverBox HoverBox;
+    }
+
+    public class VIPSliderCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            W = (VIPExpressionNode)nodes[3].AstNode;
+            H = (VIPExpressionNode)nodes[4].AstNode;
+            Ref = nodes[5].Token.ValueString;
+            Angle = (VIPExpressionNode)nodes[6].AstNode;
+            Var = (VIPQualifiedIdentifierNode)nodes[7].AstNode;
+            MinValue = (VIPExpressionNode)nodes[8].AstNode;
+            MaxValue = (VIPExpressionNode)nodes[9].AstNode;
+            HoverBox = nodes[10].Token.ValueString.EqualsI("never") ? HoverBox.Never
+                : nodes[10].Token.ValueString.EqualsI("always") ? HoverBox.Always
+                : HoverBox.Hover;
+            WheelDelta = (VIPExpressionNode)nodes[11].AstNode;
+            if (nodes.Count >= 13)
+                DisplayObject = (VIPQualifiedIdentifierNode)nodes[12].AstNode;
+        }
+
+        public VIPExpressionNode X, Y, W, H, Angle, MinValue, MaxValue, WheelDelta;
+        public VIPQualifiedIdentifierNode Var, DisplayObject;
+        public HoverBox HoverBox;
+        public string Ref;
     }
 
     public class VIPStringCommandNode : VIPNode

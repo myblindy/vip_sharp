@@ -62,35 +62,35 @@ namespace vip_sharp
             public VertexType(double x, double y) { X = x; Y = y; }
         }
 
-        private Tuple<double, double, double>[] StandardColors = new[]
+        private Tuple<float, float, float>[] StandardColors = new[]
         {
-            Tuple.Create(0.000, 0.000, 0.000),          //BLACK
-            Tuple.Create(0.250, 0.250, 0.250),          //DARK_GREY
-            Tuple.Create(0.500, 0.500, 0.500),          //GREY
-            Tuple.Create(0.750, 0.750, 0.750),          //LIGHT_GREY
-            Tuple.Create(1.000, 1.000, 1.000),          //WHITE
+            Tuple.Create(0.000f, 0.000f, 0.000f),          //BLACK
+            Tuple.Create(0.250f, 0.250f, 0.250f),          //DARK_GREY
+            Tuple.Create(0.500f, 0.500f, 0.500f),          //GREY
+            Tuple.Create(0.750f, 0.750f, 0.750f),          //LIGHT_GREY
+            Tuple.Create(1.000f, 1.000f, 1.000f),          //WHITE
 
-            Tuple.Create(1.000, 0.000, 0.000),          //RED
-            Tuple.Create(0.000, 1.000, 0.000),          //GREEN
-            Tuple.Create(0.000, 0.000, 1.000),          //BLUE
+            Tuple.Create(1.000f, 0.000f, 0.000f),          //RED
+            Tuple.Create(0.000f, 1.000f, 0.000f),          //GREEN
+            Tuple.Create(0.000f, 0.000f, 1.000f),          //BLUE
 
-            Tuple.Create(0.000, 1.000, 1.000),          //CYAN
-            Tuple.Create(1.000, 0.000, 1.000),          //MAGENTA
-            Tuple.Create(1.000, 1.000, 0.000),          //YELLOW
+            Tuple.Create(0.000f, 1.000f, 1.000f),          //CYAN
+            Tuple.Create(1.000f, 0.000f, 1.000f),          //MAGENTA
+            Tuple.Create(1.000f, 1.000f, 0.000f),          //YELLOW
 
-            Tuple.Create(0.980, 0.666, 0.235),          //AMBER
-            Tuple.Create(1.000, 0.647, 0.000),          //ORANGE
-            Tuple.Create(0.541, 0.169, 0.886),          //VIOLET
-            Tuple.Create(0.647, 0.168, 0.168),          //BROWN
-            Tuple.Create(0.824, 0.412, 0.118),          //LIGHT_BROWN
-            Tuple.Create(0.000, 0.500, 0.000),          //DARK_GREEN
-            Tuple.Create(0.157, 1.000, 0.157),          //LIGHT_GREEN
-            Tuple.Create(1.000, 0.216, 0.216),          //LIGHT_RED
-            Tuple.Create(0.500, 0.000, 0.000),          //DARK_RED
-            Tuple.Create(0.000, 0.545, 0.545),          //DARK_CYAN
-            Tuple.Create(0.392, 0.584, 0.929),          //SOFT_BLUE
-            Tuple.Create(1.000, 0.078, 0.576),          //PINK
-            Tuple.Create(1.000, 0.843, 0.000),          //GOLD
+            Tuple.Create(0.980f, 0.666f, 0.235f),          //AMBER
+            Tuple.Create(1.000f, 0.647f, 0.000f),          //ORANGE
+            Tuple.Create(0.541f, 0.169f, 0.886f),          //VIOLET
+            Tuple.Create(0.647f, 0.168f, 0.168f),          //BROWN
+            Tuple.Create(0.824f, 0.412f, 0.118f),          //LIGHT_BROWN
+            Tuple.Create(0.000f, 0.500f, 0.000f),          //DARK_GREEN
+            Tuple.Create(0.157f, 1.000f, 0.157f),          //LIGHT_GREEN
+            Tuple.Create(1.000f, 0.216f, 0.216f),          //LIGHT_RED
+            Tuple.Create(0.500f, 0.000f, 0.000f),          //DARK_RED
+            Tuple.Create(0.000f, 0.545f, 0.545f),          //DARK_CYAN
+            Tuple.Create(0.392f, 0.584f, 0.929f),          //SOFT_BLUE
+            Tuple.Create(1.000f, 0.078f, 0.576f),          //PINK
+            Tuple.Create(1.000f, 0.843f, 0.000f),          //GOLD
         };
 
         private static IList<double> DoublesFromStructure<T>(T o)
