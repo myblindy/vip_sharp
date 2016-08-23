@@ -7,7 +7,7 @@ using static vip_sharp.VIPRuntime;
 
 namespace vip_sharp
 {
-    public class VIPGenerator : IVIPNodeVisitor
+    public partial class VIPGenerator : IVIPNodeVisitor
     {
         public ContinuationStringBuilder Code = new ContinuationStringBuilder();
         private MyStringBuilder ConstructorCode = null;
@@ -38,15 +38,16 @@ namespace vip_sharp
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
         HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool", "true", "false", "char" };
 
+        public VIPGenerator()
+        {
+            CurrentSymbolRoot = SymbolsRoot;
+        }
+
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
 
         string PrefixForValueType(bool valuetype) => valuetype ? "" : "__";
 
         string LastObjectName;
-
-        public VIPGenerator()
-        {
-        }
 
         private void AddGlobalSymbol(string name) => GlobalSymbols.Add(name);
 
@@ -55,13 +56,13 @@ namespace vip_sharp
             var sb = Code;
 
             Code = new ContinuationStringBuilder();
-            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs, iod = InObjectDefinition;
-            BuildConstructor = BuildConstructorArgs = InObjectDefinition = false;
+            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs, iod = InObjectDefinition, igd = InGlobalDefinition;
+            BuildConstructor = BuildConstructorArgs = InObjectDefinition = InGlobalDefinition = false;
             node.Accept(this);
             var s = Code.ToString();
 
             Code = sb;
-            BuildConstructor = oldbc; BuildConstructorArgs = oldbca; InObjectDefinition = iod;
+            BuildConstructor = oldbc; BuildConstructorArgs = oldbca; InObjectDefinition = iod; InGlobalDefinition = igd;
 
             return s;
         }
@@ -194,6 +195,8 @@ namespace vip_sharp
                 else
                     initcode.Append(')');
                 initcode.AppendLine(";");
+
+                AddVariableSymbol(node.Name, type, false, 1);
             }
             else if (!IsValueType(node.Type))
             {
@@ -218,6 +221,8 @@ namespace vip_sharp
                     }
 
                     initcode.AppendLine("};");
+
+                    AddVariableSymbol(node.Name, type, false, 0);
                 }
                 else
                 {
@@ -230,6 +235,8 @@ namespace vip_sharp
                     }
 
                     initcode.AppendLine($" = new {type}();");
+
+                    AddVariableSymbol(node.Name, type, false, 0);
                 }
             }
             else
@@ -255,6 +262,8 @@ namespace vip_sharp
                         initcode.Append('0');
                 }
                 initcode.AppendLine(";");
+
+                AddVariableSymbol(node.Name, type, false, 0);
             }
 
             if (InGlobalDefinition)
@@ -516,6 +525,8 @@ namespace vip_sharp
             initcode.AppendLine($"= new {VIPRuntimeClass}.BitmapRes(" +
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
+
+            AddBitmapRes("__" + node.Handle);
 
             if (InGlobalDefinition)
                 AddGlobalSymbol(node.Handle);
@@ -841,6 +852,8 @@ namespace vip_sharp
             initcode.AppendLine("});");
             InGlobalDefinition = igd;
             BuildConstructor = bc;
+
+            AddDisplayList("__" + node.Name);
 
             if (!InGlobalDefinition)
                 GlobalSymbols.Add(node.Name);
