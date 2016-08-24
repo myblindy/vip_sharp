@@ -284,10 +284,14 @@ namespace vip_sharp
                 Fields = node.ChildNodes.Cast<VIPVariableDefinitionNode>().Select(n => n.Identifier).ToArray()
             });
 
+            AddTypeDefSymbolAndGoDown("__" + node.Name);
+
             Code.AppendLine($"public class __{node.Name} {{ ");
             foreach (VIPNode defnode in node.ChildNodes)
                 defnode.Accept(this);
             Code.AppendLine("}");
+
+            GoUpSymbol();
 
             InObjectDefinition = iod;
             InGlobalDefinition = igd;
@@ -526,7 +530,7 @@ namespace vip_sharp
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
 
-            AddBitmapRes("__" + node.Handle);
+            AddBitmapResSymbol("__" + node.Handle);
 
             if (InGlobalDefinition)
                 AddGlobalSymbol(node.Handle);
@@ -708,11 +712,15 @@ namespace vip_sharp
         {
             var igd = InGlobalDefinition; InGlobalDefinition = false;
 
+            AddStructSymbolAndGoDown("__" + node.Name);
+
             Code.AppendLine($"public class __struct_{node.Name} {{");
             foreach (VIPNode varnode in node.ChildNodes)
                 varnode.Accept(this);
             Code.AppendLine("}");
             Code.AppendLine($"public __struct_{node.Name} __{node.Name}=new __struct_{node.Name}();");
+
+            GoUpSymbol();
 
             InGlobalDefinition = igd;
         }
@@ -853,7 +861,7 @@ namespace vip_sharp
             InGlobalDefinition = igd;
             BuildConstructor = bc;
 
-            AddDisplayList("__" + node.Name);
+            AddDisplayListSymbol("__" + node.Name);
 
             if (!InGlobalDefinition)
                 GlobalSymbols.Add(node.Name);
