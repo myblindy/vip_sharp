@@ -17,8 +17,6 @@ namespace vip_sharp
         private bool BuildConstructorArgs = false;
         private bool BuildConstructor = false;
         private bool InObjectDefinition = false;
-        private bool InGlobalDefinition = true;
-        private HashSet<string> GlobalSymbols = new HashSet<string>();
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
         private List<Tuple<string, string>> FunctionArguments = new List<Tuple<string, string>>();
@@ -55,20 +53,18 @@ namespace vip_sharp
 
         string LastObjectName;
 
-        private void AddGlobalSymbol(string name) => GlobalSymbols.Add(name);
-
         private string GetValue(VIPNode node)
         {
             var sb = Code;
 
             Code = new ContinuationStringBuilder();
-            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs, iod = InObjectDefinition, igd = InGlobalDefinition;
-            BuildConstructor = BuildConstructorArgs = InObjectDefinition = InGlobalDefinition = false;
+            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs, iod = InObjectDefinition;
+            BuildConstructor = BuildConstructorArgs = InObjectDefinition = false;
             node.Accept(this);
             var s = Code.ToString();
 
             Code = sb;
-            BuildConstructor = oldbc; BuildConstructorArgs = oldbca; InObjectDefinition = iod; InGlobalDefinition = igd;
+            BuildConstructor = oldbc; BuildConstructorArgs = oldbca; InObjectDefinition = iod;
 
             return s;
         }
@@ -98,9 +94,6 @@ namespace vip_sharp
             Code.AppendLine($"public {type} __{node.Identifier};");
 
             AddVariableSymbol(node.Identifier, type, false, 0);
-
-            if (InGlobalDefinition)
-                AddGlobalSymbol(node.Identifier);
         }
 
         public void Visit(VIPPlainIdentifierNode node)
@@ -125,7 +118,9 @@ namespace vip_sharp
         {
             var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
 
-            if (node.Parts.Length == 1 && GlobalSymbols.Contains(node.Parts[0].Item1))
+            // global?
+            if (!node.Parts[0].Item1.EqualsI("system") && !node.Parts[0].Item1.EqualsI("true") && !node.Parts[0].Item1.EqualsI("false")
+                && GetSymbolNode("__" + node.Parts[0].Item1).Parent == null)
             {
                 code.Append($"GlobalState.MainClass.");
                 OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
@@ -156,7 +151,7 @@ namespace vip_sharp
         {
             var initcode = InObjectDefinition ? ConstructorCode : Code;
             var type = GetValue(node.Type);
-            var specifier = InGlobalDefinition ? "public " : "";
+            var specifier = CurrentSymbolRoot.SymbolType != SymbolType.Function ? "public " : "";
 
             if (node.ArraySize != null || node.ArraySizeAuto)
             {
@@ -203,7 +198,7 @@ namespace vip_sharp
                     initcode.Append(')');
                 initcode.AppendLine(";");
 
-                AddVariableSymbol(node.Name, type, false, 1);
+                AddVariableSymbol("__" + node.Name, type, false, 1);
             }
             else if (!IsValueType(node.Type))
             {
@@ -229,7 +224,7 @@ namespace vip_sharp
 
                     initcode.AppendLine("};");
 
-                    AddVariableSymbol(node.Name, type, false, 0);
+                    AddVariableSymbol("__" + node.Name, type, false, 0);
                 }
                 else
                 {
@@ -243,7 +238,7 @@ namespace vip_sharp
 
                     initcode.AppendLine($" = new {type}();");
 
-                    AddVariableSymbol(node.Name, type, false, 0);
+                    AddVariableSymbol("__" + node.Name, type, false, 0);
                 }
             }
             else
@@ -270,11 +265,8 @@ namespace vip_sharp
                 }
                 initcode.AppendLine(";");
 
-                AddVariableSymbol(node.Name, type, false, 0);
+                AddVariableSymbol("__" + node.Name, type, false, 0);
             }
-
-            if (InGlobalDefinition)
-                AddGlobalSymbol(node.Name);
         }
 
         public void Visit(VIPVariableDefinitionsNode node)
@@ -284,7 +276,6 @@ namespace vip_sharp
         public void Visit(VIPTypeDefinitionNode node)
         {
             var iod = InObjectDefinition; InObjectDefinition = true;
-            var igd = InGlobalDefinition; InGlobalDefinition = false;
 
             Typedefs.Add(new[] { node.Name }, new TypedefDataClass
             {
@@ -301,19 +292,14 @@ namespace vip_sharp
             GoUpSymbol();
 
             InObjectDefinition = iod;
-            InGlobalDefinition = igd;
         }
 
         public void Visit(VIPMainNode node)
         {
-            InGlobalDefinition = false;
-
-            Code.AppendLine("public void Run() {");
+            Code.AppendLine("public override void Run() {");
             foreach (VIPNode command in node.ChildNodes)
                 command.Accept(this);
             Code.AppendLine("}");
-
-            InGlobalDefinition = true;
         }
 
         public void Visit(VIPTranslateCommandNode node)
@@ -357,7 +343,7 @@ namespace vip_sharp
         {
             Code.AppendLine("using System;");
             Code.AppendLine("public static class GlobalState { public static MainClass MainClass; }");
-            Code.AppendLine("public class MainClass {");
+            Code.AppendLine("public class MainClass : vip_sharp.VIPRuntime.VIPObject {");
             Code.AppendLine("public MainClass() {");
             Code.AppendLine("GlobalState.MainClass = this;");
             ConstructorCode = Code.InsertContinuation();
@@ -442,8 +428,6 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionDefinitionNode node)
         {
-            var igd = InGlobalDefinition; InGlobalDefinition = false;
-
             Code.Append("public ");
             node.Type.Accept(this);
             Code.Append($" __{node.Name} (");
@@ -459,11 +443,6 @@ namespace vip_sharp
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
             Code.AppendLine("}");
-
-            InGlobalDefinition = igd;
-
-            if (!InGlobalDefinition)
-                GlobalSymbols.Add(node.Name);
         }
 
         public void Visit(VIPFunctionDefinitionArgumentListNode node)
@@ -540,9 +519,6 @@ namespace vip_sharp
                 "@\"" + node.Path + "\");");
 
             AddBitmapResSymbol("__" + node.Handle);
-
-            if (InGlobalDefinition)
-                AddGlobalSymbol(node.Handle);
         }
 
         public void Visit(VIPPathIdentifierNode node)
@@ -597,8 +573,6 @@ namespace vip_sharp
             r.MarkBeginning(Code);
 
             LastObjectName = node.Name;
-            var igd = InGlobalDefinition; InGlobalDefinition = false;
-
             AddObjectSymbolAndGoDown("__" + node.Name);
 
             Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.VIPObject {{");
@@ -622,7 +596,6 @@ namespace vip_sharp
             GoUpSymbol();
             r.MarkEnding(Code);
             ObjectRanges.Add(node.Name, r);
-            InGlobalDefinition = igd;
         }
 
         public void Visit(VIPInstanceDefinitionNode node)
@@ -649,10 +622,7 @@ namespace vip_sharp
 
             Code.AppendLine("};");
 
-            AddVariableSymbol(node.Name, type, false, 0);
-
-            if (!InGlobalDefinition)
-                GlobalSymbols.Add(node.Name);
+            AddVariableSymbol("__" + node.Name, type, false, 0);
         }
 
         public void Visit(VIPNamedArgumentListNode node)
@@ -720,8 +690,6 @@ namespace vip_sharp
 
         public void Visit(VIPStructDefinitionNode node)
         {
-            var igd = InGlobalDefinition; InGlobalDefinition = false;
-
             AddStructSymbolAndGoDown("__" + node.Name);
 
             Code.AppendLine($"public class __struct_{node.Name} {{");
@@ -731,8 +699,6 @@ namespace vip_sharp
             Code.AppendLine($"public __struct_{node.Name} __{node.Name}=new __struct_{node.Name}();");
 
             GoUpSymbol();
-
-            InGlobalDefinition = igd;
         }
 
         public void Visit(VIPObjectDefsNode vIPObjectDefsNode)
@@ -859,7 +825,6 @@ namespace vip_sharp
 
         public void Visit(VIPListDefinition node)
         {
-            var igd = InGlobalDefinition; InGlobalDefinition = false;
             var bc = BuildConstructor; BuildConstructor = true;
             var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
 
@@ -875,37 +840,27 @@ namespace vip_sharp
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             initcode.AppendLine("});");
-            InGlobalDefinition = igd;
             BuildConstructor = bc;
 
             AddDisplayListSymbol("__" + node.Name);
-
-            if (!InGlobalDefinition)
-                GlobalSymbols.Add(node.Name);
         }
+
+        private static readonly Dictionary<string, string> ShapeFunctionMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "line_strip", "LineStrip" },
+            { "polygon", "Polygon" },
+            { "quad", "Quad" },
+            { "triangle", "Triangle" },
+            { "line", "Line" },
+            { "closed_line", "ClosedLine" },
+            { "rotate", "Rotate" },
+        };
 
         public void Visit(VIPShapeCommandNode node)
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            string cmd;
-            if (node.Command.EqualsI("line_strip"))
-                cmd = "LineStrip";
-            else if (node.Command.EqualsI("polygon"))
-                cmd = "Polygon";
-            else if (node.Command.EqualsI("quad"))
-                cmd = "Quad";
-            else if (node.Command.EqualsI("triangle"))
-                cmd = "Triangle";
-            else if (node.Command.EqualsI("line"))
-                cmd = "Line";
-            else if (node.Command.EqualsI("closed_line"))
-                cmd = "ClosedLine";
-            else if (node.Command.EqualsI("rotate"))
-                cmd = "Rotate";
-            else
-                throw new NotImplementedException();
-
+            var cmd = ShapeFunctionMapping[node.Command];
             code.Append($"{VIPRuntimeInstance}.{cmd}(");
             node.ExpressionList.Accept(this);
             code.AppendLine(");");
@@ -1008,10 +963,8 @@ namespace vip_sharp
             else if (node.R != null && node.G != null && node.B != null)
             {
                 code.Append($"{VIPRuntimeInstance}.LightColor(");
-                node.R.Accept(this);
-                code.Append(',');
-                node.G.Accept(this);
-                code.Append(',');
+                node.R.Accept(this); code.Append(',');
+                node.G.Accept(this); code.Append(',');
                 node.B.Accept(this);
                 if (node.A != null)
                 {

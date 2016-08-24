@@ -10,7 +10,7 @@ namespace vip_sharp
 {
     partial class VIPGenerator
     {
-        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, DisplayList, BuiltInType }
+        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, DisplayList, BuiltInType, Root }
         [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
@@ -39,7 +39,7 @@ namespace vip_sharp
             public List<SymbolDetailsType> Arguments = new List<SymbolDetailsType>();
             public SymbolNode Return;
         }
-        SymbolNode SymbolsRoot = new SymbolNode(), CurrentSymbolRoot;
+        SymbolNode SymbolsRoot = new SymbolNode { SymbolType = SymbolType.Root }, CurrentSymbolRoot;
 
         SymbolNode AddTypeSymbol(string name)
         {
@@ -56,14 +56,20 @@ namespace vip_sharp
             // TODO handle arrays 
             var n = CurrentSymbolRoot;
 
-            // first part can bubble up
-            if (!n.Contains(path[0]))
+            // check the parameters first
+            var arg = n.Arguments.FirstOrDefault(w => w.Name == path[0]);
+
+            if (arg == null)
             {
-                n = SymbolsRoot;
-                if (!n.Contains(path[0]))
+                // first part can bubble up
+                while (n != null && !n.Contains(path[0]))
+                    n = n.Parent;
+                if (n == null)
                     throw new InvalidOperationException();
+                n = n[path[0]];
             }
-            n = n[path[0]];
+            else
+                n = arg.TypeNode;
 
             // everything else only bubbles down
             for (int idx = 1; idx < path.Length; ++idx)

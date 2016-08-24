@@ -14,7 +14,7 @@ namespace vip_sharp
 {
     public partial class VIPForm : Form
     {
-        public dynamic LibMainClass;
+        public VIPRuntime.VIPObject LibMainClass;
         bool Initialized = false;
         int Frames = 0;
         DateTime LastFPSCountedAt = DateTime.Now;

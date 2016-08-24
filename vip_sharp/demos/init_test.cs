@@ -1,6 +1,6 @@
 using System;
 public static class GlobalState { public static MainClass MainClass; }
-public class MainClass {
+public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {
 GlobalState.MainClass = this;
 }
@@ -21,9 +21,9 @@ if(Convert.ToBoolean(__dBlinkFreq>0)) {
 __m_dBlinkTime = 1/(__dBlinkFreq/2);
 }
 }
-double __m_dBlinkTime;
-double __m_dCurrTime;
-__TColor3 __m_Color;
+public double __m_dBlinkTime;
+public double __m_dCurrTime;
+public __TColor3 __m_Color;
 public class __struct_cIn {
 public bool __bStat;
 }
@@ -41,7 +41,7 @@ __m_dCurrTime = __m_dCurrTime-(__m_dBlinkTime*2);
 }
 public __Blinker __BL1 = new __Blinker(1,100,0,0) { X = -5,Y = 0};
 public __Blinker __BL2 = new __Blinker(0.5,0,100,0) { X = 5,Y = 0};
-public void Run() {
+public override void Run() {
 __BL1.__cIn.__bStat = true;
 __BL2.__cIn.__bStat = true;
 vip_sharp.VIPRuntime.Instance.Draw(__BL1);

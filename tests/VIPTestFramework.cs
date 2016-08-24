@@ -16,7 +16,7 @@ namespace tests
         {
             var tmpvip = Path.ChangeExtension(Path.GetTempFileName(), "vip");
             var tmpcs = Path.ChangeExtension(Path.GetTempFileName(), "cs");
-            dynamic libmainclass;
+            VIPRuntime.VIPObject libmainclass;
 
             try
             {
@@ -27,7 +27,7 @@ namespace tests
                 RenderingContext.CreateContext(frm);
 
                 var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(tmplib));
-                libmainclass = Activator.CreateInstance(libassembly.GetType("MainClass"));
+                libmainclass = (VIPRuntime.VIPObject)Activator.CreateInstance(libassembly.GetType("MainClass"));
             }
             finally
             {
