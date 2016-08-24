@@ -119,12 +119,15 @@ namespace vip_sharp
             var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
 
             // global?
-            if (!node.Parts[0].Item1.EqualsI("system") && !node.Parts[0].Item1.EqualsI("true") && !node.Parts[0].Item1.EqualsI("false")
-                && GetSymbolNode("__" + node.Parts[0].Item1).Parent == null)
+            if (!node.Parts[0].Item1.EqualsI("system") && !node.Parts[0].Item1.EqualsI("true") && !node.Parts[0].Item1.EqualsI("false"))
             {
-                code.Append($"GlobalState.MainClass.");
-                OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
-                return;
+                var symbol = GetSymbolNode("__" + node.Parts[0].Item1);
+                if (symbol.Parent == SymbolsRoot && CurrentSymbolRoot != SymbolsRoot)
+                {
+                    code.Append($"GlobalState.MainClass.");
+                    OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
+                    return;
+                }
             }
 
             bool first = true;
@@ -296,10 +299,12 @@ namespace vip_sharp
 
         public void Visit(VIPMainNode node)
         {
+            AddFunctionSymbol("entry", null, null);
             Code.AppendLine("public override void Run() {");
             foreach (VIPNode command in node.ChildNodes)
                 command.Accept(this);
             Code.AppendLine("}");
+            GoUpSymbol();
         }
 
         public void Visit(VIPTranslateCommandNode node)
@@ -874,15 +879,21 @@ namespace vip_sharp
             Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
             node.StringData.Accept(this); Code.Append(',');
             node.CharCount.Accept(this); Code.Append(',');
-            node.BaseList.Accept(this); Code.Append(',');
-            node.ScaleX.Accept(this); Code.Append(',');
-            node.ScaleY.Accept(this); Code.Append(',');
-            node.SpaceX.Accept(this);
-            if (node.SpaceY != null)
+
+            if (node.StringRes == null)
             {
-                Code.Append(',');
-                node.SpaceY.Accept(this);
+                node.BaseList.Accept(this); Code.Append(',');
+                node.ScaleX.Accept(this); Code.Append(',');
+                node.ScaleY.Accept(this); Code.Append(',');
+                node.SpaceX.Accept(this);
+                if (node.SpaceY != null)
+                {
+                    Code.Append(',');
+                    node.SpaceY.Accept(this);
+                }
             }
+            else
+                node.StringRes.Accept(this);
             Code.AppendLine(");");
         }
 
@@ -1012,6 +1023,33 @@ namespace vip_sharp
                 node.DisplayObject.Accept(this);
             }
             Code.AppendLine(");");
+        }
+
+        public void Visit(VIPStringResDefinition node)
+        {
+            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+
+            Code.Append($"public {VIPRuntimeClass}.StringRes __{node.Handle}");
+
+            if (InObjectDefinition)
+            {
+                Code.AppendLine(";");
+                initcode.Append($"__{node.Handle}");
+            }
+
+            initcode.Append($"= new {VIPRuntimeClass}.StringRes(");
+            node.BaseList.Accept(this); initcode.Append(',');
+            node.ScaleX.Accept(this); initcode.Append(',');
+            node.ScaleY.Accept(this); initcode.Append(',');
+            node.SpaceX.Accept(this);
+            if (node.SpaceY != null)
+            {
+                initcode.Append(',');
+                node.SpaceY.Accept(this);
+            }
+            initcode.AppendLine(");");
+
+            AddStringResSymbol("__" + node.Handle);
         }
     }
 }

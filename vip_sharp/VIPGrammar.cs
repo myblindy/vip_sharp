@@ -61,6 +61,7 @@ namespace vip_sharp
             var objectinitdefinition = new NonTerminal("objectinitdefinition", typeof(VIPObjectInitDefinition));
             var objectentrydefinition = new NonTerminal("objectentrydefinition", typeof(VIPObjectEntryDefinition));
             var listdefinition = new NonTerminal("listdefinition", typeof(VIPListDefinition));
+            var stringresdefinition = new NonTerminal("stringresdefinition", typeof(VIPStringResDefinition));
 
             var expressionlist = new NonTerminal("expressionlist", typeof(VIPExpressionListNode));
             var functiondefinitionargumentlist = new NonTerminal("functiondefinitionargumentlist", typeof(VIPFunctionDefinitionArgumentListNode));
@@ -91,12 +92,12 @@ namespace vip_sharp
             main.Rule = (ToTerm("main") + "{" + commands + "}") | ("main" + commands + "go");
 
             defs.Rule = MakeStarRule(defs, null, def);
-            def.Rule = listdefinition | macrodefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
+            def.Rule = listdefinition | macrodefinition | stringresdefinition | bitmapresdefinition | typedefinition | fullvariabledefinition
                 | functiondefinition | objectdefinition | instancedefinition;
 
             objectdefs.Rule = MakeStarRule(objectdefs, null, objectdef);
             objectdef.Rule = objectinitdefinition | objectentrydefinition | listdefinition | macrodefinition | structdefinition | bitmapresdefinition
-                | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | instancedefinition;
+                | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | stringresdefinition | instancedefinition;
 
             commands.Rule = MakeStarRule(commands, null, command);
             command.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
@@ -147,14 +148,19 @@ namespace vip_sharp
             matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")" + ";"
                 | ToTerm("matrix") + "(" + "restore" + ")" + ";"
                 | ToTerm("matrix") + "(" + "identity" + ")" + ";";
-            stringcommand.Rule = ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","
+            stringcommand.Rule =
+                ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","           // array, no spacey
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","         // array, spacey
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","               // string, no spacey
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","
-                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","               // string, spacey
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","                      // array, stringres
+                    + qualifiedidentifier + "," + expr + ")" + ";"
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + stringliteral + ","                            // string, stringres
+                    + qualifiedidentifier + "," + expr + ")" + ";";
             hotspotcommand.Rule = ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
                     + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")" + ";"                                                   // no last argument
                 | ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
@@ -181,6 +187,8 @@ namespace vip_sharp
                 + plainidentifier + ","                           // filter
                 + plainidentifier + ","                           // clamp
                 + pathidentifier + ")" + ";";                     // path
+            stringresdefinition.Rule = ToTerm("string_res") + "(" + plainidentifier + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
+                | ToTerm("string_res") + "(" + plainidentifier + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
             objectdefinition.Rule = "object" + plainidentifier + "{" + objectdefs + "}";
             instancedefinition.Rule =
                 "instance" + qualifiedidentifier + plainidentifier + "{" + namedargumentlist + "}" + ";"
@@ -292,6 +300,7 @@ namespace vip_sharp
         void Visit(VIPLightCommandNode vIPLightCommandNode);
         void Visit(VIPLightColorCommandNode vIPLightColorCommandNode);
         void Visit(VIPSliderCommandNode vIPSliderCommandNode);
+        void Visit(VIPStringResDefinition vIPStringResDefinition);
     }
 
     public abstract class VIPNode : AstNode
@@ -574,6 +583,26 @@ namespace vip_sharp
         }
 
         public string Handle, Type, Filter, ClampMode, Path;
+    }
+
+    public class VIPStringResDefinition : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            Handle = nodes[1].Token.ValueString;
+            BaseList = (VIPQualifiedIdentifierNode)nodes[2].AstNode;
+            ScaleX = (VIPExpressionNode)nodes[3].AstNode;
+            ScaleY = (VIPExpressionNode)nodes[4].AstNode;
+            SpaceX = (VIPExpressionNode)nodes[5].AstNode;
+            if (nodes.Count >= 7)
+                SpaceY = (VIPExpressionNode)nodes[6].AstNode;
+        }
+
+        public string Handle;
+        public VIPQualifiedIdentifierNode BaseList;
+        public VIPExpressionNode ScaleX, ScaleY, SpaceX, SpaceY;
     }
 
     public class VIPExpressionListNode : VIPNode
@@ -943,19 +972,29 @@ namespace vip_sharp
             X = (VIPExpressionNode)nodes[1].AstNode;
             Y = (VIPExpressionNode)nodes[2].AstNode;
             Ref = nodes[3].Token.ValueString;
-            StringData = (VIPNode)nodes[5].AstNode;
+                StringData = (VIPNode)nodes[5].AstNode;
             CharCount = (VIPExpressionNode)nodes[6].AstNode;
-            BaseList = (VIPQualifiedIdentifierNode)nodes[7].AstNode;
-            ScaleX = (VIPExpressionNode)nodes[8].AstNode;
-            ScaleY = (VIPExpressionNode)nodes[9].AstNode;
-            SpaceX = (VIPExpressionNode)nodes[10].AstNode;
-            if (nodes.Count > 11)
-                SpaceY = (VIPExpressionNode)nodes[11].AstNode;
+
+            if (nodes.Count >= 11)
+            {
+                // no string res
+                BaseList = (VIPQualifiedIdentifierNode)nodes[7].AstNode;
+                ScaleX = (VIPExpressionNode)nodes[8].AstNode;
+                ScaleY = (VIPExpressionNode)nodes[9].AstNode;
+                SpaceX = (VIPExpressionNode)nodes[10].AstNode;
+                if (nodes.Count > 11)
+                    SpaceY = (VIPExpressionNode)nodes[11].AstNode;
+            }
+            else
+            {
+                // string res
+                StringRes = (VIPNode)nodes[4].AstNode;
+            }
         }
 
         public VIPExpressionNode X, Y, ScaleX, ScaleY, CharCount, SpaceX, SpaceY;
         public string Ref;
-        public VIPNode StringData, BaseList;
+        public VIPNode StringData, BaseList, StringRes;
     }
 
     public class VIPBitmapCommandNode : VIPNode

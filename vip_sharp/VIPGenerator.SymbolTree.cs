@@ -10,7 +10,7 @@ namespace vip_sharp
 {
     partial class VIPGenerator
     {
-        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, DisplayList, BuiltInType, Root }
+        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, StringRes, DisplayList, BuiltInType, Root }
         [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
@@ -97,6 +97,13 @@ namespace vip_sharp
         void AddBitmapResSymbol(string name)
         {
             var s = new SymbolNode { SymbolType = SymbolType.BitmapRes };
+            s.Details.Name = name;
+            CurrentSymbolRoot.AddChild(s);
+        }
+
+        void AddStringResSymbol(string name)
+        {
+            var s = new SymbolNode { SymbolType = SymbolType.StringRes };
             s.Details.Name = name;
             CurrentSymbolRoot.AddChild(s);
         }

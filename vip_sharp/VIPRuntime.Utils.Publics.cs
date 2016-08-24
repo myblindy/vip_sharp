@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace vip_sharp
 {
@@ -15,10 +16,16 @@ namespace vip_sharp
     {
         public class VIPSystemClassType
         {
-            public double __dDT;
+            public double __dDT { get; set; }
+            public double __fWheel { get; set; }
+            public double __fCursor_XPos { get { return MouseX; } set { MouseX = value; } }
+            public double __fCursor_YPos { get { return MouseY; } set { MouseY = value; } }
+
             public bool LeftButtonDown;
             public bool LastLeftButtonDown;
             public double MouseX, MouseY;
+            public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
+            public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
         }
         public VIPSystemClassType VIPSystemClass = new VIPSystemClassType();
 
@@ -51,7 +58,11 @@ namespace vip_sharp
                 TextureID = gl.GenTexture();
                 gl.BindTexture(GL.TEXTURE_2D, TextureID);
 
-                gl.TexImage2D(GL.TEXTURE_2D, 0, Path);
+                var bmp = new Bitmap(Path);
+                if (type == BitmapType.RGB)
+                    bmp.MakeTransparent(System.Drawing.Color.Black);
+
+                gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
                 if (Filter == BitmapFilter.MipMap)
                     gl.GenerateMipmap(GL.TEXTURE_2D);
 
@@ -61,6 +72,20 @@ namespace vip_sharp
                 gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, Filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
 
                 gl.BindTexture(GL.TEXTURE_2D, 0);
+            }
+        }
+
+        public class StringRes
+        {
+            public DisplayList BaseList;
+            public double ScaleX;
+            public double ScaleY;
+            public double SpaceX;
+            public double SpaceY;
+
+            public StringRes(DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
+            {
+                BaseList = baselist; ScaleX = scalex; ScaleY = scaley; SpaceX = spacex; SpaceY = spacey;
             }
         }
 
@@ -349,6 +374,8 @@ namespace vip_sharp
             gl.Disable(GL.COLOR_MATERIAL);
         }
 
+        public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, StringRes res) =>
+            DrawString(x, y, @ref, s, cnt, res.BaseList, res.ScaleX, res.ScaleY, res.SpaceX, res.SpaceY);
         public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
         {
             if (cnt == 0)

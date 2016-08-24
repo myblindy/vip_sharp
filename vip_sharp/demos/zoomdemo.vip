@@ -1,0 +1,102 @@
+use "VIP.fnt"
+String_Res(LFont, VIP_Null, 0.05, 0.05, 1.2);
+
+// the switch bitmap
+Bitmap_Res(bmpSwitch, RGB, LINEAR, CLAMP, Switch.bmp);
+
+// declare a vertex type
+Typedef TVertex {
+	double	dX;
+	double	dY;
+}
+
+// up and down uv coords for the switch bitmap
+TVertex	uvDown[4]  = {	0.0,  0.0,
+						0.0,  1.0,
+						0.5,  1.0,
+						0.5,  0.0 };
+
+TVertex	uvUp[4] = {		0.5,  0.0,
+						0.5,  1.0,
+						1.0,  1.0,
+						1.0,  0.0 };
+
+// and the two position switch object						
+object TwoPosSwitch
+{
+	// the state of the button
+	struct cOut
+	{
+		bool bSel;
+	}
+	
+	// and the actual logic
+	Entry
+	{
+		bool bSelUp;
+		bool bSelDown;
+			
+		// 2 hotspots
+		Hotspot(0, 0, .2, .3, CU, bSelDown, SELECTED, MOMENTARY, true, false, NEVER);
+		Hotspot(0, 0, .2, .3, CL, bSelUp, SELECTED, MOMENTARY, true, false, NEVER);
+		
+		// decide the position of the button
+		if(bSelUp) { cOut.bSel=true; } else { if(bSelDown) { cOut.bSel=false; } }
+		
+		// and draw the actual button
+		if(cOut.bSel) {
+			Bitmap(bmpSwitch, REPLACE, 0, 0, .2, .6, CTR, uvUp);
+		}
+		else {
+			Bitmap(bmpSwitch, REPLACE, 0, 0, .2, .6, CTR, uvDown);
+		}
+	}
+}
+
+// main program
+instance TwoPosSwitch sw1 {X= 0.0, Y= 0.0, s=.3};
+instance TwoPosSwitch sw2 {X= 0.0, Y= 0.3, s=.3};
+instance TwoPosSwitch sw3 {X= 0.0, Y=-0.3, s=.3};
+instance TwoPosSwitch sw4 {X= 0.3, Y= 0.0, s=.3};
+instance TwoPosSwitch sw5 {X=-0.3, Y= 0.0, s=.3};
+
+double dZoom = 1.0;
+double dZoomX = 0.0;
+double dZoomY = 0.0;
+
+Main 
+{
+	// handle the zoom
+	double dNewZoom;
+	dNewZoom = dZoom + (System.fWheel / 10.0);
+	if(System.fWheel != 0) {
+		// save the new center
+		dZoomX = System.fCursor_XPos / dZoom;
+		dZoomY = System.fCursor_YPos / dZoom;
+	}
+	dZoom = dNewZoom;
+	
+	// set the view
+	Matrix(SAVE);
+	//Translate(dZoomX, dZoomY);
+	Scale(dZoom);
+	Translate(dZoomX * dZoom, dZoomY * dZoom);
+
+	// draw everything
+	draw(sw1);draw(sw2);//draw(sw3);//draw(sw4);draw(sw5);
+	
+	// and restore the view
+	Matrix(RESTORE);
+	
+	// hud
+	char szValue[8];
+	double tmp;
+	
+	tmp = System.fCursor_XPos / dZoom;
+	Format(szValue, "%.2f", tmp);
+	String(-0.9, 0.9, LU, LFont, szValue, 0);
+	tmp = System.fCursor_YPos / dZoom;
+	Format(szValue, "%.2f", tmp);
+	String(-0.9, 0.8, LU, LFont, szValue, 0);
+
+}

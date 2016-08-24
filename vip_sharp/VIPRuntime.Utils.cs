@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
 using System.Drawing;
+using IniParser;
 
 namespace vip_sharp
 {
@@ -22,6 +23,8 @@ namespace vip_sharp
             if (!Path.IsPathRooted(libpath))
                 libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
+            LoadINIFile(Path.ChangeExtension(libpath, "ini"));
+
             var frm = new VIPForm();
             rc = RenderingContext.CreateContext(frm);
 
@@ -30,6 +33,20 @@ namespace vip_sharp
             frm.LibMainClass = libmainclass;
 
             Application.Run(frm);
+        }
+
+        internal static void LoadINIFile(string inipath)
+        {
+            try
+            {
+                var parser = new FileIniDataParser();
+                var data = parser.ReadFile(inipath);
+                Instance.VIPSystemClass.ModelMinX = Convert.ToDouble(data["VIEW"]["X_Left_Corner"]);
+                Instance.VIPSystemClass.ModelMaxX = Convert.ToDouble(data["VIEW"]["X_Right_Corner"]);
+                Instance.VIPSystemClass.ModelMinY = Convert.ToDouble(data["VIEW"]["Y_Bottom_Corner"]);
+                Instance.VIPSystemClass.ModelMaxY = Convert.ToDouble(data["VIEW"]["Y_Upper_Corner"]);
+            }
+            catch { }
         }
 
         public abstract class VIPObject

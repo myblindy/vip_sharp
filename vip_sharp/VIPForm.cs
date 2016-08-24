@@ -21,8 +21,6 @@ namespace vip_sharp
         DateTime LastRenderedAt = DateTime.Now;
         bool AutoRender;
 
-        const double MinX = -15, MaxX = 15, MinY = -15, MaxY = 15;
-
         public VIPForm(bool autorender = true)
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
@@ -33,19 +31,27 @@ namespace vip_sharp
             MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };
             MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false; };
             MouseMove += (s, e) => { VIPRuntime.Instance.VIPSystemClass.MouseX = ToX(e.X); VIPRuntime.Instance.VIPSystemClass.MouseY = ToY(e.Y); };
+            MouseWheel += (s, e) => { VIPRuntime.Instance.VIPSystemClass.__fWheel = Math.Sign(e.Delta); };
 
             // set up the rc
             gl.DepthMask(false);
             gl.Disable(GL.LIGHTING);
             wgl.SwapInterval(0);
+            gl.Enable(GL.BLEND);
+            gl.BlendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            gl.AlphaFunc(GL.GREATER, 0.0f);
+            gl.Enable(GL.ALPHA_TEST);
+            gl.Enable(GL.LINE_SMOOTH);
+            gl.Hint(GL.LINE_SMOOTH_HINT, GL.NICEST);
+            gl.ColorMaterial(GL.FRONT, GL.AMBIENT);
 
             // ready
             Initialized = true;
             Application.Idle += Application_Idle;
         }
 
-        double ToX(int x) => ((double)x) / ClientSize.Width * (MaxX - MinX) + MinX;
-        double ToY(int y) => -(((double)y) / ClientSize.Height * (MaxY - MinY) + MinY);
+        double ToX(int x) => ((double)x) / ClientSize.Width * (VIPRuntime.Instance.VIPSystemClass.ModelMaxX - VIPRuntime.Instance.VIPSystemClass.ModelMinX) + VIPRuntime.Instance.VIPSystemClass.ModelMinX;
+        double ToY(int y) => -(((double)y) / ClientSize.Height * (VIPRuntime.Instance.VIPSystemClass.ModelMaxY - VIPRuntime.Instance.VIPSystemClass.ModelMinY) + VIPRuntime.Instance.VIPSystemClass.ModelMinY);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct NativeMessage
@@ -81,7 +87,9 @@ namespace vip_sharp
             gl.Viewport(0, 0, ClientSize.Width, ClientSize.Height);
             gl.MatrixMode(GL.PROJECTION);
             gl.LoadIdentity();
-            gl.Ortho(MinX, MaxX, MinY, MaxY, -10, 10);
+            gl.Ortho(VIPRuntime.Instance.VIPSystemClass.ModelMinX, VIPRuntime.Instance.VIPSystemClass.ModelMaxX,
+                VIPRuntime.Instance.VIPSystemClass.ModelMinY, VIPRuntime.Instance.VIPSystemClass.ModelMaxY,
+                -10, 10);
         }
 
         protected void Render()
@@ -93,6 +101,7 @@ namespace vip_sharp
             var now = DateTime.Now;
             VIPRuntime.Instance.VIPSystemClass.__dDT = (now - LastRenderedAt).TotalSeconds;
             LibMainClass.Run();
+            VIPRuntime.Instance.VIPSystemClass.__fWheel = 0;
             LastRenderedAt = now;
 
             VIPRuntime.rc.SwapBuffers();
