@@ -21,6 +21,7 @@ namespace vip_sharp
         private HashSet<string> GlobalSymbols = new HashSet<string>();
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
+        private List<Tuple<string, string>> FunctionArguments = new List<Tuple<string, string>>();
 
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
         private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
@@ -36,11 +37,16 @@ namespace vip_sharp
             internal string[] Fields;
         }
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
-        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "int", "bool", "true", "false", "char" };
+        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "float", "int", "bool", "true", "false", "char" };
 
         public VIPGenerator()
         {
             CurrentSymbolRoot = SymbolsRoot;
+            AddBuiltInTypeSymbol("double");
+            AddBuiltInTypeSymbol("int");
+            AddBuiltInTypeSymbol("float");
+            AddBuiltInTypeSymbol("bool");
+            AddBuiltInTypeSymbol("char");
         }
 
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
@@ -88,9 +94,10 @@ namespace vip_sharp
 
         public void Visit(VIPVariableDefinitionNode node)
         {
-            Code.Append("public ");
-            node.Type.Accept(this);
-            Code.AppendLine($" __{node.Identifier};");
+            var type = GetValue(node.Type);
+            Code.AppendLine($"public {type} __{node.Identifier};");
+
+            AddVariableSymbol(node.Identifier, type, false, 0);
 
             if (InGlobalDefinition)
                 AddGlobalSymbol(node.Identifier);
@@ -466,9 +473,11 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionDefinitionArgument node)
         {
-            ((VIPTypeIdentifierNode)node.ChildNodes[0]).Accept(this);
-            ConstructorArgsCode.Append(" __");
-            ConstructorArgsCode.Append(((VIPPlainIdentifierNode)node.ChildNodes[1]).Name);
+            var type = GetValue((VIPTypeIdentifierNode)node.ChildNodes[0]);
+            var name = ((VIPPlainIdentifierNode)node.ChildNodes[1]).Name;
+            ConstructorArgsCode.Append($"{type} __{name}");
+
+            FunctionArguments.Add(Tuple.Create(type, "__" + name));
         }
 
         public void Visit(VIPReturnCommandNode node)
@@ -590,6 +599,8 @@ namespace vip_sharp
             LastObjectName = node.Name;
             var igd = InGlobalDefinition; InGlobalDefinition = false;
 
+            AddObjectSymbolAndGoDown("__" + node.Name);
+
             Code.AppendLine($"public class __{node.Name} : {VIPRuntimeClass}.VIPObject {{");
 
             Code.Append($"public __{node.Name}(");
@@ -608,6 +619,7 @@ namespace vip_sharp
             ConstructorArgsCode = ConstructorArgsCodeStack.Pop();
             ConstructorCode = ConstructorCodeStack.Pop();
 
+            GoUpSymbol();
             r.MarkEnding(Code);
             ObjectRanges.Add(node.Name, r);
             InGlobalDefinition = igd;
@@ -615,12 +627,8 @@ namespace vip_sharp
 
         public void Visit(VIPInstanceDefinitionNode node)
         {
-            Code.Append("public ");
-            node.Object.Accept(this);
-            Code.Append($" __{node.Name} = new ");
-            node.Object.Accept(this);
-
-            Code.Append('(');
+            var type = GetValue(node.Object);
+            Code.Append($"public {type} __{node.Name} = new {type}(");
 
             bool first = true;
             if (node.ConstructorArguments != null)
@@ -640,6 +648,8 @@ namespace vip_sharp
             }
 
             Code.AppendLine("};");
+
+            AddVariableSymbol(node.Name, type, false, 0);
 
             if (!InGlobalDefinition)
                 GlobalSymbols.Add(node.Name);
@@ -741,6 +751,7 @@ namespace vip_sharp
 
             bool first = true;
             BuildConstructorArgs = true;
+            FunctionArguments.Clear();
             foreach (var argnode in node.Arguments)
             {
                 if (first) first = false; else ConstructorArgsCode.Append(',');
@@ -748,10 +759,14 @@ namespace vip_sharp
             }
             BuildConstructorArgs = false;
 
+            AddFunctionSymbol("init", null, FunctionArguments);
+
             BuildConstructor = true;
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             BuildConstructor = false;
+
+            GoUpSymbol();
 
             InObjectDefinition = true;
         }
@@ -759,10 +774,12 @@ namespace vip_sharp
         public void Visit(VIPObjectEntryDefinition node)
         {
             InObjectDefinition = false;
+            AddFunctionSymbol("entry", null, null);
             Code.AppendLine("public override void Run() {");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             Code.AppendLine("}");
+            GoUpSymbol();
             InObjectDefinition = true;
         }
 

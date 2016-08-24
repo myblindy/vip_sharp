@@ -1,7 +1,9 @@
 using System;
 public static class GlobalState { public static MainClass MainClass; }
 public class MainClass {
-public MainClass() { GlobalState.MainClass = this; }
+public MainClass() {
+GlobalState.MainClass = this;
+}
 public class __TColor3 { 
 public double __dR;
 public double __dG;
@@ -15,7 +17,7 @@ this.__m_Color = new __TColor3();
 __m_Color.__dR = __dR;
 __m_Color.__dG = __dG;
 __m_Color.__dB = __dB;
-if(__dBlinkFreq>0) {
+if(Convert.ToBoolean(__dBlinkFreq>0)) {
 __m_dBlinkTime = 1/(__dBlinkFreq/2);
 }
 }
@@ -27,12 +29,12 @@ public bool __bStat;
 }
 public __struct_cIn __cIn=new __struct_cIn();
 public override void Run() {
-if(__cIn.__bStat&&(__m_dCurrTime<__m_dBlinkTime)) {
+if(Convert.ToBoolean(__cIn.__bStat&&(__m_dCurrTime<__m_dBlinkTime))) {
 vip_sharp.VIPRuntime.Instance.Color(__m_Color);
 vip_sharp.VIPRuntime.Instance.Circle(0,0,2,40,true);
 }
 __m_dCurrTime = __m_dCurrTime+vip_sharp.VIPRuntime.Instance.VIPSystemClass.__dDT;
-if(__m_dCurrTime>(__m_dBlinkTime*2)) {
+if(Convert.ToBoolean(__m_dCurrTime>(__m_dBlinkTime*2))) {
 __m_dCurrTime = __m_dCurrTime-(__m_dBlinkTime*2);
 }
 }

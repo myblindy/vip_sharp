@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,8 @@ namespace vip_sharp
 {
     partial class VIPGenerator
     {
-        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, DisplayList }
+        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, DisplayList, BuiltInType }
+        [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
             public string Name;
@@ -17,6 +19,7 @@ namespace vip_sharp
             public bool TypePointer;
             public int TypeIndices;
         }
+        [DebuggerDisplay("{SymbolType} {Details.Name}")]
         class SymbolNode
         {
             private Dictionary<string, SymbolNode> Children { get; set; } = new Dictionary<string, SymbolNode>();
@@ -34,6 +37,7 @@ namespace vip_sharp
             public SymbolType SymbolType;
             public SymbolDetailsType Details = new SymbolDetailsType();
             public List<SymbolDetailsType> Arguments = new List<SymbolDetailsType>();
+            public SymbolNode Return;
         }
         SymbolNode SymbolsRoot = new SymbolNode(), CurrentSymbolRoot;
 
@@ -57,14 +61,14 @@ namespace vip_sharp
             {
                 n = SymbolsRoot;
                 if (!n.Contains(path[0]))
-                    return null;
+                    throw new InvalidOperationException();
             }
             n = n[path[0]];
 
             // everything else only bubbles down
             for (int idx = 1; idx < path.Length; ++idx)
                 if (!n.Contains(path[idx]))
-                    return null;
+                    throw new InvalidOperationException();
                 else
                     n = n[path[idx]];
 
@@ -88,7 +92,6 @@ namespace vip_sharp
         {
             var s = new SymbolNode { SymbolType = SymbolType.BitmapRes };
             s.Details.Name = name;
-            s.Details.TypeNode = s;
             CurrentSymbolRoot.AddChild(s);
         }
 
@@ -96,7 +99,6 @@ namespace vip_sharp
         {
             var s = new SymbolNode { SymbolType = SymbolType.DisplayList };
             s.Details.Name = name;
-            s.Details.TypeNode = s;
             CurrentSymbolRoot.AddChild(s);
         }
 
@@ -104,7 +106,6 @@ namespace vip_sharp
         {
             var s = AddTypeSymbol(name);
             s.SymbolType = SymbolType.Typedef;
-            s.Details.TypeNode = s;
             CurrentSymbolRoot = s;
         }
 
@@ -112,28 +113,44 @@ namespace vip_sharp
         {
             var s = AddTypeSymbol(name);
             s.SymbolType = SymbolType.Struct;
-            s.Details.TypeNode = s;
             CurrentSymbolRoot = s;
         }
 
-        void AddObjectSymbolAndGoDown(string name, IEnumerable<Tuple<string, string>> @params)
+        void AddObjectSymbolAndGoDown(string name)
         {
             var s = AddTypeSymbol(name);
             s.SymbolType = SymbolType.Object;
-            s.Details.TypeNode = s;
+            CurrentSymbolRoot = s;
+        }
+
+        void AddFunctionSymbol(string name, string returntype, IEnumerable<Tuple<string, string>> @params)
+        {
+            var s = AddTypeSymbol(name);
+            s.SymbolType = SymbolType.Function;
+            if (!string.IsNullOrWhiteSpace(returntype))
+                s.Return = GetSymbolNode(returntype);
             CurrentSymbolRoot = s;
 
-            foreach (var param in @params)
-            {
-                var d = new SymbolDetailsType
+            if (@params != null)
+                foreach (var param in @params)
                 {
-                    // TODO handle pointers and arrays
-                    Name = param.Item2,
-                    TypeNode = GetSymbolNode(param.Item1)
-                };
-            }
+                    var d = new SymbolDetailsType
+                    {
+                        // TODO handle pointers and arrays
+                        Name = param.Item2,
+                        TypeNode = GetSymbolNode(param.Item1)
+                    };
+                    s.Arguments.Add(d);
+                }
         }
 
         void GoUpSymbol() => CurrentSymbolRoot = CurrentSymbolRoot.Parent;
+
+        void AddBuiltInTypeSymbol(string name)
+        {
+            var s = new SymbolNode { SymbolType = SymbolType.BuiltInType };
+            s.Details.Name = name;
+            CurrentSymbolRoot.AddChild(s);
+        }
     }
 }
