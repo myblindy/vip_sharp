@@ -338,10 +338,18 @@ namespace vip_sharp
 
         public void Visit(VIPCommandNode node)
         {
+            foreach (VIPNode subnode in node.ChildNodes)
+                subnode.Accept(this);
         }
 
         public void Visit(VIPCommandsNode node)
         {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            code.AppendLine("{");
+            foreach (VIPNode subnode in node.ChildNodes)
+                subnode.Accept(this);
+            code.AppendLine("}");
         }
 
         public void Visit(VIPProgramNode node)
@@ -563,6 +571,7 @@ namespace vip_sharp
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
             code.AppendLine("}");
+
             if (node.ElseCommands != null)
             {
                 code.AppendLine("else {");

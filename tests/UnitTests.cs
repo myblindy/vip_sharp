@@ -51,13 +51,13 @@ double b;
 Main { 
     a = 20; b = 30;
     a = a - b;
-    if(a<b) { a = a + 5; } else { b = b + 5; } 
+    if(a<b) { a = a + 5; b = b + 1; } else if(a>b) { b = b + 5; } else { b = 0; }
     if(a) { b = b - a; }
 }");
             Step(vip);
 
             Assert.IsTrue(vip.__a == -5);
-            Assert.IsTrue(vip.__b == 35);
+            Assert.IsTrue(vip.__b == 36);
         }
 
         [TestMethod]

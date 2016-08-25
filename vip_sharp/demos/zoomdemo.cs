@@ -633,18 +633,26 @@ bool __bSelDown = false;
 vip_sharp.VIPRuntime.Instance.HotSpot(1, this,0,0,0.2,0.3,vip_sharp.VIPRuntime.PositionRef.CU,ref __bSelDown,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HoverBox.Never);
 vip_sharp.VIPRuntime.Instance.HotSpot(2, this,0,0,0.2,0.3,vip_sharp.VIPRuntime.PositionRef.CL,ref __bSelUp,vip_sharp.VIPRuntime.HotSpotTrigger.Selected,vip_sharp.VIPRuntime.HotSpotType.Momentary,true,false,vip_sharp.VIPRuntime.HoverBox.Never);
 if(Convert.ToBoolean(__bSelUp)) {
+{
 __cOut.__bSel = true;
+}
 }
 else {
 if(Convert.ToBoolean(__bSelDown)) {
+{
 __cOut.__bSel = false;
 }
 }
+}
 if(Convert.ToBoolean(__cOut.__bSel)) {
+{
 vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__bmpSwitch, vip_sharp.VIPRuntime.BitmapBlend.Replace, 0,0,0.2,0.6,vip_sharp.VIPRuntime.PositionRef.CTR,GlobalState.MainClass.__uvUp);
 }
+}
 else {
+{
 vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__bmpSwitch, vip_sharp.VIPRuntime.BitmapBlend.Replace, 0,0,0.2,0.6,vip_sharp.VIPRuntime.PositionRef.CTR,GlobalState.MainClass.__uvDown);
+}
 }
 }
 }
@@ -660,8 +668,10 @@ public override void Run() {
 double __dNewZoom = 0;
 __dNewZoom = GlobalState.MainClass.__dZoom+(vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel/10);
 if(Convert.ToBoolean(vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel!=0)) {
+{
 GlobalState.MainClass.__dZoomX = vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fCursor_XPos/GlobalState.MainClass.__dZoom;
 GlobalState.MainClass.__dZoomY = vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fCursor_YPos/GlobalState.MainClass.__dZoom;
+}
 }
 GlobalState.MainClass.__dZoom = __dNewZoom;
 vip_sharp.VIPRuntime.Instance.MatrixSave();

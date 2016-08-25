@@ -41,7 +41,7 @@ object TwoPosSwitch
 		Hotspot(0, 0, .2, .3, CL, bSelUp, SELECTED, MOMENTARY, true, false, NEVER);
 		
 		// decide the position of the button
-		if(bSelUp) { cOut.bSel=true; } else { if(bSelDown) { cOut.bSel=false; } }
+		if(bSelUp) { cOut.bSel=true; } else if(bSelDown) { cOut.bSel=false; }
 		
 		// and draw the actual button
 		if(cOut.bSel) {
