@@ -83,7 +83,7 @@ Main
 	Translate(dZoomX * dZoom, dZoomY * dZoom);
 
 	// draw everything
-	draw(sw1);draw(sw2);//draw(sw3);//draw(sw4);draw(sw5);
+	draw(sw1);draw(sw2);draw(sw3);draw(sw4);draw(sw5);
 	
 	// and restore the view
 	Matrix(RESTORE);

@@ -33,21 +33,23 @@ namespace vip_sharp
             MouseMove += (s, e) => { VIPRuntime.Instance.VIPSystemClass.MouseX = ToX(e.X); VIPRuntime.Instance.VIPSystemClass.MouseY = ToY(e.Y); };
             MouseWheel += (s, e) => { VIPRuntime.Instance.VIPSystemClass.__fWheel = Math.Sign(e.Delta); };
 
-            // set up the rc
-            gl.DepthMask(false);
+            // ready
+            Initialized = true;
+            Application.Idle += Application_Idle;
+        }
+
+        public void InitGL()
+        {
+            gl.Disable(GL.DEPTH_TEST);
             gl.Disable(GL.LIGHTING);
-            wgl.SwapInterval(0);
             gl.Enable(GL.BLEND);
             gl.BlendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+            gl.ClearColor(0, 0, 0, 0);
             gl.AlphaFunc(GL.GREATER, 0.0f);
             gl.Enable(GL.ALPHA_TEST);
             gl.Enable(GL.LINE_SMOOTH);
             gl.Hint(GL.LINE_SMOOTH_HINT, GL.NICEST);
             gl.ColorMaterial(GL.FRONT, GL.AMBIENT);
-
-            // ready
-            Initialized = true;
-            Application.Idle += Application_Idle;
         }
 
         double ToX(int x) => ((double)x) / ClientSize.Width * (VIPRuntime.Instance.VIPSystemClass.ModelMaxX - VIPRuntime.Instance.VIPSystemClass.ModelMinX) + VIPRuntime.Instance.VIPSystemClass.ModelMinX;

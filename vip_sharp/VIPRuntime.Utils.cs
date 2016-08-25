@@ -26,7 +26,9 @@ namespace vip_sharp
             LoadINIFile(Path.ChangeExtension(libpath, "ini"));
 
             var frm = new VIPForm();
-            rc = RenderingContext.CreateContext(frm);
+            var s = new RenderingContextSetting();
+            rc = RenderingContext.CreateContext(frm, s);
+            frm.InitGL();
 
             var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
             VIPObject libmainclass = (VIPObject)libassembly.CreateInstance("MainClass");
