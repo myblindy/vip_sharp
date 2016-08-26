@@ -1,0 +1,9 @@
+Microsoft (R) Visual C# Compiler version 4.6.1055.0
+for C# 5
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
+
+fndemo.cs(168,55): error CS1950: The best overloaded Add method 'vip_sharp.BipolarArray<MainClass.__TColor>.Add(MainClass.__TColor)' for the collection initializer has some invalid arguments
+fndemo.cs(168,55): error CS1503: Argument 1: cannot convert from 'int' to 'MainClass.__TColor'
+fndemo.cs(170,14): error CS0029: Cannot implicitly convert type 'MainClass.__TColor' to 'int'

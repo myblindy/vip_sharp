@@ -70,6 +70,7 @@ namespace vip_sharp
 
             var functiondefinitionargument = new NonTerminal("functiondefinitionargument", typeof(VIPFunctionDefinitionArgument));
             var namedargument = new NonTerminal("namedargument", typeof(VIPNamedArgumentNode));
+            var referenceidentifier = new NonTerminal("referenceidentifier", typeof(VIPReferenceIdentifier));
 
             var identifier = new NonTerminal("identifier", typeof(VIPIdentifierNode));
             var qualifiedidentifier = new NonTerminal("qualifiedidentifier", typeof(VIPQualifiedIdentifierNode));
@@ -79,14 +80,11 @@ namespace vip_sharp
             var binop = new NonTerminal("BinOp", typeof(VIPOperatorNode));
             var unop = new NonTerminal("UnOp", typeof(VIPOperatorNode));
 
-            var number = new NumberLiteral("number", NumberOptions.AllowSign | NumberOptions.AllowStartEndDot);
-            number.AstConfig.NodeType = typeof(VIPNumberNode);
-            var plainidentifier = new IdentifierTerminal("plainidentifier");
-            plainidentifier.AstConfig.NodeType = typeof(VIPPlainIdentifierNode);
-            var pathidentifier = new IdentifierTerminal("pathidentifier", @" /\.");
-            pathidentifier.AstConfig.NodeType = typeof(VIPPathIdentifierNode);
-            var stringliteral = new QuotedValueLiteral("stringliteral", "\"", TypeCode.String);
-            stringliteral.AstConfig.NodeType = typeof(VIPStringLiteralNode);
+            var number = new NumberLiteral("number", NumberOptions.AllowSign | NumberOptions.AllowStartEndDot); number.AstConfig.NodeType = typeof(VIPNumberNode);
+            var plainidentifier = new IdentifierTerminal("plainidentifier"); plainidentifier.AstConfig.NodeType = typeof(VIPPlainIdentifierNode);
+            var pathidentifier = new IdentifierTerminal("pathidentifier", @" /\."); pathidentifier.AstConfig.NodeType = typeof(VIPPathIdentifierNode);
+            var stringliteral = new QuotedValueLiteral("stringliteral", "\"", TypeCode.String); stringliteral.AstConfig.NodeType = typeof(VIPStringLiteralNode);
+            var referenceliteral = ToTerm("&"); referenceliteral.AstConfig.NodeType = typeof(VIPReferenceLiteralNode);
 
             program.Rule = defs + main;
             main.Rule = (ToTerm("main") + "{" + commands + "}") | ("main" + commands + "go");
@@ -123,7 +121,9 @@ namespace vip_sharp
                 | ToTerm("triangle") + "{" + expressionlist + "}" + ";";
             rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")" + ";";
             assignmentcommand.Rule = qualifiedidentifier + "=" + expr + ";";
-            functiondefinition.Rule = ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
+            functiondefinition.Rule =
+                ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}"
+                | ToTerm("function") + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
             returncommand.Rule = "return" + expr + ";";
             bitmapcommand.Rule = ToTerm("bitmap") + "("
                     + qualifiedidentifier + ","                                                                     // handle
@@ -204,13 +204,14 @@ namespace vip_sharp
             namedargumentlist.Rule = MakeStarRule(namedargumentlist, ToTerm(","), namedargument);
             plainidentifierlist.Rule = MakeStarRule(plainidentifierlist, ToTerm(","), plainidentifier);
 
-            functiondefinitionargument.Rule = typeidentifier + plainidentifier;
+            functiondefinitionargument.Rule = typeidentifier + referenceidentifier + plainidentifier;
             namedargument.Rule = plainidentifier + "=" + expr;
+            referenceidentifier.Rule = referenceliteral | Empty;
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
                 | stringliteral | number | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")";
             binop.Rule = ToTerm("-") | "+" | "*" | "/" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
-                | "<=" | ">=" | "!=" | "=" | "<" | ">";
+                | "<=" | ">=" | "!=" | "==" | "<" | ">";
             unop.Rule = ToTerm("-") | "+" | "!" | "~";
 
             identifier.Rule = plainidentifier + "[" + expr + "]" | plainidentifier;
@@ -301,6 +302,8 @@ namespace vip_sharp
         void Visit(VIPLightColorCommandNode vIPLightColorCommandNode);
         void Visit(VIPSliderCommandNode vIPSliderCommandNode);
         void Visit(VIPStringResDefinition vIPStringResDefinition);
+        void Visit(VIPReferenceLiteralNode vIPReferenceLiteralNode);
+        void Visit(VIPReferenceIdentifier vIPReferenceIdentifier);
     }
 
     public abstract class VIPNode : AstNode
@@ -470,17 +473,26 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Type = (VIPTypeIdentifierNode)nodes[1].AstNode;
-            Name = nodes[2].Token.ValueString;
-            Arguments = ((VIPFunctionDefinitionArgumentListNode)nodes[3].AstNode).ChildNodes
-                .Select(n => Tuple.Create((VIPTypeIdentifierNode)n.ChildNodes[0], ((VIPPlainIdentifierNode)n.ChildNodes[1]).Name))
-                .ToArray();
-            AddChild(nodes[4].ChildNodes.Select(n => n.ChildNodes[0]));
+            if (nodes.Count == 5)
+            {
+                // return type
+                Type = (VIPTypeIdentifierNode)nodes[1].AstNode;
+                Name = nodes[2].Token.ValueString;
+                Arguments = nodes[3].ChildNodes.Select(n => (VIPFunctionDefinitionArgument)n.AstNode).ToArray();
+                AddChild(nodes[4].ChildNodes.Select(n => n.ChildNodes[0]));
+            }
+            else
+            {
+                // no return type
+                Name = nodes[1].Token.ValueString;
+                Arguments = nodes[2].ChildNodes.Select(n => (VIPFunctionDefinitionArgument)n.AstNode).ToArray();
+                AddChild(nodes[3].ChildNodes.Select(n => n.ChildNodes[0]));
+            }
         }
 
         public VIPTypeIdentifierNode Type;
         public string Name;
-        public Tuple<VIPTypeIdentifierNode, string>[] Arguments;
+        public VIPFunctionDefinitionArgument[] Arguments;
     }
 
     public class VIPObjectDefinitionNode : VIPNode
@@ -671,6 +683,26 @@ namespace vip_sharp
         }
 
         public double Value { get; set; }
+    }
+
+    public class VIPReferenceLiteralNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void Init(AstContext context, ParseTreeNode treeNode) => base.Init(context, treeNode);
+    }
+
+    public class VIPReferenceIdentifier : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void Init(AstContext context, ParseTreeNode node)
+        {
+            base.Init(context, node);
+            Available = node.ChildNodes.Count > 0;
+        }
+
+        public bool Available;
     }
 
     public class VIPExpressionNode : VIPNode

@@ -19,7 +19,7 @@ namespace vip_sharp
         private bool InObjectDefinition = false;
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
-        private List<Tuple<string, string>> FunctionArguments = new List<Tuple<string, string>>();
+        private List<Tuple<string[], string, bool>> FunctionArguments = new List<Tuple<string[], string, bool>>();
 
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
         private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
@@ -82,10 +82,10 @@ namespace vip_sharp
 
         public void Visit(VIPDefsNode node)
         {
-            InObjectDefinition = true;
+            //InObjectDefinition = true;
             foreach (VIPNode typedef in node.ChildNodes)
                 typedef.Accept(this);
-            InObjectDefinition = false;
+            //InObjectDefinition = false;
         }
 
         public void Visit(VIPVariableDefinitionNode node)
@@ -119,22 +119,26 @@ namespace vip_sharp
             var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
 
             // global?
+            bool pointer = false;
             if (!node.Parts[0].Item1.EqualsI("system") && !node.Parts[0].Item1.EqualsI("true") && !node.Parts[0].Item1.EqualsI("false"))
             {
                 var symbol = GetSymbolNode("__" + node.Parts[0].Item1);
+                pointer = symbol.Details.TypePointer;
                 if (symbol.Parent == SymbolsRoot && CurrentSymbolRoot != SymbolsRoot)
                 {
                     code.Append($"GlobalState.MainClass.");
-                    OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
-                    return;
+                    //OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
+                    //return;
                 }
             }
 
             bool first = true;
             foreach (var part in node.Parts)
             {
-                if (first) first = false; else code.Append('.');
+                if (!first) code.Append('.');
                 OutputQualifiedIdentifierPart(code, part.Item1, part.Item2);
+                if (first && pointer) code.Append("[0]");
+                first = false;
             }
         }
 
@@ -442,16 +446,17 @@ namespace vip_sharp
         public void Visit(VIPFunctionDefinitionNode node)
         {
             Code.Append("public ");
-            node.Type.Accept(this);
+            if (node.Type == null) Code.Append("void"); else node.Type.Accept(this);
             Code.Append($" __{node.Name} (");
 
             bool first = true;
+            FunctionArguments.Clear();
             foreach (var arg in node.Arguments)
             {
                 if (first) first = false; else Code.Append(',');
-                arg.Item1.Accept(this);
-                Code.Append($" __{arg.Item2}");
+                arg.Accept(this);
             }
+            AddFunctionSymbol("__" + node.Name, node.Type == null ? null : "__" + node.Type.Parts[0], FunctionArguments);
             Code.AppendLine(") {");
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
@@ -465,11 +470,18 @@ namespace vip_sharp
 
         public void Visit(VIPFunctionDefinitionArgument node)
         {
-            var type = GetValue((VIPTypeIdentifierNode)node.ChildNodes[0]);
-            var name = ((VIPPlainIdentifierNode)node.ChildNodes[1]).Name;
-            ConstructorArgsCode.Append($"{type} __{name}");
+            var code = BuildConstructorArgs ? ConstructorArgsCode : Code;
 
-            FunctionArguments.Add(Tuple.Create(type, "__" + name));
+            var type = GetValue((VIPTypeIdentifierNode)node.ChildNodes[0]);
+            var reference = ((VIPReferenceIdentifier)node.ChildNodes[1]).Available;
+            var name = ((VIPPlainIdentifierNode)node.ChildNodes[2]).Name;
+
+            if (reference) code.Append($"{VIPArrayClass}< ");
+            code.Append(type);
+            if (reference) code.Append(">");
+            code.Append($" __{name}");
+
+            FunctionArguments.Add(Tuple.Create(new[] { type }, "__" + name, reference));
         }
 
         public void Visit(VIPReturnCommandNode node)
@@ -567,17 +579,15 @@ namespace vip_sharp
 
             code.Append("if(Convert.ToBoolean(");
             node.Test.Accept(this);
-            code.AppendLine(")) {");
+            code.AppendLine("))");
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
-            code.AppendLine("}");
 
             if (node.ElseCommands != null)
             {
-                code.AppendLine("else {");
+                code.AppendLine("else");
                 foreach (var cmd in node.ElseCommands)
                     cmd.Accept(this);
-                code.AppendLine("}");
             }
         }
 
@@ -672,6 +682,7 @@ namespace vip_sharp
         public void Visit(VIPFunctionCallCommandNode node)
         {
             var code = BuildConstructor ? ConstructorCode : Code;
+            bool first = true;
 
             // special commands
             if (node.Name.Parts.Length == 1)
@@ -687,7 +698,6 @@ namespace vip_sharp
                 {
                     code.Append($"{VIPRuntimeInstance}.{sfn}(");
 
-                    bool first = true;
                     foreach (var argnode in node.Arguments)
                     {
                         if (first) first = false; else code.Append(',');
@@ -699,7 +709,47 @@ namespace vip_sharp
                 }
             }
 
-            throw new NotImplementedException();
+            // normal function call
+            var symbol = GetSymbolNode(node.Name.Parts.Select(w => "__" + w.Item1).ToArray());
+            code.AppendLine("{");
+
+            // copy any pointers to "arrays"
+            for (int idx = 0; idx < symbol.Arguments.Count; ++idx)
+                if (symbol.Arguments[idx].Details.TypePointer)
+                {
+                    code.Append($"var _arg{idx} = new {VIPArrayClass}<");
+                    AppendSymbolNode(code, symbol.Arguments[idx].Details.TypeNode);
+                    code.Append(">(1) { ");
+                    ((VIPNode)node.Arguments[idx].AstNode).Accept(this);
+                    code.AppendLine(" };");
+                }
+
+            node.Name.Accept(this);
+            code.Append('(');
+            for (int idx = 0; idx < symbol.Arguments.Count; ++idx)
+            {
+                if (idx > 0) code.Append(',');
+                if (symbol.Arguments[idx].Details.TypePointer)
+                    code.Append($"_arg{idx}");
+                else
+                    ((VIPNode)node.Arguments[idx].AstNode).Accept(this);
+            }
+            code.AppendLine(");");
+
+            // copy the pointer "arrays" back to their values
+            for (int idx = 0; idx < symbol.Arguments.Count; ++idx)
+                if (symbol.Arguments[idx].Details.TypePointer)
+                {
+                    ((VIPNode)node.Arguments[idx].AstNode).Accept(this);
+                    code.Append($" = _arg{idx}[0];");
+                }
+
+            code.AppendLine("}");
+        }
+
+        static void AppendSymbolNode(MyStringBuilder sb, SymbolNode n)
+        {
+            sb.Append(n.Details.Name);
         }
 
         public void Visit(VIPStructDefinitionNode node)
@@ -1059,6 +1109,16 @@ namespace vip_sharp
             initcode.AppendLine(");");
 
             AddStringResSymbol("__" + node.Handle);
+        }
+
+        public void Visit(VIPReferenceLiteralNode vIPReferenceLiteralNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPReferenceIdentifier vIPReferenceIdentifier)
+        {
+            throw new NotImplementedException();
         }
     }
 }

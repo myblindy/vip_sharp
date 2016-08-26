@@ -36,7 +36,7 @@ namespace vip_sharp
 
             public SymbolType SymbolType;
             public SymbolDetailsType Details = new SymbolDetailsType();
-            public List<SymbolDetailsType> Arguments = new List<SymbolDetailsType>();
+            public List<SymbolNode> Arguments = new List<SymbolNode>();
             public SymbolNode Return;
         }
         SymbolNode SymbolsRoot = new SymbolNode { SymbolType = SymbolType.Root }, CurrentSymbolRoot;
@@ -57,7 +57,7 @@ namespace vip_sharp
             var n = CurrentSymbolRoot;
 
             // check the parameters first
-            var arg = n.Arguments.FirstOrDefault(w => w.Name == path[0]);
+            var arg = n.Arguments.FirstOrDefault(w => w.Details.Name == path[0]);
 
             if (arg == null)
             {
@@ -69,7 +69,7 @@ namespace vip_sharp
                 n = n[path[0]];
             }
             else
-                n = arg.TypeNode;
+                n = arg;
 
             // everything else only bubbles down
             for (int idx = 1; idx < path.Length; ++idx)
@@ -136,7 +136,7 @@ namespace vip_sharp
             CurrentSymbolRoot = s;
         }
 
-        void AddFunctionSymbol(string name, string returntype, IEnumerable<Tuple<string, string>> @params)
+        void AddFunctionSymbol(string name, string returntype, IEnumerable<Tuple<string[], string, bool>> @params)
         {
             var s = AddTypeSymbol(name);
             s.SymbolType = SymbolType.Function;
@@ -147,14 +147,12 @@ namespace vip_sharp
             if (@params != null)
                 foreach (var param in @params)
                 {
-                    var d = new SymbolDetailsType
-                    {
-                        // TODO handle pointers and arrays
-                        Name = param.Item2,
-                        TypeNode = GetSymbolNode(param.Item1)
-                    };
-                    s.Arguments.Add(d);
-                }
+                    var argnode = new SymbolNode { SymbolType = SymbolType.Variable };
+                    argnode.Details.Name = param.Item2;
+                    argnode.Details.TypeNode = GetSymbolNode(param.Item1);
+                    argnode.Details.TypePointer = param.Item3;
+                    s.Arguments.Add(argnode);
+                };
         }
 
         void GoUpSymbol() => CurrentSymbolRoot = CurrentSymbolRoot.Parent;

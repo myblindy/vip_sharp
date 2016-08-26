@@ -1,0 +1,50 @@
+Typedef TColor {
+	double	dR;
+	double	dG;
+	double	dB;
+}
+
+Function GetColorRGB(int nColorIn, float fInt, TColor& cColorOut)
+{
+	if (nColorIn == 0)	{	cColorOut.dR = 0;		cColorOut.dG = 0;		cColorOut.dB = 0; }
+	if (nColorIn == 1)	{	cColorOut.dR = 25;		cColorOut.dG = 25;		cColorOut.dB = 25; }
+	if (nColorIn == 2)	{	cColorOut.dR = 50;		cColorOut.dG = 50;		cColorOut.dB = 50; }
+	if (nColorIn == 3)	{	cColorOut.dR = 75;		cColorOut.dG = 75;		cColorOut.dB = 75; }
+	if (nColorIn == 4)	{	cColorOut.dR = 100;		cColorOut.dG = 100;		cColorOut.dB = 100; }
+	if (nColorIn == 5)	{	cColorOut.dR = 100;		cColorOut.dG = 0;		cColorOut.dB = 0; }
+	if (nColorIn == 6)	{	cColorOut.dR = 0;		cColorOut.dG = 100;		cColorOut.dB = 0; }
+	if (nColorIn == 7)	{	cColorOut.dR = 0;		cColorOut.dG = 0;		cColorOut.dB = 100; }
+	if (nColorIn == 8)	{	cColorOut.dR = 0;		cColorOut.dG = 100;		cColorOut.dB = 100; }
+	if (nColorIn == 9)	{	cColorOut.dR = 100;		cColorOut.dG = 0;		cColorOut.dB = 100; }
+	if (nColorIn == 10)	{	cColorOut.dR = 100;		cColorOut.dG = 100;		cColorOut.dB = 0; }
+	if (nColorIn == 11)	{	cColorOut.dR = 97.7;	cColorOut.dG = 66.4;	cColorOut.dB = 23.4; }
+	if (nColorIn == 12)	{	cColorOut.dR = 100;		cColorOut.dG = 64.5;	cColorOut.dB = 0; }
+	if (nColorIn == 13)	{	cColorOut.dR = 53.9;	cColorOut.dG = 16.8;	cColorOut.dB = 88.3; }
+	if (nColorIn == 14)	{	cColorOut.dR = 64.5;	cColorOut.dG = 16.4;	cColorOut.dB = 16.4; }
+	if (nColorIn == 15)	{	cColorOut.dR = 82;		cColorOut.dG = 41;		cColorOut.dB = 11.7; }
+	if (nColorIn == 16)	{	cColorOut.dR = 0;		cColorOut.dG = 50;		cColorOut.dB = 0; }
+	if (nColorIn == 17)	{	cColorOut.dR = 15.6;	cColorOut.dG = 100;		cColorOut.dB = 15.6; }
+	if (nColorIn == 18)	{	cColorOut.dR = 100;		cColorOut.dG = 21.5;	cColorOut.dB = 21.5; }
+	if (nColorIn == 19)	{	cColorOut.dR = 50;		cColorOut.dG = 10.5;	cColorOut.dB = 10.5; }
+	if (nColorIn == 20)	{	cColorOut.dR = 0;		cColorOut.dG = 54.3;	cColorOut.dB = 54.3; }
+	if (nColorIn == 21)	{	cColorOut.dR = 39.1;	cColorOut.dG = 58.2;	cColorOut.dB = 92.6; }
+	if (nColorIn == 22)	{	cColorOut.dR = 100;		cColorOut.dG = 7.8;		cColorOut.dB = 57.4; }
+	if (nColorIn == 23)	{	cColorOut.dR = 100;		cColorOut.dG = 84;		cColorOut.dB = 0; }
+
+	cColorOut.dR = cColorOut.dR * fInt / 100.0;
+	cColorOut.dG = cColorOut.dG * fInt / 100.0;
+	cColorOut.dB = cColorOut.dB * fInt / 100.0;
+}
+
+int coloridx;
+
+Main
+{
+	TColor c;
+	coloridx = coloridx + 1;
+	if(coloridx == 24) coloridx = 0;
+	GetColorRGB(coloridx, 100, c);
+	
+	Color(c);
+	Circle(0,0,4,25,FILL);
+}
