@@ -521,7 +521,7 @@ namespace vip_sharp
 
         public void Visit(VIPBitmapResDefinitionNode node)
         {
-            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var initcode = /*BuildConstructor || InObjectDefinition ?*/ ConstructorCode /*: Code*/;
             var type = node.Type.EqualsI("RGB") ? "RGB"
                 : node.Type.EqualsI("RGBA") ? "RGBA"
                 : node.Type.EqualsI("HARD_MASK") ? "HardMask"
@@ -533,11 +533,11 @@ namespace vip_sharp
 
             Code.Append($"public {VIPRuntimeClass}.BitmapRes __{node.Handle}");
 
-            if (InObjectDefinition)
-            {
+            //if (InObjectDefinition)
+            //{
                 Code.AppendLine(";");
                 initcode.Append($"__{node.Handle}");
-            }
+            //}
 
             initcode.AppendLine($"= new {VIPRuntimeClass}.BitmapRes(" +
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
@@ -894,11 +894,11 @@ namespace vip_sharp
 
             Code.Append($"public {VIPRuntimeClass}.DisplayList __{node.Name}");
 
-            if (InObjectDefinition)
-            {
+            //if (InObjectDefinition)
+            //{
                 Code.AppendLine(";");
                 initcode.Append($"__{node.Name}");
-            }
+            //}
 
             initcode.AppendLine($" = new { VIPRuntimeClass }.DisplayList(() => {{");
             foreach (VIPNode cmdnode in node.ChildNodes)
@@ -1086,15 +1086,16 @@ namespace vip_sharp
 
         public void Visit(VIPStringResDefinition node)
         {
-            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var bc = BuildConstructor; BuildConstructor = true;
+            var initcode = /*BuildConstructor || InObjectDefinition ?*/ ConstructorCode /*: Code*/;
 
             Code.Append($"public {VIPRuntimeClass}.StringRes __{node.Handle}");
 
-            if (InObjectDefinition)
-            {
+            //if (InObjectDefinition)
+            //{
                 Code.AppendLine(";");
                 initcode.Append($"__{node.Handle}");
-            }
+            //}
 
             initcode.Append($"= new {VIPRuntimeClass}.StringRes(");
             node.BaseList.Accept(this); initcode.Append(',');
@@ -1107,6 +1108,7 @@ namespace vip_sharp
                 node.SpaceY.Accept(this);
             }
             initcode.AppendLine(");");
+            BuildConstructor = bc;
 
             AddStringResSymbol("__" + node.Handle);
         }
