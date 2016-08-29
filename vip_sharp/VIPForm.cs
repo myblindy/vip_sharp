@@ -26,6 +26,9 @@ namespace vip_sharp
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             InitializeComponent();
             AutoRender = autorender;
+            Left = (int)VIPRuntime.Instance.VIPSystemClass.WindowX;
+            Top = (int)VIPRuntime.Instance.VIPSystemClass.WindowY;
+            ClientSize = new Size((int)VIPRuntime.Instance.VIPSystemClass.WindowWidth, (int)VIPRuntime.Instance.VIPSystemClass.WindowHeight);
 
             // events
             MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };

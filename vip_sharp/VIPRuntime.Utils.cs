@@ -9,6 +9,7 @@ using System.Reflection;
 using System.IO;
 using System.Drawing;
 using IniParser;
+using System.Text.RegularExpressions;
 
 namespace vip_sharp
 {
@@ -37,16 +38,29 @@ namespace vip_sharp
             Application.Run(frm);
         }
 
+        internal static double INIValueToDouble(string val, double def)
+        {
+            try
+            {
+                return Convert.ToDouble(Regex.Match(val, @"^((?:-\s*)?\d+(?:\.\d+)?)").Value);
+            }
+            catch { return def; }
+        }
+
         internal static void LoadINIFile(string inipath)
         {
             try
             {
                 var parser = new FileIniDataParser();
                 var data = parser.ReadFile(inipath);
-                Instance.VIPSystemClass.ModelMinX = Convert.ToDouble(data["VIEW"]["X_Left_Corner"]);
-                Instance.VIPSystemClass.ModelMaxX = Convert.ToDouble(data["VIEW"]["X_Right_Corner"]);
-                Instance.VIPSystemClass.ModelMinY = Convert.ToDouble(data["VIEW"]["Y_Bottom_Corner"]);
-                Instance.VIPSystemClass.ModelMaxY = Convert.ToDouble(data["VIEW"]["Y_Upper_Corner"]);
+                Instance.VIPSystemClass.ModelMinX = INIValueToDouble(data["VIEW"]["X_Left_Corner"], -15);
+                Instance.VIPSystemClass.ModelMaxX = INIValueToDouble(data["VIEW"]["X_Right_Corner"], 15);
+                Instance.VIPSystemClass.ModelMinY = INIValueToDouble(data["VIEW"]["Y_Bottom_Corner"], -15);
+                Instance.VIPSystemClass.ModelMaxY = INIValueToDouble(data["VIEW"]["Y_Upper_Corner"], 15);
+                Instance.VIPSystemClass.WindowX = INIValueToDouble(data["HARDWARE"]["X-Pos"], 200);
+                Instance.VIPSystemClass.WindowY = INIValueToDouble(data["HARDWARE"]["Y-Pos"], 200);
+                Instance.VIPSystemClass.WindowWidth = INIValueToDouble(data["HARDWARE"]["X-Screen-Res"], 400);
+                Instance.VIPSystemClass.WindowHeight = INIValueToDouble(data["HARDWARE"]["Y-Screen-Res"], 400);
             }
             catch { }
         }

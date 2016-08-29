@@ -157,7 +157,7 @@ namespace vip_sharp
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","               // string, spacey
                     + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","                      // array, stringres
+                | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + ","                                     // array, stringres
                     + qualifiedidentifier + "," + expr + ")" + ";"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + stringliteral + ","                            // string, stringres
                     + qualifiedidentifier + "," + expr + ")" + ";";

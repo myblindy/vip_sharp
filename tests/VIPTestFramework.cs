@@ -12,16 +12,14 @@ namespace tests
 {
     public static class VIPTestFramework
     {
-        public static dynamic PrepareSource(string source)
+        public static dynamic PrepareFile(string path)
         {
-            var tmpvip = Path.ChangeExtension(Path.GetTempFileName(), "vip");
             var tmpcs = Path.ChangeExtension(Path.GetTempFileName(), "cs");
             VIPRuntime.VIPObject libmainclass;
 
             try
             {
-                File.WriteAllText(tmpvip, source);
-                var tmplib = VIPCompiler.Compile(tmpvip);
+                var tmplib = VIPCompiler.Compile(path);
 
                 var frm = new VIPForm(false);
                 RenderingContext.CreateContext(frm);
@@ -32,10 +30,24 @@ namespace tests
             finally
             {
                 File.Delete(tmpcs);
-                File.Delete(tmpvip);
             }
 
             return libmainclass;
+        }
+
+        public static dynamic PrepareSource(string source)
+        {
+            var tmpvip = Path.ChangeExtension(Path.GetTempFileName(), "vip");
+            File.WriteAllText(tmpvip, source);
+
+            try
+            {
+                return PrepareFile(tmpvip);
+            }
+            finally
+            {
+                File.Delete(tmpvip);
+            }
         }
 
         public static void Step(dynamic obj)
