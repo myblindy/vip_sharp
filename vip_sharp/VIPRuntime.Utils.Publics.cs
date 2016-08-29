@@ -62,6 +62,7 @@ namespace vip_sharp
                 if (type == BitmapType.RGB)
                     bmp.MakeTransparent(System.Drawing.Color.Black);
 
+                // TODO cache the files, they get initialized again every new instance
                 gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
                 if (Filter == BitmapFilter.MipMap)
                     gl.GenerateMipmap(GL.TEXTURE_2D);
