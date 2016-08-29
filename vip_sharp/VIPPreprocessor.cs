@@ -10,126 +10,343 @@ namespace vip_sharp
 {
     public static class VIPPreprocessor
     {
+        private class ObjectPayload
+        {
+            private class FieldMappingComparer : IEqualityComparer<Dictionary<string, string>>
+            {
+                public bool Equals(Dictionary<string, string> x, Dictionary<string, string> y) =>
+                    x.Count == y.Count && !x.Except(y).Any();
+
+                public int GetHashCode(Dictionary<string, string> obj)
+                {
+                    int res = 0;
+                    foreach (var kvp in obj)
+                        res = res * 23 + kvp.Key.GetHashCode() ^ kvp.Value.GetHashCode();
+                    return res;
+                }
+            }
+
+            internal StringBuilder Body = new StringBuilder();
+            internal bool Used;
+            internal Dictionary<Dictionary<string, string>, int> FieldMapping = new Dictionary<Dictionary<string, string>, int>(new FieldMappingComparer());
+            internal string Name;
+        }
+
         private static Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*)\s*$", RegexOptions.IgnoreCase);
-        private static Dictionary<string, string> Defines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
+        private static int MaxAutogenID;
+        private static StringBuilder ObjectsCode = new StringBuilder();
 
         public static string Preprocess(string filename)
         {
             // init defines
-            Defines.Clear();
-            Defines.Add("BLACK", "0");
-            Defines.Add("DARK_GREY", "1");
-            Defines.Add("GREY", "2");
-            Defines.Add("LIGHT_GREY", "3");
-            Defines.Add("WHITE", "4");
-            Defines.Add("RED", "5");
-            Defines.Add("GREEN", "6");
-            Defines.Add("BLUE", "7");
-            Defines.Add("CYAN", "8");
-            Defines.Add("MAGENTA", "9");
-            Defines.Add("YELLOW", "10");
-            Defines.Add("AMBER", "11");
-            Defines.Add("ORANGE", "12");
-            Defines.Add("VIOLET", "13");
-            Defines.Add("BROWN", "14");
-            Defines.Add("LIGHT_BROWN", "15");
-            Defines.Add("DARK_GREEN", "16");
-            Defines.Add("LIGHT_GREEN", "17");
-            Defines.Add("LIGHT_RED", "18");
-            Defines.Add("DARK_RED", "19");
-            Defines.Add("DARK_CYAN", "20");
-            Defines.Add("SOFT_BLUE", "21");
-            Defines.Add("PINK", "22");
-            Defines.Add("GOLD", "23");
+            var defines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            defines.Add("BLACK", "0");
+            defines.Add("DARK_GREY", "1");
+            defines.Add("GREY", "2");
+            defines.Add("LIGHT_GREY", "3");
+            defines.Add("WHITE", "4");
+            defines.Add("RED", "5");
+            defines.Add("GREEN", "6");
+            defines.Add("BLUE", "7");
+            defines.Add("CYAN", "8");
+            defines.Add("MAGENTA", "9");
+            defines.Add("YELLOW", "10");
+            defines.Add("AMBER", "11");
+            defines.Add("ORANGE", "12");
+            defines.Add("VIOLET", "13");
+            defines.Add("BROWN", "14");
+            defines.Add("LIGHT_BROWN", "15");
+            defines.Add("DARK_GREEN", "16");
+            defines.Add("LIGHT_GREEN", "17");
+            defines.Add("LIGHT_RED", "18");
+            defines.Add("DARK_RED", "19");
+            defines.Add("DARK_CYAN", "20");
+            defines.Add("SOFT_BLUE", "21");
+            defines.Add("PINK", "22");
+            defines.Add("GOLD", "23");
 
-            return _Preprocess(filename);
+            // various housekeeping
+            Objects.Clear();
+            MaxAutogenID = 0;
+            ObjectsCode.Clear();
+
+            var body = _Preprocess(File.ReadAllText(filename), defines);
+            return ObjectsCode.ToString() + Environment.NewLine + body;
         }
 
-        private static string _Preprocess(string filename)
+        private static Dictionary<string, T> CloneDictionary<T>(Dictionary<string, T> d)
         {
-            var sb = new StringBuilder();
+            var clone = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in d)
+                clone.Add(kvp.Key, kvp.Value);
 
-            foreach (var line in File.ReadLines(filename))
+            return clone;
+        }
+
+        private static Dictionary<string, T> AddOrUpdate<T>(this Dictionary<string, T> d, string key, T val)
+        {
+            if (d.ContainsKey(key))
+                d[key] = val;
+            else
+                d.Add(key, val);
+            return d;
+        }
+
+        private static Dictionary<string, T> AddOrUpdate<T>(this Dictionary<string, T> d, Dictionary<string, T> nd)
+        {
+            foreach (var kvp in nd)
+                d.AddOrUpdate(kvp.Key, kvp.Value);
+            return d;
+        }
+
+        private static string GetNextToken(string line, ref int idx)
+        {
+            while (char.IsWhiteSpace(line[idx])) ++idx;
+            var endidx = idx;
+            while (endidx < line.Length && (char.IsLetterOrDigit(line[endidx]) || line[endidx] == '_')) ++endidx;
+            var token = line.Substring(idx, endidx - idx);
+            idx = endidx;
+
+            return token;
+        }
+
+        private static string GetNextBlock(string line, ref int idx)
+        {
+            int balance = 1;
+
+            while (char.IsWhiteSpace(line[idx])) ++idx;
+            if (line[idx] == '{')
             {
-                var m = InstructionRegex.Match(line);
-                if (m.Success)
+                var startidx = idx++;
+
+                do
                 {
-                    if (m.Groups[1].Value.EqualsI("use"))
+                    if (line[idx] == '{')
+                        ++balance;
+                    else if (line[idx] == '}' && --balance == 0)
+                        return line.Substring(startidx, idx++ - startidx + 1);
+                    // TODO handle strings, comments, etc
+                } while (++idx < line.Length);
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        private static bool GetCharacterToken(string line, ref int idx, char c)
+        {
+            while (char.IsWhiteSpace(line[idx])) ++idx;
+            return line[idx++] == c;
+        }
+
+        private static string _Preprocess(string sourcecode, Dictionary<string, string> defines)
+        {
+            var mastersb = new StringBuilder();
+            var sb = mastersb;
+            int objlvl = -1;
+            string line;
+
+            using (var s = new StringReader(sourcecode))
+                while ((line = s.ReadLine()) != null)
+                {
+                    var m = InstructionRegex.Match(line);
+                    if (m.Success)
                     {
-                        // include the file instead of the line
-                        var f = m.Groups[2].Value;
-                        if (f.StartsWith("\"") && f.EndsWith("\""))
-                            f = f.Substring(1, f.Length - 2);
-                        sb.AppendLine(_Preprocess(f));
+                        if (m.Groups[1].Value.EqualsI("use"))
+                        {
+                            // include the file instead of the line
+                            var f = m.Groups[2].Value;
+                            if (f.StartsWith("\"") && f.EndsWith("\""))
+                                f = f.Substring(1, f.Length - 2);
+                            sb.AppendLine(_Preprocess(File.ReadAllText(f), defines));
+                        }
+                        else
+                        {
+                            // define
+                            var idx = m.Groups[2].Value.IndexOfAny(new[] { ' ', '\t' });
+                            var key = m.Groups[2].Value.Substring(0, idx);
+                            var val = m.Groups[2].Value.Substring(idx + 1);
+
+                            defines.AddOrUpdate(key, val);
+                        }
                     }
                     else
                     {
-                        // define
-                        var idx = m.Groups[2].Value.IndexOfAny(new[] { ' ', '\t' });
-                        var key = m.Groups[2].Value.Substring(0, idx);
-                        var val = m.Groups[2].Value.Substring(idx + 1);
-
-                        if (Defines.ContainsKey(key))
-                            Defines[key] = val;
-                        else
-                            Defines.Add(key, val);
-                    }
-                }
-                else
-                {
-                    for (int idx = 0; idx < line.Length; ++idx)
-                    {
-                        if (string.Compare(line, idx, ".and.", 0, 5, true) == 0)
+                        for (int idx = 0; idx < line.Length; ++idx)
                         {
-                            sb.Append(" .AND. ");
-                            idx += 4;
-                            continue;
-                        }
-                        if (string.Compare(line, idx, ".or.", 0, 4, true) == 0)
-                        {
-                            sb.Append(" .OR. ");
-                            idx += 3;
-                            continue;
-                        }
-                        if (line[idx] == '"' && idx + 1 < line.Length)
-                        {
-                            var end = line.IndexOf('"', idx + 1);
-                            if (end > idx)
+                            if (line[idx] == '/' && idx + 1 < line.Length && line[idx + 1] == '/')
                             {
-                                sb.Append(line.Substring(idx, end - idx + 1));
-                                idx += end - idx;
+                                // finish processing the line
+                                break;
+                            }
+
+                            if (line[idx] == '"' && idx + 1 < line.Length)
+                            {
+                                var end = line.IndexOf('"', idx + 1);
+                                if (end > idx)
+                                {
+                                    sb.Append(line.Substring(idx, end - idx + 1));
+                                    idx += end - idx;
+                                    continue;
+                                }
+                            }
+
+                            if (string.Compare(line, idx, "object", 0, 6, true) == 0 && char.IsSeparator(line[idx + 6]))
+                            {
+                                idx += 7;
+                                // we're starting an object, add the metadata
+                                var objname = GetNextToken(line, ref idx);
+                                var payload = new ObjectPayload();
+                                Objects.Add(objname, payload);
+                                sb = payload.Body;
+                                objlvl = 0;
+                                --idx;
+
                                 continue;
                             }
-                        }
-                        if (line[idx] == '/' && idx + 1 < line.Length && line[idx + 1] == '/')
-                            break;
 
-                        // is this a define?
-                        var len = 0;
-                        while (idx + len < line.Length && (char.IsLetterOrDigit(line[idx + len]) || line[idx + len] == '_'))
-                            len++;
-                        var word = line.Substring(idx, len);
+                            if (string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
+                            {
+                                // instance call
+                                idx += 9;
 
-                        string val;
-                        if (len > 0 && Defines.TryGetValue(word, out val))
-                        {
-                            sb.Append(val);
-                            idx += len - 1;
+                                // get all the fields
+                                var objname = GetNextToken(line, ref idx);
+                                var instancename = GetNextToken(line, ref idx);
+                                var specialblock = GetNextBlock(line, ref idx);
+                                string constructorblock = null, definesblock = null;
+                                if (GetCharacterToken(line, ref idx, ':'))
+                                {
+                                    constructorblock = GetNextBlock(line, ref idx);
+                                    if (GetCharacterToken(line, ref idx, ':'))
+                                        definesblock = GetNextBlock(line, ref idx);
+                                    else
+                                        --idx;
+                                }
+                                else
+                                    --idx;
+                                if (!GetCharacterToken(line, ref idx, ';'))
+                                    throw new InvalidOperationException();
+
+                                // process the defines block
+                                var objdef = Objects[objname];
+                                if (definesblock == null)
+                                {
+                                    if (!objdef.Used)
+                                    {
+                                        // first time using this plain object
+                                        objdef.Used = true;
+                                        ObjectsCode.AppendLine("object " + objname);
+                                        ObjectsCode.AppendLine(objdef.Body.ToString());
+                                    }
+                                }
+                                else
+                                {
+                                    int didx = 1;
+                                    var newdefines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                                    do
+                                    {
+                                        var dkey = GetNextToken(definesblock, ref didx);
+                                        if (!GetCharacterToken(definesblock, ref didx, '='))
+                                            throw new InvalidOperationException();
+                                        var endidx = didx;
+                                        while (definesblock[endidx] != ',' && definesblock[endidx] != '}') ++endidx;
+                                        var dval = definesblock.Substring(didx, endidx - didx);
+                                        didx = endidx;
+
+                                        // push it to the new defines list
+                                        newdefines.AddOrUpdate(dkey, dval);
+
+                                        // comma?
+                                        if (!GetCharacterToken(definesblock, ref didx, ','))
+                                            --didx;
+                                    } while (definesblock[didx] != '}');
+
+                                    // have we used this object before?
+                                    int autogenidx;
+                                    if (!objdef.FieldMapping.TryGetValue(newdefines, out autogenidx))
+                                    {
+                                        objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
+                                        objdef.Name = objname + "__autogen_" + autogenidx;
+                                        ObjectsCode.AppendLine("object " + objdef.Name);
+                                        ObjectsCode.AppendLine(_Preprocess(objdef.Body.ToString(), defines.AddOrUpdate(newdefines)));
+                                    }
+
+                                    // update the object name to write the instance call later
+                                    objname = objdef.Name;
+                                }
+
+
+                                // and output the instance call
+                                sb.Append($"instance {objname} {instancename} {specialblock} ");
+                                if (constructorblock != null)
+                                    sb.Append($": {constructorblock}");
+                                sb.Append(';');
+                                continue;
+                            }
+
+                            if (objlvl >= 0 && line[idx] == '{')
+                            {
+                                ++objlvl;
+                                sb.Append('{');
+                                continue;
+                            }
+                            else if (objlvl >= 0 && line[idx] == '}' && --objlvl == 0)
+                            {
+                                // done with the object
+                                sb.Append('}');
+                                objlvl = -1;
+                                sb = mastersb;
+                                continue;
+                            }
+
+                            if (string.Compare(line, idx, ".and.", 0, 5, true) == 0)
+                            {
+                                sb.Append(" .AND. ");
+                                idx += 4;
+                                continue;
+                            }
+
+                            if (string.Compare(line, idx, ".or.", 0, 4, true) == 0)
+                            {
+                                sb.Append(" .OR. ");
+                                idx += 3;
+                                continue;
+                            }
+
+                            // optimization: write separators as is
+                            if (line[idx] != '_' && char.IsSeparator(line[idx]))
+                            {
+                                sb.Append(line[idx]);
+                                continue;
+                            }
+
+                            // is this a define?
+                            var len = 0;
+                            while (idx + len < line.Length && (char.IsLetterOrDigit(line[idx + len]) || line[idx + len] == '_'))
+                                len++;
+                            var word = line.Substring(idx, len);
+
+                            string val;
+                            if (len > 0 && defines.TryGetValue(word, out val))
+                            {
+                                sb.Append(val);
+                                idx += len - 1;
+                            }
+                            else if (len > 0)
+                            {
+                                sb.Append(word);
+                                idx += len - 1;
+                            }
+                            else
+                                sb.Append(line[idx]);
                         }
-                        else if (len > 0)
-                        {
-                            sb.Append(word);
-                            idx += len - 1;
-                        }
-                        else
-                            sb.Append(line[idx]);
                     }
+
+                    sb.AppendLine();
                 }
 
-                sb.AppendLine();
-            }
-
-            return sb.ToString();
+            return mastersb.ToString();
         }
     }
 }

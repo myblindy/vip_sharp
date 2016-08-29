@@ -1,0 +1,35 @@
+Object OComplex
+{
+	double arf;
+
+	Init()
+	{
+		arf = def;
+	}
+	
+	Entry
+	{
+	}
+}
+
+Object OSimple
+{
+	Init()
+	{
+	}
+	
+	Entry
+	{
+	}
+}
+
+Instance OComplex c1 {}:{}:{def=1, arf=meep};
+Instance OComplex c2 {}:{}:{def=4, arf=moop};
+Instance OComplex c3 {}:{}:{def=2, arf=maep};
+Instance OComplex c4 {}:{}:{def=2, arf=maep};
+Instance OSimple  s1 {}:{};
+Instance OSimple  s2 {};
+
+main
+{
+}
