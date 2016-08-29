@@ -12,8 +12,9 @@ namespace vip_sharp
 
         public virtual void Append(string s) => sb.Append(s);
         public virtual void Append(char c) => sb.Append(c);
-        public virtual void AppendLine(string s) => sb.AppendLine(s);
         public virtual void Append(double d) => sb.Append(d);
+        public virtual void AppendLine(string s) => sb.AppendLine(s);
+        public virtual void AppendLine() => sb.AppendLine();
         public virtual void Remove(int start, int end) => sb.Remove(start, end);
         public virtual int Length => sb.Length;
 
@@ -27,8 +28,15 @@ namespace vip_sharp
 
         public override void Append(string s) => CurrentBuilder.Append(s);
         public override void Append(char c) => CurrentBuilder.Append(c);
-        public override void AppendLine(string s) => CurrentBuilder.AppendLine(s);
         public override void Append(double d) => CurrentBuilder.Append(d);
+        public void Append(ContinuationStringBuilder csb) => Builders.AddRange(csb.Builders);
+        public void AppendLine(ContinuationStringBuilder csb)
+        {
+            Builders.AddRange(csb.Builders);
+            CurrentBuilder.AppendLine();
+        }
+        public override void AppendLine(string s) => CurrentBuilder.AppendLine(s);
+        public override void AppendLine() => CurrentBuilder.AppendLine();
         public override void Remove(int start, int end) => CurrentBuilder.Remove(start, end);
         public override int Length => CurrentBuilder.Length;
 

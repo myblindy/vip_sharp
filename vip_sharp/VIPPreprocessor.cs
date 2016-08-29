@@ -26,7 +26,8 @@ namespace vip_sharp
                 }
             }
 
-            internal StringBuilder Body = new StringBuilder();
+            internal ContinuationStringBuilder Body = new ContinuationStringBuilder();
+            internal MyStringBuilder ContinuationPoint;
             internal bool Used;
             internal Dictionary<Dictionary<string, string>, int> FieldMapping = new Dictionary<Dictionary<string, string>, int>(new FieldMappingComparer());
             internal string Name;
@@ -35,7 +36,6 @@ namespace vip_sharp
         private static Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*)\s*$", RegexOptions.IgnoreCase);
         private static Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
         private static int MaxAutogenID;
-        private static StringBuilder ObjectsCode = new StringBuilder();
 
         public static string Preprocess(string filename)
         {
@@ -69,10 +69,8 @@ namespace vip_sharp
             // various housekeeping
             Objects.Clear();
             MaxAutogenID = 0;
-            ObjectsCode.Clear();
 
-            var body = _Preprocess(File.ReadAllText(filename), defines);
-            return ObjectsCode.ToString() + Environment.NewLine + body;
+            return _Preprocess(File.ReadAllText(filename), defines).ToString();
         }
 
         private static Dictionary<string, T> CloneDictionary<T>(Dictionary<string, T> d)
@@ -139,9 +137,9 @@ namespace vip_sharp
             return line[idx++] == c;
         }
 
-        private static string _Preprocess(string sourcecode, Dictionary<string, string> defines)
+        private static ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
-            var mastersb = new StringBuilder();
+            var mastersb = new ContinuationStringBuilder();
             var sb = mastersb;
             int objlvl = -1;
             string line;
@@ -196,7 +194,7 @@ namespace vip_sharp
                                 idx += 7;
                                 // we're starting an object, add the metadata
                                 var objname = GetNextToken(line, ref idx);
-                                var payload = new ObjectPayload();
+                                var payload = new ObjectPayload { ContinuationPoint = sb.InsertContinuation() };
                                 Objects.Add(objname, payload);
                                 sb = payload.Body;
                                 objlvl = 0;
@@ -236,8 +234,8 @@ namespace vip_sharp
                                     {
                                         // first time using this plain object
                                         objdef.Used = true;
-                                        ObjectsCode.AppendLine("object " + objname);
-                                        ObjectsCode.AppendLine(objdef.Body.ToString());
+                                        objdef.ContinuationPoint.AppendLine("object " + objname);
+                                        objdef.ContinuationPoint.AppendLine(objdef.Body.ToString());
                                     }
                                 }
                                 else
@@ -268,8 +266,8 @@ namespace vip_sharp
                                     {
                                         objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
                                         objdef.Name = objname + "__autogen_" + autogenidx;
-                                        ObjectsCode.AppendLine("object " + objdef.Name);
-                                        ObjectsCode.AppendLine(_Preprocess(objdef.Body.ToString(), defines.AddOrUpdate(newdefines)));
+                                        objdef.ContinuationPoint.AppendLine("object " + objdef.Name);
+                                        objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), defines.AddOrUpdate(newdefines)).ToString());
                                     }
 
                                     // update the object name to write the instance call later
@@ -346,7 +344,7 @@ namespace vip_sharp
                     sb.AppendLine();
                 }
 
-            return mastersb.ToString();
+            return mastersb;
         }
     }
 }
