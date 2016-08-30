@@ -30,7 +30,7 @@ namespace vip_sharp
             // compile the grammar to C# code
             var grammar = new VIPGrammar();
             var parser = new Parser(grammar);
-            var processedsource = VIPPreprocessor.Preprocess(filename);
+            var processedsource = new VIPPreprocessor().Preprocess(filename);
             var ast = parser.Parse(processedsource);
 
             var generator = new VIPGenerator();

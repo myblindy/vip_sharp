@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace vip_sharp
 {
-    public static class VIPPreprocessor
+    public class VIPPreprocessor
     {
         private class ObjectPayload
         {
@@ -33,12 +33,12 @@ namespace vip_sharp
             internal string Name;
         }
 
-        private static Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*$", RegexOptions.IgnoreCase);
-        private static Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
-        private static HashSet<string> ProcessedFiles = new HashSet<string>();
-        private static int MaxAutogenID;
+        private Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*$", RegexOptions.IgnoreCase);
+        private Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
+        private HashSet<string> ProcessedFiles = new HashSet<string>();
+        private int MaxAutogenID;
 
-        public static string Preprocess(string filename)
+        public string Preprocess(string filename)
         {
             // init defines
             var defines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -69,10 +69,10 @@ namespace vip_sharp
 
             // various housekeeping
             Objects.Clear();
+            ProcessedFiles.Clear();
             MaxAutogenID = 0;
 
             var result = _PreprocessFile(filename, defines).ToString();
-            Objects.Clear();
             return result;
         }
 
@@ -85,7 +85,7 @@ namespace vip_sharp
             return clone;
         }
 
-        private static Dictionary<string, T> AddOrUpdate<T>(this Dictionary<string, T> d, string key, T val)
+        private static Dictionary<string, T> AddOrUpdate<T>(Dictionary<string, T> d, string key, T val)
         {
             if (d.ContainsKey(key))
                 d[key] = val;
@@ -94,10 +94,10 @@ namespace vip_sharp
             return d;
         }
 
-        private static Dictionary<string, T> AddOrUpdate<T>(this Dictionary<string, T> d, Dictionary<string, T> nd)
+        private static Dictionary<string, T> AddOrUpdate<T>(Dictionary<string, T> d, Dictionary<string, T> nd)
         {
             foreach (var kvp in nd)
-                d.AddOrUpdate(kvp.Key, kvp.Value);
+                AddOrUpdate(d, kvp.Key, kvp.Value);
             return d;
         }
 
@@ -140,10 +140,10 @@ namespace vip_sharp
             return line[idx++] == c;
         }
 
-        private static ContinuationStringBuilder _PreprocessFile(string filename, Dictionary<string, string> defines) =>
+        private ContinuationStringBuilder _PreprocessFile(string filename, Dictionary<string, string> defines) =>
             ProcessedFiles.Add(filename) ? _Preprocess(File.ReadAllText(filename), defines) : null;
 
-        private static ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
+        private ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
             var mastersb = new ContinuationStringBuilder();
             var sb = mastersb;
@@ -176,7 +176,7 @@ namespace vip_sharp
                             var key = m.Groups[2].Value.Substring(0, idx);
                             var val = m.Groups[2].Value.Substring(idx + 1);
 
-                            defines.AddOrUpdate(key, val);
+                            AddOrUpdate(defines, key, val);
                         }
                     }
                     else
@@ -264,7 +264,7 @@ namespace vip_sharp
                                         didx = endidx;
 
                                         // push it to the new defines list
-                                        newdefines.AddOrUpdate(dkey, _Preprocess(dval, defines).ToString());
+                                        AddOrUpdate(newdefines, dkey, _Preprocess(dval, defines).ToString());
 
                                         // comma?
                                         if (!GetCharacterToken(definesblock, ref didx, ','))
@@ -278,7 +278,7 @@ namespace vip_sharp
                                         objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
                                         objdef.Name = objname + "__autogen_" + autogenidx;
                                         objdef.ContinuationPoint.Append("object " + objdef.Name);
-                                        objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), defines.AddOrUpdate(newdefines)).ToString());
+                                        objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), AddOrUpdate(defines, newdefines)).ToString());
                                     }
 
                                     // update the object name to write the instance call later
