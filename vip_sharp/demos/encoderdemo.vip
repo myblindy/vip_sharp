@@ -1,0 +1,21 @@
+use "VIP.fnt"
+
+// the font
+String_Res(LFont, VIP_Null, 0.05, 0.05, 1.2);
+
+// the encoder bitmap
+list KnobArrow
+{
+	bitmap(HARD_MASK, LINEAR, CLAMP, "encoder.bmp", BLEND, 0.0, 0.0, 0.5, 0.5, CC);
+}
+
+Main {
+	// the knob
+	double dKnobValue;
+	rotary_knob(0, 0, .25, dKnobValue, -65535, 65535, -65535, 65535, NEVER, 1, KnobArrow);
+	
+	// and show the string
+	char szValue[12];
+	Format(szValue, "%.2f", dKnobValue);
+	String(0, -.5, CTR, LFont, szValue[0], 0);
+}

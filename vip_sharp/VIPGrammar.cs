@@ -125,15 +125,7 @@ namespace vip_sharp
                 ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}"
                 | ToTerm("function") + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
             returncommand.Rule = "return" + expr + ";";
-            bitmapcommand.Rule = ToTerm("bitmap") + "("
-                    + qualifiedidentifier + ","                                                                     // handle
-                    + plainidentifier + ","                                                                         // modulation
-                    + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ","                     // x,y,w,h,ref
-                    + qualifiedidentifier + ")" + ";"                                                               // uv coords
-                | ToTerm("bitmap") + "("
-                    + qualifiedidentifier + ","                                                                     // handle
-                    + plainidentifier + ","                                                                         // modulation
-                    + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ")" + ";";              // x,y,w,h,ref
+            bitmapcommand.Rule = ToTerm("bitmap") + "(" + expressionlist + ")" + ";";           // expression list to handle all the different ways of calling this. disambiguate in the Ast handler
             ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + command
                 | ToTerm("if") + "(" + expr + ")" + command + "else" + command;
             drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")" + ";";
@@ -223,9 +215,6 @@ namespace vip_sharp
             MarkPunctuation("{", "}", "(", ")", ",", ";", ":");
             //MarkTransient();
             LanguageFlags |= LanguageFlags.CreateAst;
-            NonGrammarTerminals.Add(
-                new CommentTerminal("line-comment", "//",
-                    "\r", "\n", "\u2085", "\u2028", "\u2029"));
 
             // operator precedence
             RegisterOperators(1, "!");
@@ -1037,17 +1026,38 @@ namespace vip_sharp
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void InitChildren(ParseTreeNodeList nodes)
+        public override void InitChildren(ParseTreeNodeList _nodes)
         {
-            Handle = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
-            Blend = ((VIPPlainIdentifierNode)nodes[2].AstNode).Name;
-            X = (VIPExpressionNode)nodes[3].AstNode;
-            Y = (VIPExpressionNode)nodes[4].AstNode;
-            W = (VIPExpressionNode)nodes[5].AstNode;
-            H = (VIPExpressionNode)nodes[6].AstNode;
-            Ref = ((VIPPlainIdentifierNode)nodes[7].AstNode).Name;
-            if (nodes.Count >= 9)
-                UVCoords = (VIPQualifiedIdentifierNode)nodes[8].AstNode;
+            var nodes = _nodes[1].ChildNodes;
+
+            if (nodes.Count >= 10)
+            {
+                // no bitmapres
+                BitmapType = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[0].AstNode).ChildNodes[0]).Parts[0].Item1;
+                BitmapFilter = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[1].AstNode).ChildNodes[0]).Parts[0].Item1;
+                BitmapRepeat = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[2].AstNode).ChildNodes[0]).Parts[0].Item1;
+                BitmapPath = ((VIPStringLiteralNode)((VIPExpressionNode)nodes[3].AstNode).ChildNodes[0]).Value;
+                Blend = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[4].AstNode).ChildNodes[0]).Parts[0].Item1;
+                X = (VIPExpressionNode)nodes[5].AstNode;
+                Y = (VIPExpressionNode)nodes[6].AstNode;
+                W = (VIPExpressionNode)nodes[7].AstNode;
+                H = (VIPExpressionNode)nodes[8].AstNode;
+                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[9].AstNode).ChildNodes[0]).Parts[0].Item1;
+                if (nodes.Count >= 11)
+                    UVCoords = (VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[10].AstNode).ChildNodes[0];
+            }
+            else
+            {
+                Handle = (VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[0].AstNode).ChildNodes[0];
+                Blend = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[1].AstNode).ChildNodes[0]).Parts[0].Item1;
+                X = (VIPExpressionNode)nodes[2].AstNode;
+                Y = (VIPExpressionNode)nodes[3].AstNode;
+                W = (VIPExpressionNode)nodes[4].AstNode;
+                H = (VIPExpressionNode)nodes[5].AstNode;
+                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[6].AstNode).ChildNodes[0]).Parts[0].Item1;
+                if (nodes.Count >= 8)
+                    UVCoords = (VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[7].AstNode).ChildNodes[0];
+            }
         }
 
         public VIPQualifiedIdentifierNode Handle;
@@ -1055,6 +1065,7 @@ namespace vip_sharp
         public VIPExpressionNode X, Y, W, H;
         public string Ref;
         public VIPQualifiedIdentifierNode UVCoords;
+        public string BitmapType, BitmapFilter, BitmapRepeat, BitmapPath;
     }
 
     public class VIPAssignmentCommandNode : VIPNode

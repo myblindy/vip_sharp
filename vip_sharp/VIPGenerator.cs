@@ -17,6 +17,7 @@ namespace vip_sharp
         private bool BuildConstructorArgs = false;
         private bool BuildConstructor = false;
         private bool InObjectDefinition = false;
+        private bool InStringCall = false;
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
         private List<Tuple<string[], string, bool>> FunctionArguments = new List<Tuple<string[], string, bool>>();
@@ -36,6 +37,31 @@ namespace vip_sharp
         }
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
         HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "float", "int", "bool", "true", "false", "char" };
+        Dictionary<string, string> BitmapTypeTranslation = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "RGB","RGB" },
+            { "RGBA","RGBA" },
+            { "HARD_MASK","HardMask" },
+            { "SOFT_MASK","SoftMask" },
+        };
+        Dictionary<string, string> BitmapFilterTranslation = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "LINEAR","Linear" },
+            { "NEAREST","Nearest" },
+            { "MIP_MAP","MipMap" },
+        };
+        Dictionary<string, string> BitmapRepeatTranslation = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "CLAMP","Clamp" },
+            { "REPEAT","Repeat" },
+        };
+        Dictionary<string, string> BitmapBlendTranslation = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "BLEND","Blend" },
+            { "MODULATE","Modulate" },
+            { "DECAL","Decal" },
+            { "REPLACE","Replace" },
+        };
 
         public VIPGenerator()
         {
@@ -101,16 +127,22 @@ namespace vip_sharp
             Code.Append($"__{node.Name}");
         }
 
-        void OutputQualifiedIdentifierPart(MyStringBuilder code, string name, VIPExpressionNode idx)
+        void OutputQualifiedIdentifierPart(MyStringBuilder code, string name, VIPExpressionNode idx, bool lastpart)
         {
             var prefix = ValueTypes.Contains(name) ? "" : "__";
             var n = name.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + name;
             code.Append(n);
-            if (idx != null)
+            if (idx != null && (!InStringCall || (InStringCall && !lastpart)))
             {
                 code.Append('[');
                 idx.Accept(this);
                 code.Append(']');
+            }
+            else if (idx != null && InStringCall && lastpart)
+            {
+                code.Append(".Skip(");
+                idx.Accept(this);
+                code.Append(')');
             }
         }
 
@@ -132,13 +164,12 @@ namespace vip_sharp
                 }
             }
 
-            bool first = true;
-            foreach (var part in node.Parts)
+            for (int idx = 0; idx < node.Parts.Length; ++idx)
             {
-                if (!first) code.Append('.');
-                OutputQualifiedIdentifierPart(code, part.Item1, part.Item2);
-                if (first && pointer) code.Append("[0]");
-                first = false;
+                var part = node.Parts[idx];
+                if (idx > 0) code.Append('.');
+                OutputQualifiedIdentifierPart(code, part.Item1, part.Item2, idx == node.Parts.Length - 1);
+                if (idx == 0 && pointer) code.Append("[0]");
             }
         }
 
@@ -359,6 +390,7 @@ namespace vip_sharp
         public void Visit(VIPProgramNode node)
         {
             Code.AppendLine("using System;");
+            Code.AppendLine("using System.Linq;");
             Code.AppendLine("public static class GlobalState { public static MainClass MainClass; }");
             Code.AppendLine("public class MainClass : vip_sharp.VIPRuntime.VIPObject {");
             Code.AppendLine("public MainClass() {");
@@ -521,15 +553,10 @@ namespace vip_sharp
 
         public void Visit(VIPBitmapResDefinitionNode node)
         {
-            var initcode = /*BuildConstructor || InObjectDefinition ?*/ ConstructorCode /*: Code*/;
-            var type = node.Type.EqualsI("RGB") ? "RGB"
-                : node.Type.EqualsI("RGBA") ? "RGBA"
-                : node.Type.EqualsI("HARD_MASK") ? "HardMask"
-                : "SoftMask";
-            var filter = node.Filter.EqualsI("LINEAR") ? "Linear"
-                : node.Filter.EqualsI("NEAREST") ? "Nearest"
-                : "MipMap";
-            var clamp = node.ClampMode.EqualsI("CLAMP") ? "Clamp" : "Repeat";
+            var initcode = ConstructorCode;
+            var type = BitmapTypeTranslation[node.Type];
+            var filter = BitmapFilterTranslation[node.Filter];
+            var clamp = BitmapRepeatTranslation[node.ClampMode];
 
             Code.Append($"public {VIPRuntimeClass}.BitmapRes __{node.Handle}");
 
@@ -554,23 +581,42 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            var blend = node.Blend.EqualsI("BLEND") ? "Blend"
-                : node.Blend.EqualsI("MODULATE") ? "Modulate"
-                : node.Blend.EqualsI("DECAL") ? "Decal"
-                : "Replace";
+            var blend = BitmapBlendTranslation[node.Blend];
 
-            code.Append($"{VIPRuntimeInstance}.Bitmap(");
-            node.Handle.Accept(this);
-            code.Append($", {VIPRuntimeClass}.BitmapBlend.{blend}, ");
-            node.X.Accept(this); code.Append(','); node.Y.Accept(this); code.Append(',');
-            node.W.Accept(this); code.Append(','); node.H.Accept(this); code.Append(',');
-            code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref}");
-            if (node.UVCoords != null)
+            if (node.Handle != null)
             {
-                code.Append(',');
-                node.UVCoords.Accept(this);
+                code.Append($"{VIPRuntimeInstance}.Bitmap(");
+                node.Handle.Accept(this);
+                code.Append($", {VIPRuntimeClass}.BitmapBlend.{blend}, ");
+                node.X.Accept(this); code.Append(','); node.Y.Accept(this); code.Append(',');
+                node.W.Accept(this); code.Append(','); node.H.Accept(this); code.Append(',');
+                code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref}");
+                if (node.UVCoords != null)
+                {
+                    code.Append(',');
+                    node.UVCoords.Accept(this);
+                }
+                code.AppendLine(");");
             }
-            code.AppendLine(");");
+            else
+            {
+                var type = BitmapTypeTranslation[node.BitmapType];
+                var filter = BitmapFilterTranslation[node.BitmapFilter];
+                var clamp = BitmapRepeatTranslation[node.BitmapRepeat];
+
+                code.Append($"{VIPRuntimeInstance}.Bitmap(");
+                code.Append($"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
+                    "@\"" + node.BitmapPath + $"\" , {VIPRuntimeClass}.BitmapBlend.{blend}, ");
+                node.X.Accept(this); code.Append(','); node.Y.Accept(this); code.Append(',');
+                node.W.Accept(this); code.Append(','); node.H.Accept(this); code.Append(',');
+                code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref}");
+                if (node.UVCoords != null)
+                {
+                    code.Append(',');
+                    node.UVCoords.Accept(this);
+                }
+                code.AppendLine(");");
+            }
         }
 
         public void Visit(VIPIfCommandNode node)
@@ -940,7 +986,7 @@ namespace vip_sharp
             node.X.Accept(this); Code.Append(',');
             node.Y.Accept(this); Code.Append(',');
             Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
-            node.StringData.Accept(this); Code.Append(',');
+            InStringCall = true; node.StringData.Accept(this); Code.Append(','); InStringCall = false;
             node.CharCount.Accept(this); Code.Append(',');
 
             if (node.StringRes == null)

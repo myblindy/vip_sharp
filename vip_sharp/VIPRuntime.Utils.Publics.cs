@@ -109,10 +109,10 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Bitmap(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref)
+        public void Bitmap(uint texid, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref)
         {
             gl.Enable(GL.TEXTURE_2D);
-            gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
+            gl.BindTexture(GL.TEXTURE_2D, texid);
             gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
                 blend == BitmapBlend.Modulate ? GL.MODULATE :
                 blend == BitmapBlend.Decal ? GL.DECAL :
@@ -140,10 +140,15 @@ namespace vip_sharp
             gl.Disable(GL.TEXTURE_2D);
         }
 
-        public void Bitmap<TVertex>(BitmapRes handle, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv)
+        public void Bitmap(BitmapRes res, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref) =>
+            Bitmap(res.TextureID, blend, x, y, w, h, @ref);
+        public void Bitmap(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref) =>
+            Bitmap(LoadBitmap(type, filter, clamp, path), blend, x, y, w, h, @ref);
+
+        public void Bitmap<TVertex>(uint texid, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv)
         {
             gl.Enable(GL.TEXTURE_2D);
-            gl.BindTexture(GL.TEXTURE_2D, handle.TextureID);
+            gl.BindTexture(GL.TEXTURE_2D, texid);
             gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
                 blend == BitmapBlend.Modulate ? GL.MODULATE :
                 blend == BitmapBlend.Decal ? GL.DECAL :
@@ -174,6 +179,11 @@ namespace vip_sharp
 
             gl.Disable(GL.TEXTURE_2D);
         }
+
+        public void Bitmap<TVertex>(BitmapRes res, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv) =>
+            Bitmap(res.TextureID, blend, x, y, w, h, @ref, uv);
+        public void Bitmap<TVertex>(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv) =>
+            Bitmap(LoadBitmap(type, filter, clamp, path), blend, x, y, w, h, @ref, uv);
 
         public void Draw(VIPObject obj)
         {
