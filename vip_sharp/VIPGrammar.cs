@@ -110,6 +110,7 @@ namespace vip_sharp
                 | (typeidentifier + plainidentifier + "[" + "]" + "=" + "{" + expressionlist + "}" + ";")
                 | (typeidentifier + plainidentifier + "[" + "]" + "=" + stringliteral + ";")
                 | (typeidentifier + plainidentifier + "=" + expr + ";")
+                | (typeidentifier + plainidentifier + "=" + "{" + expressionlist + "}" + ";")
                 | (typeidentifier + plainidentifier + ";");
             shapecommand.Rule = ToTerm("rotate") + "{" + expressionlist + "}" + ";"
                 | ToTerm("line") + "{" + expressionlist + "}" + ";"
@@ -398,7 +399,10 @@ namespace vip_sharp
                         InitValues = nodes[5].ChildNodes.Select(n => (VIPExpressionNode)n.AstNode).ToArray();
             }
             else if (nodes.Count > 2 && nodes[2].Token.ValueString == "=")
-                InitValue = (VIPExpressionNode)nodes[3].AstNode;
+                if (nodes[3].AstNode is VIPExpressionNode)
+                    InitValue = (VIPExpressionNode)nodes[3].AstNode;
+                else
+                    InitValues = nodes[3].ChildNodes.Select(n => (VIPExpressionNode)n.AstNode).ToArray();
         }
 
         public VIPTypeIdentifierNode Type;

@@ -262,7 +262,7 @@ namespace vip_sharp
                     for (int initvalidx = 0; initvalidx < fields.Length; ++initvalidx)
                     {
                         if (initvalidx != 0) Code.Append(',');
-                        initcode.Append(fields[initvalidx] + " = ");
+                        initcode.Append("__" + fields[initvalidx] + " = ");
                         node.InitValues[initvalidx].Accept(this);
                     }
 
