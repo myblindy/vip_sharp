@@ -178,7 +178,9 @@ namespace vip_sharp
         public void Draw(VIPObject obj)
         {
             MatrixSave();
-            Translate(obj.X, obj.Y);
+            if (obj.X != 0 || obj.Y != 0) Translate(obj.X, obj.Y);
+            if (obj.R != 0) Rotate(obj.R);
+            if (obj.S != 1) Scale(obj.S);
             obj.Run();
             MatrixRestore();
         }
