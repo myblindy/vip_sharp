@@ -210,6 +210,12 @@ namespace vip_sharp
             qualifiedidentifier.Rule = MakePlusRule(qualifiedidentifier, ToTerm("."), identifier);
             typeidentifier.Rule = MakePlusRule(typeidentifier, ToTerm("."), plainidentifier);
 
+            // comments
+            var SingleLineComment = new CommentTerminal("SingleLineComment", "//", "\r", "\n", "\u2085", "\u2028", "\u2029");
+            var DelimitedComment = new CommentTerminal("DelimitedComment", "/*", "*/");
+            NonGrammarTerminals.Add(SingleLineComment);
+            NonGrammarTerminals.Add(DelimitedComment);
+
             // grammar setup
             Root = program;
             MarkPunctuation("{", "}", "(", ")", ",", ";", ":");
@@ -217,13 +223,16 @@ namespace vip_sharp
             LanguageFlags |= LanguageFlags.CreateAst;
 
             // operator precedence
-            RegisterOperators(1, "!");
-            RegisterOperators(2, "~");
-            RegisterOperators(3, "|", "&");
-            RegisterOperators(4, "+", "-");
-            RegisterOperators(5, "*", "/");
-            RegisterOperators(6, "<=", ">=", "!=", "=", "<", ">");
-            RegisterOperators(7, "||", "&&", ".AND.", ".OR.");
+            RegisterOperators(1, "||");
+            RegisterOperators(2, "&&");
+            RegisterOperators(3, "|");
+            RegisterOperators(4, "^");
+            RegisterOperators(5, "&");
+            RegisterOperators(6, "==", "!=");
+            RegisterOperators(7, "<", ">", "<=", ">=");
+            RegisterOperators(9, "+", "-");
+            RegisterOperators(10, "*", "/", "%");
+            RegisterOperators(-3, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
 
             RegisterBracePair("(", ")");
             MarkMemberSelect(".");

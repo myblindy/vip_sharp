@@ -140,8 +140,20 @@ namespace vip_sharp
             return line[idx++] == c;
         }
 
-        private ContinuationStringBuilder _PreprocessFile(string filename, Dictionary<string, string> defines) =>
-            ProcessedFiles.Add(filename) ? _Preprocess(File.ReadAllText(filename), defines) : null;
+        private ContinuationStringBuilder _PreprocessFile(string filename, Dictionary<string, string> defines)
+        {
+            var added = ProcessedFiles.Add(filename);
+            var sb = new ContinuationStringBuilder();
+            if (!added)
+                sb.AppendLine($"// not including {filename}, already added");
+            else
+            {
+                sb.AppendLine($"// including {filename}");
+                sb.AppendLine(_Preprocess(File.ReadAllText(filename), defines));
+            }
+
+            return sb;
+        }
 
         private ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
@@ -214,7 +226,7 @@ namespace vip_sharp
                                 continue;
                             }
 
-                            if (objlvl == -1 && string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
+                            if (string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
                             {
                                 // instance call (outside of objects)
                                 idx += 9;
@@ -237,64 +249,77 @@ namespace vip_sharp
                                 if (!GetCharacterToken(line, ref idx, ';'))
                                     throw new InvalidOperationException();
 
-                                // process the defines block
-                                var objdef = Objects[objname];
-                                if (definesblock == null)
+                                if (objlvl == -1)
                                 {
-                                    if (!objdef.Used)
+                                    // process the defines block
+                                    var objdef = Objects[objname];
+                                    if (definesblock == null)
                                     {
-                                        // first time using this plain object
-                                        objdef.Used = true;
-                                        objdef.ContinuationPoint.Append("object " + objname + " ");
-                                        objdef.ContinuationPoint.AppendLine(objdef.Body.ToString());
+                                        if (!objdef.Used)
+                                        {
+                                            // first time using this plain object
+                                            objdef.Used = true;
+                                            objdef.ContinuationPoint.Append("object " + objname + " ");
+                                            objdef.ContinuationPoint.AppendLine(objdef.Body.ToString());
+                                        }
                                     }
+                                    else
+                                    {
+                                        int didx = 1;
+                                        var newdefines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                                        do
+                                        {
+                                            var dkey = GetNextToken(definesblock, ref didx);
+                                            if (!GetCharacterToken(definesblock, ref didx, '='))
+                                                throw new InvalidOperationException();
+                                            var endidx = didx;
+                                            while (definesblock[endidx] != ',' && definesblock[endidx] != '}') ++endidx;
+                                            var dval = definesblock.Substring(didx, endidx - didx);
+                                            didx = endidx;
+
+                                            // push it to the new defines list
+                                            AddOrUpdate(newdefines, dkey, _Preprocess(dval, defines).ToString());
+
+                                            // comma?
+                                            if (!GetCharacterToken(definesblock, ref didx, ','))
+                                                --didx;
+                                        } while (definesblock[didx] != '}');
+
+                                        // have we used this object before?
+                                        int autogenidx;
+                                        if (!objdef.FieldMapping.TryGetValue(newdefines, out autogenidx))
+                                        {
+                                            objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
+                                            objdef.Name = objname + "__autogen_" + autogenidx;
+                                            objdef.ContinuationPoint.Append("object " + objdef.Name);
+                                            objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), AddOrUpdate(defines, newdefines)).ToString());
+                                        }
+
+                                        // update the object name to write the instance call later
+                                        objname = objdef.Name;
+                                    }
+
+                                    // and output the instance call
+                                    specialblock = _Preprocess(specialblock, defines).ToString();
+                                    sb.Append($"instance {objname} {instancename} {specialblock} ");
+                                    if (constructorblock != null)
+                                    {
+                                        constructorblock = _Preprocess(constructorblock, defines).ToString();
+                                        sb.Append($": {constructorblock}");
+                                    }
+                                    sb.Append(';');
                                 }
                                 else
                                 {
-                                    int didx = 1;
-                                    var newdefines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                                    do
-                                    {
-                                        var dkey = GetNextToken(definesblock, ref didx);
-                                        if (!GetCharacterToken(definesblock, ref didx, '='))
-                                            throw new InvalidOperationException();
-                                        var endidx = didx;
-                                        while (definesblock[endidx] != ',' && definesblock[endidx] != '}') ++endidx;
-                                        var dval = definesblock.Substring(didx, endidx - didx);
-                                        didx = endidx;
-
-                                        // push it to the new defines list
-                                        AddOrUpdate(newdefines, dkey, _Preprocess(dval, defines).ToString());
-
-                                        // comma?
-                                        if (!GetCharacterToken(definesblock, ref didx, ','))
-                                            --didx;
-                                    } while (definesblock[didx] != '}');
-
-                                    // have we used this object before?
-                                    int autogenidx;
-                                    if (!objdef.FieldMapping.TryGetValue(newdefines, out autogenidx))
-                                    {
-                                        objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
-                                        objdef.Name = objname + "__autogen_" + autogenidx;
-                                        objdef.ContinuationPoint.Append("object " + objdef.Name);
-                                        objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), AddOrUpdate(defines, newdefines)).ToString());
-                                    }
-
-                                    // update the object name to write the instance call later
-                                    objname = objdef.Name;
+                                    // if we're inside an object, write the call as is
+                                    sb.Append($"instance {objname} {instancename} {specialblock} ");
+                                    if (constructorblock != null)
+                                        sb.Append($": {constructorblock}");
+                                    if (definesblock != null)
+                                        sb.Append($": {definesblock}");
+                                    sb.Append(';');
                                 }
 
-
-                                // and output the instance call
-                                specialblock = _Preprocess(specialblock, defines).ToString();
-                                sb.Append($"instance {objname} {instancename} {specialblock} ");
-                                if (constructorblock != null)
-                                {
-                                    constructorblock = _Preprocess(constructorblock, defines).ToString();
-                                    sb.Append($": {constructorblock}");
-                                }
-                                sb.Append(';');
                                 continue;
                             }
 
