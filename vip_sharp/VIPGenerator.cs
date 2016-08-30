@@ -208,21 +208,27 @@ namespace vip_sharp
                 {
                     initcode.Append(") {");
 
-                    var fields = Typedefs[node.Type.Parts].Fields;
-                    var itemsintype = fields.Length;
+                    var fields = Typedefs.ContainsKey(node.Type.Parts) ? Typedefs[node.Type.Parts].Fields : null;
+                    var itemsintype = fields?.Length ?? 1;
                     for (int idx = 0; idx < node.InitValues.Length; idx += itemsintype)
                     {
                         if (idx != 0) initcode.Append(',');
-                        initcode.Append($"new {type} {{");
 
-                        for (int initvalidx = idx; initvalidx < idx + fields.Length; ++initvalidx)
+                        if (fields != null)
                         {
-                            if (initvalidx != idx) initcode.Append(',');
-                            initcode.Append($"__{fields[initvalidx - idx]} = ");
-                            node.InitValues[initvalidx].Accept(this);
-                        }
+                            initcode.Append($"new {type} {{");
 
-                        initcode.Append('}');
+                            for (int initvalidx = idx; initvalidx < idx + fields.Length; ++initvalidx)
+                            {
+                                if (initvalidx != idx) initcode.Append(',');
+                                initcode.Append($"__{fields[initvalidx - idx]} = ");
+                                node.InitValues[initvalidx].Accept(this);
+                            }
+
+                            initcode.Append('}');
+                        }
+                        else
+                            node.InitValues[idx].Accept(this);
                     }
                     initcode.Append('}');
                 }

@@ -33,8 +33,9 @@ namespace vip_sharp
             internal string Name;
         }
 
-        private static Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*)\s*$", RegexOptions.IgnoreCase);
+        private static Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*$", RegexOptions.IgnoreCase);
         private static Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
+        private static HashSet<string> ProcessedFiles = new HashSet<string>();
         private static int MaxAutogenID;
 
         public static string Preprocess(string filename)
@@ -70,7 +71,7 @@ namespace vip_sharp
             Objects.Clear();
             MaxAutogenID = 0;
 
-            var result = _Preprocess(File.ReadAllText(filename), defines).ToString();
+            var result = _PreprocessFile(filename, defines).ToString();
             Objects.Clear();
             return result;
         }
@@ -139,6 +140,9 @@ namespace vip_sharp
             return line[idx++] == c;
         }
 
+        private static ContinuationStringBuilder _PreprocessFile(string filename, Dictionary<string, string> defines) =>
+            ProcessedFiles.Add(filename) ? _Preprocess(File.ReadAllText(filename), defines) : null;
+
         private static ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
             var mastersb = new ContinuationStringBuilder();
@@ -148,7 +152,7 @@ namespace vip_sharp
 
             bool first = true;
             using (var s = new StringReader(sourcecode))
-                while ((line = s.ReadLine()) != null)
+                while ((line = s.ReadLine()?.Trim()) != null)
                 {
                     if (first) first = false; else sb.AppendLine();
 
@@ -159,9 +163,11 @@ namespace vip_sharp
                         {
                             // include the file instead of the line
                             var f = m.Groups[2].Value;
+                            if (f.EndsWith(";"))
+                                f = f.Substring(0, f.Length - 1).Trim();
                             if (f.StartsWith("\"") && f.EndsWith("\""))
                                 f = f.Substring(1, f.Length - 2);
-                            sb.AppendLine(_Preprocess(File.ReadAllText(f), defines));
+                            sb.AppendLine(_PreprocessFile(f, defines));
                         }
                         else
                         {

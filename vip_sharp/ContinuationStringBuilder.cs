@@ -29,10 +29,15 @@ namespace vip_sharp
         public override void Append(string s) => CurrentBuilder.Append(s);
         public override void Append(char c) => CurrentBuilder.Append(c);
         public override void Append(double d) => CurrentBuilder.Append(d);
-        public void Append(ContinuationStringBuilder csb) => Builders.AddRange(csb.Builders);
+        public void Append(ContinuationStringBuilder csb)
+        {
+            if (csb != null)
+                Builders.AddRange(csb.Builders);
+        }
         public void AppendLine(ContinuationStringBuilder csb)
         {
-            Builders.AddRange(csb.Builders);
+            if (csb != null)
+                Builders.AddRange(csb.Builders);
             CurrentBuilder.AppendLine();
         }
         public override void AppendLine(string s) => CurrentBuilder.AppendLine(s);

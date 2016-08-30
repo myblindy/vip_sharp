@@ -10,12 +10,18 @@ namespace vip_sharp
     public class BipolarArray<T> : IEnumerable<T>
     {
         private T[] Array;
+        private bool AutoGrow;
         public int N1 { get; private set; }
         public int N2 { get; private set; }
         public int N3 { get; private set; }
 
         private int InitIdx = 0;
 
+        public BipolarArray()
+        {
+            Array = new T[0];
+            AutoGrow = true;
+        }
         public BipolarArray(string init)
         {
             Array = new T[init.Length + 1];             // null character
@@ -66,7 +72,12 @@ namespace vip_sharp
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Add(T val) => Array[InitIdx++] = val;
+        public void Add(T val)
+        {
+            if (AutoGrow && InitIdx >= Array.Length)
+                System.Array.Resize(ref Array, Array.Length + 1);
+            Array[InitIdx++] = val;
+        }
 
         public void Set(string s)
         {

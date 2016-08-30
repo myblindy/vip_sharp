@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 public static class GlobalState { public static MainClass MainClass; }
 public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {

@@ -1,0 +1,10 @@
+main
+{
+	int a[5] = { 100, 101 };
+	char b[5] = "meep";
+	int c[5];
+	int d[] = { 100, 101 };
+	char e[] = "meep";
+	int f = 100 + 101;
+	int g;
+}

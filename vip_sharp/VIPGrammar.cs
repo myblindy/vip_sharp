@@ -109,7 +109,6 @@ namespace vip_sharp
                 | (typeidentifier + plainidentifier + "[" + expr + "]" + ";")
                 | (typeidentifier + plainidentifier + "[" + "]" + "=" + "{" + expressionlist + "}" + ";")
                 | (typeidentifier + plainidentifier + "[" + "]" + "=" + stringliteral + ";")
-                | (typeidentifier + plainidentifier + "[" + "]" + ";")
                 | (typeidentifier + plainidentifier + "=" + expr + ";")
                 | (typeidentifier + plainidentifier + ";");
             shapecommand.Rule = ToTerm("rotate") + "{" + expressionlist + "}" + ";"
@@ -387,13 +386,16 @@ namespace vip_sharp
                 ArraySize = (VIPExpressionNode)nodes[3].AstNode;
                 ArraySizeAuto = ArraySize == null;
 
-                if (nodes.Count >= 6 && nodes[5].Token.ValueString == "=")
+                if (nodes.Count >= 6 && nodes[5].Token?.ValueString == "=")
                     if (nodes[6].AstNode is VIPStringLiteralNode)
                         InitValue = (VIPNode)nodes[6].AstNode;
                     else
                         InitValues = nodes[6].ChildNodes.Select(n => (VIPExpressionNode)n.AstNode).ToArray();
-                else if (nodes[4].Token.ValueString == "=" && nodes[5].AstNode is VIPStringLiteralNode)
-                    InitValue = (VIPNode)nodes[5].AstNode;
+                else if (nodes[4].Token.ValueString == "=")
+                    if (nodes[5].AstNode is VIPStringLiteralNode)
+                        InitValue = (VIPNode)nodes[5].AstNode;
+                    else
+                        InitValues = nodes[5].ChildNodes.Select(n => (VIPExpressionNode)n.AstNode).ToArray();
             }
             else if (nodes.Count > 2 && nodes[2].Token.ValueString == "=")
                 InitValue = (VIPExpressionNode)nodes[3].AstNode;
