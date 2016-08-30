@@ -193,5 +193,62 @@ namespace vip_sharp
                 (float)(ld.LightValues[2] * ld.LightIntensity), (float)(ld.LightValues[3] * ld.LightIntensity) };
             gl.LightModelfv(GL.LIGHT_MODEL_AMBIENT, light);
         }
+
+        private class BitmapData
+        {
+            internal BitmapType Type;
+            internal BitmapFilter Filter;
+            internal BitmapClamp Clamp;
+            internal string Path;
+
+            internal BitmapData(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
+            {
+                Type = type;
+                Filter = filter;
+                Clamp = clamp;
+                Path = path;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var bmpdata = obj as BitmapData;
+                return ReferenceEquals(bmpdata, null) ? base.Equals(obj)
+                    : Type == bmpdata.Type && Filter == bmpdata.Filter && Clamp == bmpdata.Clamp && Path == bmpdata.Path;
+            }
+
+            public override int GetHashCode() =>
+                ((Type.GetHashCode() * 23 + Filter.GetHashCode()) * 23 + Clamp.GetHashCode()) * 23 + Path.GetHashCode();
+        }
+        static Dictionary<BitmapData, uint> LoadedBitmaps = new Dictionary<BitmapData, uint>();
+
+        private static uint LoadBitmap(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
+        {
+            var bmpkey = new BitmapData(type, filter, clamp, path);
+            uint texid;
+            if (LoadedBitmaps.TryGetValue(bmpkey, out texid))
+                return texid;
+
+            // load the bitmap
+            texid = gl.GenTexture();
+            gl.BindTexture(GL.TEXTURE_2D, texid);
+
+            var bmp = new Bitmap(path);
+            if (type == BitmapType.RGB)
+                bmp.MakeTransparent(System.Drawing.Color.Black);
+
+            gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
+            if (filter == BitmapFilter.MipMap)
+                gl.GenerateMipmap(GL.TEXTURE_2D);
+
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, filter == BitmapFilter.MipMap || filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
+
+            gl.BindTexture(GL.TEXTURE_2D, 0);
+
+            LoadedBitmaps.Add(bmpkey, texid);
+            return texid;
+        }
     }
 }

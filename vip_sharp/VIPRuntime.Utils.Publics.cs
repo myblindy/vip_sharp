@@ -40,39 +40,11 @@ namespace vip_sharp
 
         public class BitmapRes
         {
-            private BitmapType Type;
-            private BitmapFilter Filter;
-            private BitmapClamp Clamp;
-            private string Path;
-
             public uint TextureID;
 
             public BitmapRes(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
             {
-                Type = type;
-                Filter = filter;
-                Clamp = clamp;
-                Path = path;
-
-                // load the bitmap
-                TextureID = gl.GenTexture();
-                gl.BindTexture(GL.TEXTURE_2D, TextureID);
-
-                var bmp = new Bitmap(Path);
-                if (type == BitmapType.RGB)
-                    bmp.MakeTransparent(System.Drawing.Color.Black);
-
-                // TODO cache the files, they get initialized again every new instance
-                gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
-                if (Filter == BitmapFilter.MipMap)
-                    gl.GenerateMipmap(GL.TEXTURE_2D);
-
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, Clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, Clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, Filter == BitmapFilter.MipMap || Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
-                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, Filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : Filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
-
-                gl.BindTexture(GL.TEXTURE_2D, 0);
+                TextureID = LoadBitmap(type, filter, clamp, path);
             }
         }
 
