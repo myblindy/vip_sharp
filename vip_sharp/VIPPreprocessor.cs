@@ -70,7 +70,9 @@ namespace vip_sharp
             Objects.Clear();
             MaxAutogenID = 0;
 
-            return _Preprocess(File.ReadAllText(filename), defines).ToString();
+            var result = _Preprocess(File.ReadAllText(filename), defines).ToString();
+            Objects.Clear();
+            return result;
         }
 
         private static Dictionary<string, T> CloneDictionary<T>(Dictionary<string, T> d)
@@ -144,9 +146,12 @@ namespace vip_sharp
             int objlvl = -1;
             string line;
 
+            bool first = true;
             using (var s = new StringReader(sourcecode))
                 while ((line = s.ReadLine()) != null)
                 {
+                    if (first) first = false; else sb.AppendLine();
+
                     var m = InstructionRegex.Match(line);
                     if (m.Success)
                     {
@@ -203,9 +208,9 @@ namespace vip_sharp
                                 continue;
                             }
 
-                            if (string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
+                            if (objlvl == -1 && string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
                             {
-                                // instance call
+                                // instance call (outside of objects)
                                 idx += 9;
 
                                 // get all the fields
@@ -234,7 +239,7 @@ namespace vip_sharp
                                     {
                                         // first time using this plain object
                                         objdef.Used = true;
-                                        objdef.ContinuationPoint.AppendLine("object " + objname);
+                                        objdef.ContinuationPoint.Append("object " + objname + " ");
                                         objdef.ContinuationPoint.AppendLine(objdef.Body.ToString());
                                     }
                                 }
@@ -253,7 +258,7 @@ namespace vip_sharp
                                         didx = endidx;
 
                                         // push it to the new defines list
-                                        newdefines.AddOrUpdate(dkey, dval);
+                                        newdefines.AddOrUpdate(dkey, _Preprocess(dval, defines).ToString());
 
                                         // comma?
                                         if (!GetCharacterToken(definesblock, ref didx, ','))
@@ -266,7 +271,7 @@ namespace vip_sharp
                                     {
                                         objdef.FieldMapping.Add(newdefines, autogenidx = MaxAutogenID++);
                                         objdef.Name = objname + "__autogen_" + autogenidx;
-                                        objdef.ContinuationPoint.AppendLine("object " + objdef.Name);
+                                        objdef.ContinuationPoint.Append("object " + objdef.Name);
                                         objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), defines.AddOrUpdate(newdefines)).ToString());
                                     }
 
@@ -276,9 +281,13 @@ namespace vip_sharp
 
 
                                 // and output the instance call
+                                specialblock = _Preprocess(specialblock, defines).ToString();
                                 sb.Append($"instance {objname} {instancename} {specialblock} ");
                                 if (constructorblock != null)
+                                {
+                                    constructorblock = _Preprocess(constructorblock, defines).ToString();
                                     sb.Append($": {constructorblock}");
+                                }
                                 sb.Append(';');
                                 continue;
                             }
@@ -340,8 +349,6 @@ namespace vip_sharp
                                 sb.Append(line[idx]);
                         }
                     }
-
-                    sb.AppendLine();
                 }
 
             return mastersb;

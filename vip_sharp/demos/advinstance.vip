@@ -1,6 +1,23 @@
+object OInner
+{
+	T V;
+	
+	Init(T IV)
+	{
+		V=IV;
+	}
+	
+	Entry
+	{
+	}
+}
+
 Object OComplex
 {
 	double arf;
+	
+	Instance OInner o1 {}:{def}:{T=double, V=arf};
+	Instance OInner o2 {}:{11}:{T=int, V=arf};
 
 	Init()
 	{

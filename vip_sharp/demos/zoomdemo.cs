@@ -481,6 +481,11 @@ __VIP_Delete = new vip_sharp.VIPRuntime.DisplayList(() => {
 });
 __LFont= new vip_sharp.VIPRuntime.StringRes(__VIP_Null,0.05,0.05,1.2);
 __bmpSwitch= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+__sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 0.3};
+__sw2 = new __TwoPosSwitch() { X = 0,Y = 0.3,s = 0.3};
+__sw3 = new __TwoPosSwitch() { X = 0,Y = -0.3,s = 0.3};
+__sw4 = new __TwoPosSwitch() { X = 0.3,Y = 0,s = 0.3};
+__sw5 = new __TwoPosSwitch() { X = -0.3,Y = 0,s = 0.3};
 }
 public vip_sharp.VIPRuntime.DisplayList __VIP_Null;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Smiley;
@@ -649,11 +654,11 @@ vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__bmpSwitch, vip_shar
 }
 }
 }
-public __TwoPosSwitch __sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 0.3};
-public __TwoPosSwitch __sw2 = new __TwoPosSwitch() { X = 0,Y = 0.3,s = 0.3};
-public __TwoPosSwitch __sw3 = new __TwoPosSwitch() { X = 0,Y = -0.3,s = 0.3};
-public __TwoPosSwitch __sw4 = new __TwoPosSwitch() { X = 0.3,Y = 0,s = 0.3};
-public __TwoPosSwitch __sw5 = new __TwoPosSwitch() { X = -0.3,Y = 0,s = 0.3};
+public __TwoPosSwitch __sw1;
+public __TwoPosSwitch __sw2;
+public __TwoPosSwitch __sw3;
+public __TwoPosSwitch __sw4;
+public __TwoPosSwitch __sw5;
 public double __dZoom = 1;
 public double __dZoomX = 0;
 public double __dZoomY = 0;

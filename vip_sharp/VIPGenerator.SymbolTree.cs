@@ -54,25 +54,27 @@ namespace vip_sharp
         SymbolNode GetSymbolNode(string[] path)
         {
             // TODO handle arrays 
-            var n = CurrentSymbolRoot;
+            var rooted = path.Length >= 3 && path[0].EqualsI("globalstate") && path[1].EqualsI("mainclass");
+            var n = rooted ? SymbolsRoot : CurrentSymbolRoot;
+            var startidx = rooted ? 2 : 0;
 
             // check the parameters first
-            var arg = n.Arguments.FirstOrDefault(w => w.Details.Name == path[0]);
+            var arg = n.Arguments.FirstOrDefault(w => w.Details.Name == path[startidx]);
 
             if (arg == null)
             {
                 // first part can bubble up
-                while (n != null && !n.Contains(path[0]))
+                while (n != null && !n.Contains(path[startidx]))
                     n = n.Parent;
                 if (n == null)
                     throw new InvalidOperationException();
-                n = n[path[0]];
+                n = n[path[startidx]];
             }
             else
                 n = arg;
 
             // everything else only bubbles down
-            for (int idx = 1; idx < path.Length; ++idx)
+            for (int idx = startidx + 1; idx < path.Length; ++idx)
                 if (!n.Contains(path[idx]))
                     throw new InvalidOperationException();
                 else

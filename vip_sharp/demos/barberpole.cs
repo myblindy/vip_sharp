@@ -3,6 +3,8 @@ public static class GlobalState { public static MainClass MainClass; }
 public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {
 GlobalState.MainClass = this;
+__Pole1 = new __BarberPole() { X = -4,Y = 0};
+__Pole2 = new __BarberPole() { X = 4,Y = 0};
 }
 public class __TVertex { 
 public double __dX;
@@ -30,8 +32,8 @@ __dOffSet = 0;
 }
 }
 }
-public __BarberPole __Pole1 = new __BarberPole() { X = -4,Y = 0};
-public __BarberPole __Pole2 = new __BarberPole() { X = 4,Y = 0};
+public __BarberPole __Pole1;
+public __BarberPole __Pole2;
 public override void Run() {
 vip_sharp.VIPRuntime.Instance.Scale(2.5);
 vip_sharp.VIPRuntime.Instance.Draw(GlobalState.MainClass.__Pole1);

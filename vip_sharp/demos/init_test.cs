@@ -3,6 +3,8 @@ public static class GlobalState { public static MainClass MainClass; }
 public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {
 GlobalState.MainClass = this;
+__BL1 = new __Blinker(1,100,0,0) { X = -5,Y = 0};
+__BL2 = new __Blinker(0.5,0,100,0) { X = 5,Y = 0};
 }
 public class __TColor3 { 
 public double __dR;
@@ -42,8 +44,8 @@ __m_dCurrTime = __m_dCurrTime-(__m_dBlinkTime*2);
 }
 }
 }
-public __Blinker __BL1 = new __Blinker(1,100,0,0) { X = -5,Y = 0};
-public __Blinker __BL2 = new __Blinker(0.5,0,100,0) { X = 5,Y = 0};
+public __Blinker __BL1;
+public __Blinker __BL2;
 public override void Run() {
 GlobalState.MainClass.__BL1.__cIn.__bStat = true;
 GlobalState.MainClass.__BL2.__cIn.__bStat = true;

@@ -4,6 +4,7 @@ public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {
 GlobalState.MainClass = this;
 __bmpSwitch= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+__sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 1};
 }
 public vip_sharp.VIPRuntime.BitmapRes __bmpSwitch;
 public class __TVertex { 
@@ -45,7 +46,7 @@ vip_sharp.VIPRuntime.Instance.Bitmap(GlobalState.MainClass.__bmpSwitch, vip_shar
 }
 }
 }
-public __TwoPosSwitch __sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 1};
+public __TwoPosSwitch __sw1;
 public override void Run() {
 vip_sharp.VIPRuntime.Instance.Draw(GlobalState.MainClass.__sw1);
 }
