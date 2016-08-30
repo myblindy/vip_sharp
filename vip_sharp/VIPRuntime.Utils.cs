@@ -69,7 +69,7 @@ namespace vip_sharp
         {
             public double X { get; set; }
             public double Y { get; set; }
-            public double S { get; set; }
+            public double S { get; set; } = 1;
             public double R { get; set; }
 
             public double x { get { return X; } set { X = value; } }
