@@ -191,5 +191,78 @@ Main {
             Step(vip);
             Assert.IsTrue(VIPTestFramework.Equals(Math.Round(vip.__knobvar, 2), +28.27));
         }
+
+        [TestMethod]
+        public void NestedObjectWithDefines()
+        {
+            var vip = PrepareSource(@"
+object OInner
+{
+	T V;
+	
+	Init(T IV)
+	{
+		V=IV;
+	}
+	
+	Entry
+	{
+	}
+}
+
+Object OComplex
+{
+	double arf;
+	
+	Instance OInner o1 {}:{def}:{T=double, V=arf};
+	Instance OInner o2 {}:{11}:{T=int, V=arf};
+
+	Init()
+	{
+		arf = def;
+	}
+	
+	Entry
+	{
+	}
+}
+
+Object OSimple
+{
+	Init()
+	{
+	}
+	
+	Entry
+	{
+	}
+}
+
+Instance OComplex c1 {}:{}:{def=1, arf=meep};
+Instance OComplex c2 {}:{}:{def=4, arf=moop};
+Instance OComplex c3 {}:{}:{def=2, arf=maep};
+Instance OComplex c4 {}:{}:{def=2, arf=maep};
+Instance OSimple  s1 {}:{};
+Instance OSimple  s2 {};
+
+main
+{
+}");
+            Step(vip);
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c1.__meep, 1.0));
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c1.__o1.__meep, 1.0));
+            Assert.IsTrue(vip.__c1.__o2.__meep == 11);
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c2.__moop, 4.0));
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c2.__o1.__moop, 4.0));
+            Assert.IsTrue(vip.__c2.__o2.__moop == 11);
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c3.__maep, 2.0));
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c3.__o1.__maep, 2.0));
+            Assert.IsTrue(vip.__c3.__o2.__maep == 11);
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c4.__maep, 2.0));
+            Assert.IsTrue(VIPTestFramework.Equals(vip.__c4.__o1.__maep, 2.0));
+            Assert.IsTrue(vip.__c4.__o2.__maep == 11);
+            Assert.IsTrue(vip.__s1 != null);
+            Assert.IsTrue(vip.__s2 != null);
+        }
     }
 }
