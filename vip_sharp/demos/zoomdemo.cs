@@ -666,7 +666,7 @@ public double __dZoomY = 0;
 public override void Run() {
 double __dNewZoom = 0;
 __dNewZoom = GlobalState.MainClass.__dZoom+(vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel/10);
-if(Convert.ToBoolean(vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel!=0))
+if(Convert.ToBoolean((vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel!=0)))
 {
 GlobalState.MainClass.__dZoomX = vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fCursor_XPos/GlobalState.MainClass.__dZoom;
 GlobalState.MainClass.__dZoomY = vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fCursor_YPos/GlobalState.MainClass.__dZoom;

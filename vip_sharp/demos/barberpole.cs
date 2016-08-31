@@ -27,7 +27,7 @@ __TextVertices2[2].__dY = 6-__dOffSet;
 __TextVertices2[3].__dY = 0-__dOffSet;
 vip_sharp.VIPRuntime.Instance.Bitmap(__STRIPE, vip_sharp.VIPRuntime.BitmapBlend.Modulate, 0,0,0.5,8,vip_sharp.VIPRuntime.PositionRef.CTR,__TextVertices2);
 __dOffSet = __dOffSet+0.01;
-if(Convert.ToBoolean(__dOffSet>1))
+if(Convert.ToBoolean((__dOffSet>1)))
 {
 __dOffSet = 0;
 }

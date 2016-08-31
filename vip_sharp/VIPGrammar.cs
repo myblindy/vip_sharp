@@ -27,10 +27,11 @@ namespace vip_sharp
 
             var commands = new NonTerminal("commands", typeof(VIPCommandsNode));
             var command = new NonTerminal("command", typeof(VIPCommandNode));
+            var nakedcommand = new NonTerminal("nakedcommand", typeof(VIPNakedCommandNode));
             var translatecommand = new NonTerminal("translatecommand", typeof(VIPTranslateCommandNode));
             var scalecommand = new NonTerminal("scalecommand", typeof(VIPScaleCommandNode));
             var lightcommand = new NonTerminal("lightcommand", typeof(VIPLightCommandNode));
-            var fullvariabledefinition = new NonTerminal("fullvariabledefinition", typeof(VIPFullVariableDefinitionNode));
+            var fullvariabledefinitioncommand = new NonTerminal("fullvariabledefinitioncommand", typeof(VIPFullVariableDefinitionCommandNode));
             var shapecommand = new NonTerminal("shapecommand", typeof(VIPShapeCommandNode));
             var rotatecommand = new NonTerminal("rotatecommand", typeof(VIPRotateCommandNode));
             var assignmentcommand = new NonTerminal("assignmentcommand", typeof(VIPAssignmentCommandNode));
@@ -48,6 +49,8 @@ namespace vip_sharp
             var formatcommand = new NonTerminal("formatcommand", typeof(VIPFormatCommandNode));
             var rotaryknobcommand = new NonTerminal("rotaryknobcommand", typeof(VIPRotaryKnobCommandNode));
             var slidercommand = new NonTerminal("slidercommand", typeof(VIPSliderCommandNode));
+            var forcommand = new NonTerminal("forcommand", typeof(VIPForCommandNode));
+            var unaryassignmentcommand = new NonTerminal("unaryassignmentcommand", typeof(VIPUnaryAssignmentCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -62,6 +65,7 @@ namespace vip_sharp
             var objectentrydefinition = new NonTerminal("objectentrydefinition", typeof(VIPObjectEntryDefinition));
             var listdefinition = new NonTerminal("listdefinition", typeof(VIPListDefinition));
             var stringresdefinition = new NonTerminal("stringresdefinition", typeof(VIPStringResDefinition));
+            var fullvariabledefinition = new NonTerminal("fullvariabledefinition", typeof(VIPFullVariableDefinitionNode));
 
             var expressionlist = new NonTerminal("expressionlist", typeof(VIPExpressionListNode));
             var functiondefinitionargumentlist = new NonTerminal("functiondefinitionargumentlist", typeof(VIPFunctionDefinitionArgumentListNode));
@@ -100,87 +104,97 @@ namespace vip_sharp
                 | typedefinition | fullvariabledefinition | functiondefinition | objectdefinition | stringresdefinition | instancedefinition;
 
             commands.Rule = MakeStarRule(commands, null, command);
-            command.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
-                | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition | lightcommand
-                | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand | slidercommand | ToTerm("{") + commands + "}";
-            translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
-            scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";" | ToTerm("scale") + "(" + expr + "," + expr + ")" + ";";
-            fullvariabledefinition.Rule =
-                (typeidentifier + plainidentifier + "[" + expr + "]" + "=" + "{" + expressionlist + "}" + ";")
-                | (typeidentifier + plainidentifier + "[" + expr + "]" + "=" + stringliteral + ";")
-                | (typeidentifier + plainidentifier + "[" + expr + "]" + ";")
-                | (typeidentifier + plainidentifier + "[" + "]" + "=" + "{" + expressionlist + "}" + ";")
-                | (typeidentifier + plainidentifier + "[" + "]" + "=" + stringliteral + ";")
-                | (typeidentifier + plainidentifier + "=" + expr + ";")
-                | (typeidentifier + plainidentifier + "=" + "{" + expressionlist + "}" + ";")
-                | (typeidentifier + plainidentifier + ";");
-            shapecommand.Rule = ToTerm("rotate") + "{" + expressionlist + "}" + ";"
-                | ToTerm("line") + "{" + expressionlist + "}" + ";"
-                | ToTerm("quad") + "{" + expressionlist + "}" + ";"
-                | ToTerm("line_strip") + "{" + expressionlist + "}" + ";"
-                | ToTerm("closed_line") + "{" + expressionlist + "}" + ";"
-                | ToTerm("polygon") + "{" + expressionlist + "}" + ";"
-                | ToTerm("triangle") + "{" + expressionlist + "}" + ";";
-            rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")" + ";";
-            assignmentcommand.Rule = qualifiedidentifier + "=" + expr + ";";
+            nakedcommand.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
+                | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinitioncommand | lightcommand
+                | rotatecommand | returncommand | bitmapcommand | functioncallcommand | slidercommand | unaryassignmentcommand;
+            command.Rule = nakedcommand + ";" | ToTerm("{") + commands + "}" | ifcommand | forcommand;
+            translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")";
+            scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" | ToTerm("scale") + "(" + expr + "," + expr + ")";
+            fullvariabledefinitioncommand.Rule =
+                typeidentifier + plainidentifier + "[" + expr + "]" + "=" + "{" + expressionlist + "}"
+                | typeidentifier + plainidentifier + "[" + expr + "]" + "=" + stringliteral
+                | typeidentifier + plainidentifier + "[" + expr + "]"
+                | typeidentifier + plainidentifier + "[" + "]" + "=" + "{" + expressionlist + "}"
+                | typeidentifier + plainidentifier + "[" + "]" + "=" + stringliteral
+                | typeidentifier + plainidentifier + "=" + expr
+                | typeidentifier + plainidentifier + "=" + "{" + expressionlist + "}"
+                | typeidentifier + plainidentifier;
+            shapecommand.Rule = ToTerm("rotate") + "{" + expressionlist + "}"
+                | ToTerm("line") + "{" + expressionlist + "}"
+                | ToTerm("quad") + "{" + expressionlist + "}"
+                | ToTerm("line_strip") + "{" + expressionlist + "}"
+                | ToTerm("closed_line") + "{" + expressionlist + "}"
+                | ToTerm("polygon") + "{" + expressionlist + "}"
+                | ToTerm("triangle") + "{" + expressionlist + "}";
+            rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")";
+            assignmentcommand.Rule = qualifiedidentifier + "=" + expr;
             functiondefinition.Rule =
                 ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}"
                 | ToTerm("function") + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
-            returncommand.Rule = "return" + expr + ";";
-            bitmapcommand.Rule = ToTerm("bitmap") + "(" + expressionlist + ")" + ";";           // expression list to handle all the different ways of calling this. disambiguate in the Ast handler
-            ifcommand.Rule = ToTerm("if") + "(" + expr + ")" + command
-                | ToTerm("if") + "(" + expr + ")" + command + "else" + command;
-            drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")" + ";";
-            functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")" + ";";
-            colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")" + ";"
-                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + ")" + ";"
-                | ToTerm("color") + "(" + expr + "," + expr + ")" + ";"
-                | ToTerm("color") + "(" + expr + ")" + ";";
-            circlecommand.Rule = ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + "fill" + ")" + ";"
-                | ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
-            matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")" + ";"
-                | ToTerm("matrix") + "(" + "restore" + ")" + ";"
-                | ToTerm("matrix") + "(" + "identity" + ")" + ";";
+            returncommand.Rule = "return" + expr;
+            bitmapcommand.Rule = ToTerm("bitmap") + "(" + expressionlist + ")";           // expression list to handle all the different ways of calling this. disambiguate in the Ast handler
+            ifcommand.Rule = ToTerm("if") + expr + command
+                | ToTerm("if") + expr + command + "else" + command;
+            drawcommand.Rule = ToTerm("draw") + "(" + qualifiedidentifier + ")";
+            functioncallcommand.Rule = qualifiedidentifier + "(" + expressionlist + ")";
+            colorcommand.Rule = ToTerm("color") + "(" + qualifiedidentifier + ")"
+                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + "," + expr + ")"
+                | ToTerm("color") + "(" + expr + "," + expr + "," + expr + ")"
+                | ToTerm("color") + "(" + expr + "," + expr + ")"
+                | ToTerm("color") + "(" + expr + ")";
+            circlecommand.Rule = ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + "fill" + ")"
+                | ToTerm("circle") + "(" + expr + "," + expr + "," + expr + "," + expr + ")";
+            matrixcommand.Rule = ToTerm("matrix") + "(" + "save" + ")"
+                | ToTerm("matrix") + "(" + "restore" + ")"
+                | ToTerm("matrix") + "(" + "identity" + ")";
             stringcommand.Rule =
                 ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","           // array, no spacey
-                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ","         // array, spacey
-                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","               // string, no spacey
-                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + "," + stringliteral + ","               // string, spacey
-                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";"
+                    + expr + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + expr + ","                                     // array, stringres
-                    + qualifiedidentifier + "," + expr + ")" + ";"
+                    + qualifiedidentifier + "," + expr + ")"
                 | ToTerm("string") + "(" + expr + "," + expr + "," + plainidentifier + "," + stringliteral + ","                            // string, stringres
-                    + qualifiedidentifier + "," + expr + ")" + ";";
+                    + qualifiedidentifier + "," + expr + ")";
             hotspotcommand.Rule = ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
-                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")" + ";"                                                   // no last argument
+                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + ")"                                                   // no last argument
                 | ToTerm("hotspot") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ","
-                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ")" + ";";                       // last argument quoted identifier (bitmap or list)
-            formatcommand.Rule = ToTerm("format") + "(" + qualifiedidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
+                    + plainidentifier + "," + plainidentifier + "," + expr + "," + expr + "," + plainidentifier + "," + qualifiedidentifier + ")";                       // last argument quoted identifier (bitmap or list)
+            formatcommand.Rule = ToTerm("format") + "(" + qualifiedidentifier + "," + expr + "," + qualifiedidentifier + ")";
             rotaryknobcommand.Rule = ToTerm("rotary_knob") + "(" + expr + "," + expr + "," + expr + "," + qualifiedidentifier + "," + expr + "," + expr + ","
-                    + expr + "," + expr + "," + plainidentifier + "," + expr + ")" + ";"
+                    + expr + "," + expr + "," + plainidentifier + "," + expr + ")"
                 | ToTerm("rotary_knob") + "(" + expr + "," + expr + "," + expr + "," + qualifiedidentifier + "," + expr + "," + expr + ","
-                    + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
-            lightcommand.Rule = ToTerm("light") + "(" + expr + ")" + ";"
-                | ToTerm("light") + "(" + "on" + ")" + ";"
-                | ToTerm("light") + "(" + "off" + ")" + ";";
+                    + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")";
+            lightcommand.Rule = ToTerm("light") + "(" + expr + ")"
+                | ToTerm("light") + "(" + "on" + ")"
+                | ToTerm("light") + "(" + "off" + ")";
             slidercommand.Rule = ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
-                    expr + "," + expr + "," + plainidentifier + "," + expr + ")" + ";"
+                    expr + "," + expr + "," + plainidentifier + "," + expr + ")"
                 | ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
-                    expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
+                    expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")";
+            forcommand.Rule = ToTerm("for") + "(" + nakedcommand + ";" + expr + ";" + nakedcommand + ")" + command;
+            unaryassignmentcommand.Rule = (ToTerm("++") | "--") + expr | expr + (ToTerm("++") | "--");
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + optarr + ";";
             typedefinition.Rule = ToTerm("typedef") + plainidentifier + "{" + variabledefinitions + "}";
-            bitmapresdefinition.Rule = ToTerm("bitmap_res") + "("
-                + plainidentifier + ","                           // name
-                + plainidentifier + ","                           // bitmap type
-                + plainidentifier + ","                           // filter
-                + plainidentifier + ","                           // clamp
-                + pathidentifier + ")" + ";";                     // path
+            bitmapresdefinition.Rule =
+                ToTerm("bitmap_res") + "("
+                    + plainidentifier + ","                           // name
+                    + plainidentifier + ","                           // bitmap type
+                    + plainidentifier + ","                           // filter
+                    + plainidentifier + ","                           // clamp
+                    + pathidentifier + ")" + ";"                      // path
+                | ToTerm("bitmap_res") + "("
+                    + plainidentifier + ","                           // name
+                    + plainidentifier + ","                           // bitmap type
+                    + plainidentifier + ","                           // filter
+                    + plainidentifier + ","                           // clamp
+                    + expr + ")" + ";";                               // path
             stringresdefinition.Rule = ToTerm("string_res") + "(" + plainidentifier + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + ")" + ";"
                 | ToTerm("string_res") + "(" + plainidentifier + "," + qualifiedidentifier + "," + expr + "," + expr + "," + expr + "," + expr + ")" + ";";
             objectdefinition.Rule = "object" + plainidentifier + "{" + objectdefs + "}";
@@ -192,6 +206,7 @@ namespace vip_sharp
             objectentrydefinition.Rule = ToTerm("entry") + "{" + commands + "}";
             objectinitdefinition.Rule = ToTerm("init") + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}";
             listdefinition.Rule = ToTerm("list") + plainidentifier + "{" + commands + "}" | ToTerm("list") + plainidentifier + "{" + commands + "}" + ";";
+            fullvariabledefinition.Rule = fullvariabledefinitioncommand + ";";
 
             expressionlist.Rule = MakeStarRule(expressionlist, ToTerm(","), expr);
             functiondefinitionargumentlist.Rule = MakeStarRule(functiondefinitionargumentlist, ToTerm(","), functiondefinitionargument);
@@ -205,8 +220,9 @@ namespace vip_sharp
             optarr.Rule = "[" + expr + "]" | Empty;
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
-                | stringliteral | number | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")";
-            binop.Rule = ToTerm("-") | "+" | "*" | "/" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
+                | stringliteral | number | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")"
+                | "{" + expr + "}" + "mod" + "{" + expr + "}";
+            binop.Rule = ToTerm("-") | "+" | "*" | "/" | "^" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
                 | "<=" | ">=" | "!=" | "==" | "<" | ">";
             unop.Rule = ToTerm("-") | "+" | "!" | "~";
 
@@ -223,7 +239,7 @@ namespace vip_sharp
             // grammar setup
             Root = program;
             MarkPunctuation("{", "}", "(", ")", ",", ";", ":");
-            //MarkTransient();
+            //MarkTransient(nakedcommand);
             LanguageFlags |= LanguageFlags.CreateAst;
 
             // operator precedence
@@ -235,7 +251,8 @@ namespace vip_sharp
             RegisterOperators(6, "==", "!=");
             RegisterOperators(7, "<", ">", "<=", ">=");
             RegisterOperators(9, "+", "-");
-            RegisterOperators(10, "*", "/", "%");
+            RegisterOperators(10, "*", "/", "mod");
+            RegisterOperators(11, "^");
             RegisterOperators(-3, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
 
             RegisterBracePair("(", ")");
@@ -258,7 +275,7 @@ namespace vip_sharp
         void Visit(VIPVariableDefinitionNode node);
         void Visit(VIPVariableDefinitionsNode node);
         void Visit(VIPPlainIdentifierNode node);
-        void Visit(VIPFullVariableDefinitionNode node);
+        void Visit(VIPFullVariableDefinitionCommandNode node);
         void Visit(VIPExpressionListNode node);
         void Visit(VIPPolygonCommandNode node);
         void Visit(VIPExpressionNode node);
@@ -307,6 +324,10 @@ namespace vip_sharp
         void Visit(VIPReferenceLiteralNode vIPReferenceLiteralNode);
         void Visit(VIPReferenceIdentifier vIPReferenceIdentifier);
         void Visit(VIPOptArrNode vIPOptArrNode);
+        void Visit(VIPNakedCommandNode vIPNakedCommandNode);
+        void Visit(VIPForCommandNode vIPForCommandNode);
+        void Visit(VIPFullVariableDefinitionNode vIPFullVariableDefinitionNode);
+        void Visit(VIPUnaryAssignmentCommandNode vIPUnaryAssignmentCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -389,6 +410,16 @@ namespace vip_sharp
     }
 
     public class VIPFullVariableDefinitionNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes) =>
+            FullVariableDefinitionCommandNode = (VIPFullVariableDefinitionCommandNode)nodes[0].AstNode;
+
+        public VIPFullVariableDefinitionCommandNode FullVariableDefinitionCommandNode;
+    }
+
+    public class VIPFullVariableDefinitionCommandNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
@@ -662,6 +693,13 @@ namespace vip_sharp
     }
 
     public class VIPCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes) => AddChild(nodes);
+    }
+
+    public class VIPNakedCommandNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
@@ -1132,6 +1170,47 @@ namespace vip_sharp
 
         public VIPExpressionNode Test;
         public VIPNode[] ElseCommands;
+    }
+
+    public class VIPForCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            InitCommand = (VIPNakedCommandNode)nodes[1].AstNode;
+            Test = (VIPExpressionNode)nodes[2].AstNode;
+            StepCommand = (VIPNakedCommandNode)nodes[3].AstNode;
+            AddChild(nodes[4].ChildNodes);
+        }
+
+        public VIPNakedCommandNode InitCommand, StepCommand;
+        public VIPExpressionNode Test;
+    }
+
+    public class VIPUnaryAssignmentCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes[1].AstNode is VIPExpressionNode)
+            {
+                Prefix = false;
+                Expression = (VIPExpressionNode)nodes[1].AstNode;
+                Operation = nodes[2].Token.ValueString;
+            }
+            else
+            {
+                Prefix = true;
+                Expression = (VIPExpressionNode)nodes[2].AstNode;
+                Operation = nodes[1].Token.ValueString;
+            }
+        }
+
+        public string Operation;
+        public bool Prefix;
+        public VIPExpressionNode Expression;
     }
 
     public class VIPDrawCommandNode : VIPNode

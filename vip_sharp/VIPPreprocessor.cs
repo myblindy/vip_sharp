@@ -155,6 +155,8 @@ namespace vip_sharp
             return sb;
         }
 
+        private bool IsSeparator(char c) => char.IsSeparator(c) || char.IsWhiteSpace(c);
+
         private ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
             var mastersb = new ContinuationStringBuilder();
@@ -212,7 +214,7 @@ namespace vip_sharp
                                 }
                             }
 
-                            if (string.Compare(line, idx, "object", 0, 6, true) == 0 && char.IsSeparator(line[idx + 6]))
+                            if (string.Compare(line, idx, "object", 0, 6, true) == 0 && IsSeparator(line[idx + 6]))
                             {
                                 idx += 7;
                                 // we're starting an object, add the metadata
@@ -226,7 +228,7 @@ namespace vip_sharp
                                 continue;
                             }
 
-                            if (string.Compare(line, idx, "instance", 0, 8, true) == 0 && char.IsSeparator(line[idx + 8]))
+                            if (string.Compare(line, idx, "instance", 0, 8, true) == 0 && IsSeparator(line[idx + 8]))
                             {
                                 // instance call (outside of objects)
                                 idx += 9;
@@ -299,12 +301,22 @@ namespace vip_sharp
                                         objname = objdef.Name;
                                     }
 
+                                    // for blocks, only preprocess the value parts
+                                    Func<string, string> preprocessblock = b =>
+                                        "{" +
+                                        string.Join(",", b.Substring(1, b.Length - 2).Split(',').Select(p =>
+                                        {
+                                            var eqidx = p.IndexOf('=');
+                                            return p.Substring(0, eqidx + 1) + _Preprocess(p.Substring(eqidx + 1), defines).ToString();
+                                        })) +
+                                        "}";
+
                                     // and output the instance call
-                                    specialblock = _Preprocess(specialblock, defines).ToString();
+                                    specialblock = preprocessblock(specialblock).ToString();
                                     sb.Append($"instance {objname} {instancename} {specialblock} ");
                                     if (constructorblock != null)
                                     {
-                                        constructorblock = _Preprocess(constructorblock, defines).ToString();
+                                        constructorblock = preprocessblock(constructorblock).ToString();
                                         sb.Append($": {constructorblock}");
                                     }
                                     sb.Append(';');
@@ -353,7 +365,7 @@ namespace vip_sharp
                             }
 
                             // optimization: write separators as is
-                            if (line[idx] != '_' && char.IsSeparator(line[idx]))
+                            if (line[idx] != '_' && IsSeparator(line[idx]))
                             {
                                 sb.Append(line[idx]);
                                 continue;

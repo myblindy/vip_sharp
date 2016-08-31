@@ -185,7 +185,7 @@ namespace vip_sharp
             }
         }
 
-        public void Visit(VIPFullVariableDefinitionNode node)
+        public void Visit(VIPFullVariableDefinitionCommandNode node)
         {
             var initcode = InObjectDefinition ? ConstructorCode : Code;
             var type = GetValue(node.Type);
@@ -1185,6 +1185,25 @@ namespace vip_sharp
         }
 
         public void Visit(VIPOptArrNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPNakedCommandNode node)
+        {
+            foreach (VIPNode subnode in node.ChildNodes)
+                subnode.Accept(this);
+        }
+
+        public void Visit(VIPForCommandNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPFullVariableDefinitionNode node) =>
+            node.FullVariableDefinitionCommandNode.Accept(this);
+
+        public void Visit(VIPUnaryAssignmentCommandNode vIPUnaryAssignmentCommandNode)
         {
             throw new NotImplementedException();
         }
