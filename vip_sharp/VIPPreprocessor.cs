@@ -34,7 +34,7 @@ namespace vip_sharp
         }
 
         private Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*$", RegexOptions.IgnoreCase);
-        private Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>();
+        private Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> ProcessedFiles = new HashSet<string>();
         private int MaxAutogenID;
 
@@ -260,7 +260,7 @@ namespace vip_sharp
                                             // first time using this plain object
                                             objdef.Used = true;
                                             objdef.ContinuationPoint.Append("object " + objname + " ");
-                                            objdef.ContinuationPoint.AppendLine(objdef.Body.ToString());
+                                            objdef.ContinuationPoint.AppendLine(_Preprocess(objdef.Body.ToString(), defines).ToString());
                                         }
                                     }
                                     else
