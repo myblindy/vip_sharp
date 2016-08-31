@@ -364,7 +364,12 @@ namespace vip_sharp
             var code = BuildConstructor ? ConstructorCode : Code;
 
             code.Append($"{VIPRuntimeInstance}.Scale(");
-            node.Scale.Accept(this);
+            node.ScaleX.Accept(this);
+            if (node.ScaleY != null)
+            {
+                code.Append(',');
+                node.ScaleY.Accept(this);
+            }
             code.AppendLine(");");
         }
 
@@ -1175,6 +1180,11 @@ namespace vip_sharp
         }
 
         public void Visit(VIPReferenceIdentifier vIPReferenceIdentifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPOptArrNode node)
         {
             throw new NotImplementedException();
         }

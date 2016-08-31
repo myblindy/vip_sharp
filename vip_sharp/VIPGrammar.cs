@@ -72,6 +72,8 @@ namespace vip_sharp
             var namedargument = new NonTerminal("namedargument", typeof(VIPNamedArgumentNode));
             var referenceidentifier = new NonTerminal("referenceidentifier", typeof(VIPReferenceIdentifier));
 
+            var optarr = new NonTerminal("optarr", typeof(VIPOptArrNode));
+
             var identifier = new NonTerminal("identifier", typeof(VIPIdentifierNode));
             var qualifiedidentifier = new NonTerminal("qualifiedidentifier", typeof(VIPQualifiedIdentifierNode));
             var typeidentifier = new NonTerminal("typeidentifier", typeof(VIPTypeIdentifierNode));
@@ -102,7 +104,7 @@ namespace vip_sharp
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinition | lightcommand
                 | rotatecommand | returncommand | bitmapcommand | ifcommand | functioncallcommand | slidercommand | ToTerm("{") + commands + "}";
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")" + ";";
-            scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";";
+            scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" + ";" | ToTerm("scale") + "(" + expr + "," + expr + ")" + ";";
             fullvariabledefinition.Rule =
                 (typeidentifier + plainidentifier + "[" + expr + "]" + "=" + "{" + expressionlist + "}" + ";")
                 | (typeidentifier + plainidentifier + "[" + expr + "]" + "=" + stringliteral + ";")
@@ -171,7 +173,7 @@ namespace vip_sharp
                     expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")" + ";";
 
             variabledefinitions.Rule = MakePlusRule(variabledefinitions, null, variabledefinition);
-            variabledefinition.Rule = typeidentifier + plainidentifier + ";";
+            variabledefinition.Rule = typeidentifier + plainidentifier + optarr + ";";
             typedefinition.Rule = ToTerm("typedef") + plainidentifier + "{" + variabledefinitions + "}";
             bitmapresdefinition.Rule = ToTerm("bitmap_res") + "("
                 + plainidentifier + ","                           // name
@@ -199,6 +201,8 @@ namespace vip_sharp
             functiondefinitionargument.Rule = typeidentifier + referenceidentifier + plainidentifier;
             namedargument.Rule = plainidentifier + "=" + expr;
             referenceidentifier.Rule = referenceliteral | Empty;
+
+            optarr.Rule = "[" + expr + "]" | Empty;
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
                 | stringliteral | number | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")";
@@ -302,6 +306,7 @@ namespace vip_sharp
         void Visit(VIPStringResDefinition vIPStringResDefinition);
         void Visit(VIPReferenceLiteralNode vIPReferenceLiteralNode);
         void Visit(VIPReferenceIdentifier vIPReferenceIdentifier);
+        void Visit(VIPOptArrNode vIPOptArrNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -709,6 +714,19 @@ namespace vip_sharp
         public bool Available;
     }
 
+    public class VIPOptArrNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes.Count >= 2)
+                Expression = (VIPExpressionNode)nodes[1].AstNode;
+        }
+
+        public VIPExpressionNode Expression;
+    }
+
     public class VIPExpressionNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
@@ -841,10 +859,13 @@ namespace vip_sharp
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void InitChildren(ParseTreeNodeList nodes) =>
-            Scale = (VIPExpressionNode)nodes[1].AstNode;
-
-        public VIPExpressionNode Scale;
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            ScaleX = (VIPExpressionNode)nodes[1].AstNode;
+            if (nodes.Count >= 3)
+                ScaleX = (VIPExpressionNode)nodes[2].AstNode;
+        }
+        public VIPExpressionNode ScaleX, ScaleY;
     }
 
     public class VIPRotateCommandNode : VIPNode
