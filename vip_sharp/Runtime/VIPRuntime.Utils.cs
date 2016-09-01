@@ -38,7 +38,7 @@ namespace vip_sharp
             Application.Run(frm);
         }
 
-        internal static double INIValueToDouble(string val, double def)
+        internal static double INIValueToDouble(string val, double def = 0)
         {
             try
             {
@@ -47,9 +47,15 @@ namespace vip_sharp
             catch { return def; }
         }
 
+        internal static string INIValueToString(string val, string def = null)
+        {
+            var m = Regex.Match(val, @"^([^;]+)");
+            return m.Success ? m.Value.Trim() : def;
+        }
+
         internal static void LoadINIFile(string inipath)
         {
-            try
+            if (File.Exists(inipath))
             {
                 var parser = new FileIniDataParser();
                 var data = parser.ReadFile(inipath);
@@ -61,9 +67,24 @@ namespace vip_sharp
                 Instance.VIPSystemClass.WindowY = INIValueToDouble(data["HARDWARE"]["Y-Pos"], 200);
                 Instance.VIPSystemClass.WindowWidth = INIValueToDouble(data["HARDWARE"]["X-Screen-Res"], 400);
                 Instance.VIPSystemClass.WindowHeight = INIValueToDouble(data["HARDWARE"]["Y-Screen-Res"], 400);
+
+                Instance.VIPSystemClass.VIPInFile = INIValueToString(data["VIP"]["VIP_In_File"]);
+                Instance.VIPSystemClass.VIPOutFile = INIValueToString(data["VIP"]["VIP_Out_File"]);
+                Instance.VIPSystemClass.VHPInFile = INIValueToString(data["VHP"]["VHP_In_File"]);
+                Instance.VIPSystemClass.VHPOutFile = INIValueToString(data["VHP"]["VHP_Out_File"]);
             }
-            catch { }
+
+            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VIPInFile))
+                Instance.VIPSystemClass.VIPInVariables = LoadHeaderFile(Instance.VIPSystemClass.VIPInFile);
+            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VIPOutFile))
+                Instance.VIPSystemClass.VIPOutVariables = LoadHeaderFile(Instance.VIPSystemClass.VIPOutFile);
+            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VHPInFile))
+                Instance.VIPSystemClass.VHPInVariables = LoadHeaderFile(Instance.VIPSystemClass.VHPInFile);
+            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VHPOutFile))
+                Instance.VIPSystemClass.VHPOutVariables = LoadHeaderFile(Instance.VIPSystemClass.VHPOutFile);
         }
+
+        private static UnmanagedDefinition[] LoadHeaderFile(string path) => VIPHCompiler.Compile(path).ToArray();
 
         public abstract class VIPObject
         {

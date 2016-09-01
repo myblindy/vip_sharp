@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace vip_sharp
@@ -8,6 +9,8 @@ namespace vip_sharp
         [STAThread]
         static void Main(string[] args)
         {
+            VIPRuntime.LoadINIFile(Path.ChangeExtension(args[0], "ini"));
+
             var compiledfile = VIPCompiler.Compile(args[0]);
             if (compiledfile == null)
                 return;
