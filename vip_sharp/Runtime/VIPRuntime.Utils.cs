@@ -18,7 +18,7 @@ namespace vip_sharp
         public static VIPRuntime Instance { get; } = new VIPRuntime();
         private VIPRuntime() { }
 
-        internal static RenderingContext rc;
+        public static RenderingContext rc;
         internal static void RunGL(string libpath)
         {
             if (!Path.IsPathRooted(libpath))
@@ -38,7 +38,7 @@ namespace vip_sharp
             Application.Run(frm);
         }
 
-        internal static double INIValueToDouble(string val, double def = 0)
+        private static double INIValueToDouble(string val, double def = 0)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace vip_sharp
             catch { return def; }
         }
 
-        internal static string INIValueToString(string val, string def = null)
+        private static string INIValueToString(string val, string def = null)
         {
             var m = Regex.Match(val, @"^([^;]+)");
             return m.Success ? m.Value.Trim() : def;
@@ -68,20 +68,32 @@ namespace vip_sharp
                 Instance.VIPSystemClass.WindowWidth = INIValueToDouble(data["HARDWARE"]["X-Screen-Res"], 400);
                 Instance.VIPSystemClass.WindowHeight = INIValueToDouble(data["HARDWARE"]["Y-Screen-Res"], 400);
 
-                Instance.VIPSystemClass.VIPInFile = INIValueToString(data["VIP"]["VIP_In_File"]);
-                Instance.VIPSystemClass.VIPOutFile = INIValueToString(data["VIP"]["VIP_Out_File"]);
-                Instance.VIPSystemClass.VHPInFile = INIValueToString(data["VHP"]["VHP_In_File"]);
-                Instance.VIPSystemClass.VHPOutFile = INIValueToString(data["VHP"]["VHP_Out_File"]);
-            }
+                var VIPInFile = INIValueToString(data["VIP"]["VIP_In_File"]);
+                var VIPOutFile = INIValueToString(data["VIP"]["VIP_Out_File"]);
+                var VHPInFile = INIValueToString(data["VHP"]["VHP_In_File"]);
+                var VHPOutFile = INIValueToString(data["VHP"]["VHP_Out_File"]);
 
-            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VIPInFile))
-                Instance.VIPSystemClass.VIPInVariables = LoadHeaderFile(Instance.VIPSystemClass.VIPInFile);
-            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VIPOutFile))
-                Instance.VIPSystemClass.VIPOutVariables = LoadHeaderFile(Instance.VIPSystemClass.VIPOutFile);
-            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VHPInFile))
-                Instance.VIPSystemClass.VHPInVariables = LoadHeaderFile(Instance.VIPSystemClass.VHPInFile);
-            if (!string.IsNullOrWhiteSpace(Instance.VIPSystemClass.VHPOutFile))
-                Instance.VIPSystemClass.VHPOutVariables = LoadHeaderFile(Instance.VIPSystemClass.VHPOutFile);
+                if (!string.IsNullOrWhiteSpace(VIPInFile))
+                {
+                    Instance.VIPSystemClass.VIPInVariables = LoadHeaderFile(VIPInFile);
+                    BuildIOVariables(Instance.VIPSystemClass.VIPInVariables);
+                }
+                if (!string.IsNullOrWhiteSpace(VIPOutFile))
+                {
+                    Instance.VIPSystemClass.VIPOutVariables = LoadHeaderFile(VIPOutFile);
+                    BuildIOVariables(Instance.VIPSystemClass.VIPOutVariables);
+                }
+                if (!string.IsNullOrWhiteSpace(VHPInFile))
+                {
+                    Instance.VIPSystemClass.VHPInVariables = LoadHeaderFile(VHPInFile);
+                    BuildIOVariables(Instance.VIPSystemClass.VHPInVariables);
+                }
+                if (!string.IsNullOrWhiteSpace(VHPOutFile))
+                {
+                    Instance.VIPSystemClass.VHPOutVariables = LoadHeaderFile(VHPOutFile);
+                    BuildIOVariables(Instance.VIPSystemClass.VHPOutVariables);
+                }
+            }
         }
 
         private static UnmanagedDefinition[] LoadHeaderFile(string path) => VIPHCompiler.Compile(path).ToArray();

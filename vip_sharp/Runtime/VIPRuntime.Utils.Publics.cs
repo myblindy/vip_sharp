@@ -9,6 +9,7 @@ using System.Reflection;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Dynamic;
 
 namespace vip_sharp
 {
@@ -26,11 +27,13 @@ namespace vip_sharp
             public double MouseX, MouseY;
             public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
-            public string VIPInFile, VIPOutFile, VHPInFile, VHPOutFile;
-            public UnmanagedDefinition[] VIPInVariables = new UnmanagedDefinition[0],
+
+            public UnmanagedDefinition[]
+                VIPInVariables = new UnmanagedDefinition[0],
                 VIPOutVariables = new UnmanagedDefinition[0],
                 VHPInVariables = new UnmanagedDefinition[0],
                 VHPOutVariables = new UnmanagedDefinition[0];
+            public dynamic IOVariables = new ExpandoObject();
         }
         public VIPSystemClassType VIPSystemClass = new VIPSystemClassType();
 
