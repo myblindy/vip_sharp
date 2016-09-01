@@ -33,7 +33,7 @@ namespace vip_sharp
             internal string Name;
         }
 
-        private Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*$", RegexOptions.IgnoreCase);
+        private Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*;?\s*$", RegexOptions.IgnoreCase);
         private Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> ProcessedFiles = new HashSet<string>();
         private int MaxAutogenID;
@@ -331,6 +331,8 @@ namespace vip_sharp
                                         sb.Append($": {definesblock}");
                                     sb.Append(';');
                                 }
+
+                                --idx;
 
                                 continue;
                             }

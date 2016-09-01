@@ -24,8 +24,6 @@ namespace vip_sharp
             if (!Path.IsPathRooted(libpath))
                 libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
-            LoadINIFile(Path.ChangeExtension(libpath, "ini"));
-
             var frm = new VIPForm();
             var s = new RenderingContextSetting();
             rc = RenderingContext.CreateContext(frm, s);

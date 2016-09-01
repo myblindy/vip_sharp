@@ -1184,7 +1184,7 @@ namespace vip_sharp
             throw new NotImplementedException();
         }
 
-        public void Visit(VIPOptArrNode node)
+        public void Visit(VIPArrNode node)
         {
             throw new NotImplementedException();
         }
@@ -1204,6 +1204,31 @@ namespace vip_sharp
             node.FullVariableDefinitionCommandNode.Accept(this);
 
         public void Visit(VIPUnaryAssignmentCommandNode vIPUnaryAssignmentCommandNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPAssignmentCommandAsDefinitionNode vIPAssignmentCommandAsDefinitionNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPCharLiteralNode vIPCharLiteralNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPCalResDefinitionNode vIPCalResDefinitionNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPArrListNode vIPArrListNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPLoopCommandNode vIPLoopCommand)
         {
             throw new NotImplementedException();
         }
