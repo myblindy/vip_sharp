@@ -73,8 +73,7 @@ namespace vip_sharp
             Builders.RemoveRange(from, to - from);
         }
 
-        public override string ToString() =>
-            Builders.Select(b => b.ToString()).Aggregate("", (a, b) => a + b);
+        public override string ToString() => string.Concat(Builders.Select(b => b.ToString()));
 
         public class Range
         {

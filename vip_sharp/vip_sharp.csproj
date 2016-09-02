@@ -86,8 +86,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BipolarArray.cs" />
-    <Compile Include="ContinuationStringBuilder.cs" />
+    <Compile Include="Utils\BipolarArray.cs" />
+    <Compile Include="Utils\ContinuationStringBuilder.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
