@@ -10,7 +10,7 @@ namespace vip_sharp
 {
     partial class VIPGenerator
     {
-        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, StringRes, DisplayList, BuiltInType, Root }
+        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, StringRes, DisplayList, BuiltInType, BuiltInFunction, Root }
         [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
@@ -22,7 +22,7 @@ namespace vip_sharp
         [DebuggerDisplay("{SymbolType} {Details.Name}")]
         class SymbolNode
         {
-            private Dictionary<string, SymbolNode> Children { get; set; } = new Dictionary<string, SymbolNode>();
+            private Dictionary<string, SymbolNode> Children { get; set; } = new Dictionary<string, SymbolNode>(StringComparer.OrdinalIgnoreCase);
             public SymbolNode Parent { get; private set; }
 
             public void AddChild(SymbolNode node)
@@ -164,6 +164,23 @@ namespace vip_sharp
             var s = new SymbolNode { SymbolType = SymbolType.BuiltInType };
             s.Details.Name = name;
             CurrentSymbolRoot.AddChild(s);
+        }
+
+        void AddBuiltInFunctionSymbol(string name, string returntype, params Tuple<string[], string, bool>[] @params)
+        {
+            var s = AddTypeSymbol(name);
+            s.SymbolType = SymbolType.BuiltInFunction;
+            if (!string.IsNullOrWhiteSpace(returntype))
+                s.Return = GetSymbolNode(returntype);
+
+            foreach (var param in @params)
+            {
+                var argnode = new SymbolNode { SymbolType = SymbolType.Variable };
+                argnode.Details.Name = param.Item2;
+                argnode.Details.TypeNode = GetSymbolNode(param.Item1);
+                argnode.Details.TypePointer = param.Item3;
+                s.Arguments.Add(argnode);
+            };
         }
     }
 }

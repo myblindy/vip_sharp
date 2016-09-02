@@ -7,6 +7,7 @@ using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
 using static vip_sharp.VIPRuntime;
+using vip_sharp.Utils;
 
 namespace vip_sharp
 {
@@ -33,6 +34,7 @@ namespace vip_sharp
             var lightcommand = new NonTerminal("lightcommand", typeof(VIPLightCommandNode));
             var fullvariabledefinitioncommand = new NonTerminal("fullvariabledefinitioncommand", typeof(VIPFullVariableDefinitionCommandNode));
             var shapecommand = new NonTerminal("shapecommand", typeof(VIPShapeCommandNode));
+            var boxcommand = new NonTerminal("boxcommand", typeof(VIPBoxCommandNode));
             var rotatecommand = new NonTerminal("rotatecommand", typeof(VIPRotateCommandNode));
             var assignmentcommand = new NonTerminal("assignmentcommand", typeof(VIPAssignmentCommandNode));
             var returncommand = new NonTerminal("returncommand", typeof(VIPReturnCommandNode));
@@ -41,6 +43,7 @@ namespace vip_sharp
             var drawcommand = new NonTerminal("drawcommand", typeof(VIPDrawCommandNode));
             var functioncallcommand = new NonTerminal("functioncallcommand", typeof(VIPFunctionCallCommandNode));
             var colorcommand = new NonTerminal("colorcommand", typeof(VIPColorCommandNode));
+            var linewidthcommand = new NonTerminal("linewidthcommand", typeof(VIPLineWidthCommandNode));
             var lightcolorcommand = new NonTerminal("lightcolorcommand", typeof(VIPLightColorCommandNode));
             var circlecommand = new NonTerminal("circlecommand", typeof(VIPCircleCommandNode));
             var matrixcommand = new NonTerminal("matrixcommand", typeof(VIPMatrixCommandNode));
@@ -52,6 +55,7 @@ namespace vip_sharp
             var forcommand = new NonTerminal("forcommand", typeof(VIPForCommandNode));
             var unaryassignmentcommand = new NonTerminal("unaryassignmentcommand", typeof(VIPUnaryAssignmentCommandNode));
             var loopcommand = new NonTerminal("loopcommand", typeof(VIPLoopCommandNode));
+            var displaycommand = new NonTerminal("displaycommand", typeof(VIPDisplayCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -90,7 +94,9 @@ namespace vip_sharp
             var binop = new NonTerminal("BinOp", typeof(VIPOperatorNode));
             var unop = new NonTerminal("UnOp", typeof(VIPOperatorNode));
 
-            var number = new NumberLiteral("number", NumberOptions.AllowSign | NumberOptions.AllowStartEndDot); number.AstConfig.NodeType = typeof(VIPNumberNode);
+            var incrementops = new NonTerminal("incrementops", typeof(VIPIncrementOpsNode));
+
+            var numberliteral = GrammarUtils.CreateNumberLiteral("numberliteral"); numberliteral.AstConfig.NodeType = typeof(VIPNumberNode);
             var plainidentifier = new IdentifierTerminal("plainidentifier"); plainidentifier.AstConfig.NodeType = typeof(VIPPlainIdentifierNode);
             var pathidentifier = new IdentifierTerminal("pathidentifier", @" /\."); pathidentifier.AstConfig.NodeType = typeof(VIPPathIdentifierNode);
             var stringliteral = new QuotedValueLiteral("stringliteral", "\"", TypeCode.String); stringliteral.AstConfig.NodeType = typeof(VIPStringLiteralNode);
@@ -113,8 +119,9 @@ namespace vip_sharp
             commands.Rule = MakeStarRule(commands, null, command);
             nakedcommand.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinitioncommand | lightcommand
-                | rotatecommand | returncommand | bitmapcommand | functioncallcommand | slidercommand | unaryassignmentcommand;
-            command.Rule = nakedcommand + ";" | ToTerm("{") + commands + "}" | ifcommand | forcommand | calresdefinition | loopcommand;
+                | rotatecommand | returncommand | bitmapcommand | functioncallcommand | slidercommand | unaryassignmentcommand | boxcommand | displaycommand
+                | linewidthcommand;
+            command.Rule = nakedcommand + ";" | ToTerm("{") + commands + "}" | ifcommand | forcommand | calresdefinition | loopcommand | bitmapresdefinition;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" | ToTerm("scale") + "(" + expr + "," + expr + ")";
             fullvariabledefinitioncommand.Rule =
@@ -134,6 +141,9 @@ namespace vip_sharp
                 | ToTerm("polygon") + "{" + expressionlist + "}"
                 | ToTerm("triangle") + "{" + expressionlist + "}";
             rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")";
+            boxcommand.Rule =
+                ToTerm("box") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + ")"
+                | ToTerm("box") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + "fill" + ")";
             assignmentcommand.Rule = qualifiedidentifier + "=" + expr;
             functiondefinition.Rule =
                 ToTerm("function") + typeidentifier + plainidentifier + "(" + functiondefinitionargumentlist + ")" + "{" + commands + "}"
@@ -184,8 +194,14 @@ namespace vip_sharp
                 | ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
                     expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")";
             forcommand.Rule = ToTerm("for") + "(" + nakedcommand + ";" + expr + ";" + nakedcommand + ")" + command;
-            unaryassignmentcommand.Rule = (ToTerm("++") | "--") + expr | expr + (ToTerm("++") | "--");
+            unaryassignmentcommand.Rule = incrementops + expr | expr + incrementops;
             loopcommand.Rule = ToTerm("loop") + "(" + expr + ")" + command;
+            displaycommand.Rule = ToTerm("display") + "(" + expr + "," + expr + "," + qualifiedidentifier + ")";
+            linewidthcommand.Rule =
+                ToTerm("line_width") + "(" + "save" + ")"
+                | ToTerm("line_width") + "(" + "restore" + ")"
+                | ToTerm("line_width") + "(" + expr + ")";
+
 
             variabledefinitions.Rule = MakeStarRule(variabledefinitions, null, variabledefinition);
             variabledefinition.Rule = typeidentifier + plainidentifier + arrlist + ";";
@@ -230,14 +246,16 @@ namespace vip_sharp
             referenceidentifier.Rule = referenceliteral | Empty;
 
             arrlist.Rule = MakeStarRule(arrlist, arr);
-            arr.Rule = "[" + expr + "]" | Empty;
+            arr.Rule = "[" + expr + "]";
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
-                | stringliteral | charliteral | number | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")"
+                | stringliteral | charliteral | numberliteral | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")"
                 | "{" + expr + "}" + "mod" + "{" + expr + "}";
             binop.Rule = ToTerm("-") | "+" | "*" | "/" | "^" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
                 | "<=" | ">=" | "!=" | "==" | "<" | ">" | "mod";
             unop.Rule = ToTerm("-") | "+" | "!" | "~";
+
+            incrementops.Rule = ToTerm("--") | "++";
 
             identifier.Rule = plainidentifier + arrlist;
             qualifiedidentifier.Rule = MakePlusRule(qualifiedidentifier, ToTerm("."), identifier);
@@ -346,6 +364,10 @@ namespace vip_sharp
         void Visit(VIPArrNode vIPArrNode);
         void Visit(VIPArrListNode vIPArrListNode);
         void Visit(VIPLoopCommandNode vIPLoopCommand);
+        void Visit(VIPIncrementOpsNode vIPIncrementOpsNode);
+        void Visit(VIPBoxCommandNode vIPBoxCommandNode);
+        void Visit(VIPDisplayCommandNode vIPDisplayCommandNode);
+        void Visit(VIPLineWidthCommandNode vIPLineWidthCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -367,6 +389,16 @@ namespace vip_sharp
             foreach (var node in nodes)
                 if (node.AstNode != null)
                     AddChild("", node);
+        }
+
+        protected static void ExtractIndices(VIPArrListNode arrlist, out VIPExpressionNode index1, out VIPExpressionNode index2)
+        {
+            var indexes = arrlist.ChildNodes;
+            index1 = index2 = null;
+            if (indexes.Count >= 1)
+                index1 = ((VIPArrNode)indexes[0]).Expression;
+            if (indexes.Count >= 2)
+                index2 = ((VIPArrNode)indexes[1]).Expression;
         }
     }
 
@@ -441,10 +473,24 @@ namespace vip_sharp
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void InitChildren(ParseTreeNodeList nodes) =>
-            AssignmentCommand = (VIPAssignmentCommandNode)nodes[0].AstNode;
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes[0].Token?.ValueString == "w")
+            {
+                Name = ((VIPPlainIdentifierNode)nodes[1].AstNode).Name;
+                ExtractIndices((VIPArrListNode)nodes[2].AstNode, out Index1, out Index2);
+                Value = (VIPExpressionNode)nodes[3].AstNode;
+            }
+            else
+            {
+                Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name;
+                ExtractIndices((VIPArrListNode)nodes[1].AstNode, out Index1, out Index2);
+                Value = (VIPExpressionNode)nodes[3].AstNode;
+            }
+        }
 
-        public VIPAssignmentCommandNode AssignmentCommand;
+        public string Name;
+        public VIPExpressionNode Index1, Index2, Value;
     }
 
     public class VIPFullVariableDefinitionCommandNode : VIPNode
@@ -659,7 +705,10 @@ namespace vip_sharp
             Type = nodes[2].Token.ValueString;
             Filter = nodes[3].Token.ValueString;
             ClampMode = nodes[4].Token.ValueString;
-            Path = nodes[5].Token.ValueString;
+            if (((VIPExpressionNode)nodes[5].AstNode).ChildNodes[0] is VIPStringLiteralNode)
+                Path = ((VIPStringLiteralNode)((VIPExpressionNode)nodes[5].AstNode).ChildNodes[0]).Value;
+            else
+                throw new NotImplementedException();
         }
 
         public string Handle, Type, Filter, ClampMode, Path;
@@ -824,11 +873,18 @@ namespace vip_sharp
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void Init(AstContext context, ParseTreeNode treeNode)
-        {
-            base.Init(context, treeNode);
-            Operator = treeNode.ChildNodes[0].Token.ValueString;
-        }
+        public override void InitChildren(ParseTreeNodeList nodes) =>
+            Operator = nodes[0].Token.ValueString;
+
+        public string Operator { get; set; }
+    }
+
+    public class VIPIncrementOpsNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes) =>
+            Operator = nodes[0].Token.ValueString;
 
         public string Operator { get; set; }
     }
@@ -889,30 +945,25 @@ namespace vip_sharp
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void Init(AstContext context, ParseTreeNode treeNode)
+        public override void InitChildren(ParseTreeNodeList nodes)
         {
-            base.Init(context, treeNode);
-            Name = ((VIPPlainIdentifierNode)treeNode.ChildNodes[0].AstNode).Name;
-            if (treeNode.ChildNodes.Count > 2)
-                Index = (VIPExpressionNode)treeNode.ChildNodes[2].AstNode;
+            Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name;
+            ExtractIndices((VIPArrListNode)nodes[1].AstNode, out Index1, out Index2);
         }
 
         public string Name;
-        public VIPExpressionNode Index;
+        public VIPExpressionNode Index1, Index2;
     }
 
     public class VIPQualifiedIdentifierNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
-        public override void Init(AstContext context, ParseTreeNode treeNode)
-        {
-            base.Init(context, treeNode);
-            Parts = treeNode.ChildNodes.Select(n => Tuple.Create(((VIPIdentifierNode)n.AstNode).Name, ((VIPIdentifierNode)n.AstNode).Index)).ToArray();
-        }
+        public override void InitChildren(ParseTreeNodeList nodes) =>
+            Parts = nodes.Select(n => Tuple.Create(((VIPIdentifierNode)n.AstNode).Name, ((VIPIdentifierNode)n.AstNode).Index1, ((VIPIdentifierNode)n.AstNode).Index2)).ToArray();
 
         // tuple of name and index
-        public Tuple<string, VIPExpressionNode>[] Parts;
+        public Tuple<string, VIPExpressionNode, VIPExpressionNode>[] Parts;
     }
 
     public class VIPTypeIdentifierNode : VIPNode
@@ -979,10 +1030,13 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            if (nodes[1].Token.ValueString.EqualsI("on"))
-                On = true;
-            else if (nodes[1].Token.ValueString.EqualsI("off"))
-                Off = true;
+            if (nodes[1].Token != null)
+            {
+                if (nodes[1].Token.ValueString.EqualsI("on"))
+                    On = true;
+                else if (nodes[1].Token.ValueString.EqualsI("off"))
+                    Off = true;
+            }
             else
                 Intensity = (VIPExpressionNode)nodes[1].AstNode;
         }
@@ -1238,7 +1292,7 @@ namespace vip_sharp
             InitCommand = (VIPNakedCommandNode)nodes[1].AstNode;
             Test = (VIPExpressionNode)nodes[2].AstNode;
             StepCommand = (VIPNakedCommandNode)nodes[3].AstNode;
-            AddChild(nodes[4].ChildNodes);
+            AddChild(Enumerable.Repeat(nodes[4], 1));
         }
 
         public VIPNakedCommandNode InitCommand, StepCommand;
@@ -1251,17 +1305,17 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            if (nodes[1].AstNode is VIPExpressionNode)
+            if (nodes[0].AstNode is VIPExpressionNode)
             {
                 Prefix = false;
-                Expression = (VIPExpressionNode)nodes[1].AstNode;
-                Operation = nodes[2].Token.ValueString;
+                Expression = (VIPExpressionNode)nodes[0].AstNode;
+                Operation = ((VIPIncrementOpsNode)nodes[1].AstNode).Operator;
             }
             else
             {
                 Prefix = true;
-                Expression = (VIPExpressionNode)nodes[2].AstNode;
-                Operation = nodes[1].Token.ValueString;
+                Expression = (VIPExpressionNode)nodes[1].AstNode;
+                Operation = ((VIPIncrementOpsNode)nodes[0].AstNode).Operator;
             }
         }
 
@@ -1342,6 +1396,34 @@ namespace vip_sharp
 
         public VIPQualifiedIdentifierNode ArrayName;
         public VIPExpressionNode R, G, B, A, C;
+        public bool Save, Restore;
+    }
+
+    public class VIPLineWidthCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            if (nodes[1].Token != null)
+            {
+                // save/restore?
+                if (nodes[1].Token.ValueString.EqualsI("save"))
+                {
+                    Save = true;
+                    return;
+                }
+                else if (nodes[1].Token.ValueString.EqualsI("restore"))
+                {
+                    Restore = true;
+                    return;
+                }
+            }
+            else
+                Expression = (VIPExpressionNode)nodes[1].AstNode;
+        }
+
+        public VIPExpressionNode Expression;
         public bool Save, Restore;
     }
 
@@ -1441,13 +1523,52 @@ namespace vip_sharp
         public VIPExpressionListNode ExpressionList;
     }
 
+    public class VIPBoxCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            W = (VIPExpressionNode)nodes[3].AstNode;
+            H = (VIPExpressionNode)nodes[4].AstNode;
+            Ref = ((VIPPlainIdentifierNode)nodes[5].AstNode).Name;
+            if (nodes.Count >= 7)
+                Filled = true;
+        }
+
+        public VIPExpressionNode X, Y, W, H;
+        public string Ref;
+        public bool Filled;
+    }
+
     public class VIPLoopCommandNode : VIPNode
     {
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            // TODO implement loop
+            Expression = (VIPExpressionNode)nodes[1].AstNode;
+            Command = (VIPCommandNode)nodes[2].AstNode;
         }
+
+        public VIPExpressionNode Expression;
+        public VIPCommandNode Command;
+    }
+
+    public class VIPDisplayCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            List = (VIPQualifiedIdentifierNode)nodes[3].AstNode;
+        }
+
+        public VIPExpressionNode X, Y;
+        public VIPQualifiedIdentifierNode List;
     }
 }

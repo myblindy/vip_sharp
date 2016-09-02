@@ -71,6 +71,10 @@ namespace vip_sharp
             AddBuiltInTypeSymbol("float");
             AddBuiltInTypeSymbol("bool");
             AddBuiltInTypeSymbol("char");
+
+            AddBuiltInFunctionSymbol("__abs", "double", Tuple.Create(new[] { "double" }, "arg", false));
+            AddBuiltInFunctionSymbol("__sin", "double", Tuple.Create(new[] { "double" }, "arg", false));
+            AddBuiltInFunctionSymbol("__cos", "double", Tuple.Create(new[] { "double" }, "arg", false));
         }
 
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
@@ -127,21 +131,26 @@ namespace vip_sharp
             Code.Append($"__{node.Name}");
         }
 
-        void OutputQualifiedIdentifierPart(MyStringBuilder code, string name, VIPExpressionNode idx, bool lastpart)
+        void OutputQualifiedIdentifierPart(MyStringBuilder code, string name, VIPExpressionNode idx1, VIPExpressionNode idx2, bool lastpart)
         {
             var prefix = ValueTypes.Contains(name) ? "" : "__";
             var n = name.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + name;
             code.Append(n);
-            if (idx != null && (!InStringCall || (InStringCall && !lastpart)))
+            if (idx1 != null && (!InStringCall || (InStringCall && !lastpart)))
             {
                 code.Append('[');
-                idx.Accept(this);
+                idx1.Accept(this);
+                if (idx2 != null)
+                {
+                    code.Append(',');
+                    idx2.Accept(this);
+                }
                 code.Append(']');
             }
-            else if (idx != null && InStringCall && lastpart)
+            else if (idx1 != null && InStringCall && lastpart)
             {
                 code.Append(".Skip(");
-                idx.Accept(this);
+                idx1.Accept(this);
                 code.Append(')');
             }
         }
@@ -168,7 +177,7 @@ namespace vip_sharp
             {
                 var part = node.Parts[idx];
                 if (idx > 0) code.Append('.');
-                OutputQualifiedIdentifierPart(code, part.Item1, part.Item2, idx == node.Parts.Length - 1);
+                OutputQualifiedIdentifierPart(code, part.Item1, part.Item2, part.Item3, idx == node.Parts.Length - 1);
                 if (idx == 0 && pointer) code.Append("[0]");
             }
         }
@@ -539,10 +548,15 @@ namespace vip_sharp
         public void Visit(VIPIdentifierNode node)
         {
             Code.Append($"__{node.Name}");
-            if (node.Index != null)
+            if (node.Index1 != null)
             {
                 Code.Append('[');
-                node.Index.Accept(this);
+                node.Index1.Accept(this);
+                if (node.Index2 != null)
+                {
+                    Code.Append(',');
+                    node.Index2.Accept(this);
+                }
                 Code.Append(']');
             }
         }
@@ -748,11 +762,9 @@ namespace vip_sharp
             // special commands
             if (node.Name.Parts.Length == 1)
             {
-                var qname = node.Name.Parts[0].Item1;
-                string sfn = null;
-                if (qname.EqualsI("line_width"))
-                    sfn = "LineWidth";
-                else if (qname.EqualsI("arc_line"))
+                var qname = node.Name.Parts[0].Item1;       // qualified name
+                string sfn = null;                          // special function name
+                if (qname.EqualsI("arc_line"))
                     sfn = "ArcLine";
 
                 if (sfn != null)
@@ -1197,15 +1209,29 @@ namespace vip_sharp
 
         public void Visit(VIPForCommandNode node)
         {
-            throw new NotImplementedException();
+            Code.Append("for(");
+            node.InitCommand.Accept(this);
+            node.Test.Accept(this); Code.Append(';');
+            node.StepCommand.Accept(this);
+            Code.AppendLine(")");
+            ((VIPCommandNode)node.ChildNodes[0]).Accept(this);
         }
 
         public void Visit(VIPFullVariableDefinitionNode node) =>
             node.FullVariableDefinitionCommandNode.Accept(this);
 
-        public void Visit(VIPUnaryAssignmentCommandNode vIPUnaryAssignmentCommandNode)
+        public void Visit(VIPUnaryAssignmentCommandNode node)
         {
-            throw new NotImplementedException();
+            if (node.Prefix)
+            {
+                Code.Append(node.Operation);
+                node.Expression.Accept(this);
+            }
+            else
+            {
+                node.Expression.Accept(this);
+                Code.Append(node.Operation);
+            }
         }
 
         public void Visit(VIPAssignmentCommandAsDefinitionNode vIPAssignmentCommandAsDefinitionNode)
@@ -1231,6 +1257,50 @@ namespace vip_sharp
         public void Visit(VIPLoopCommandNode vIPLoopCommand)
         {
             throw new NotImplementedException();
+        }
+
+        public void Visit(VIPIncrementOpsNode vIPIncrementOpsNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(VIPBoxCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            code.Append($"{VIPRuntimeInstance}.Box(");
+            node.X.Accept(this); code.Append(',');
+            node.Y.Accept(this); code.Append(',');
+            node.W.Accept(this); code.Append(',');
+            node.H.Accept(this); code.Append(',');
+            code.AppendLine($"{VIPRuntimeClass}.PositionRef.{node.Ref},{node.Filled.ToString().ToLower()});");
+        }
+
+        public void Visit(VIPDisplayCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            code.Append($"{VIPRuntimeInstance}.Display(");
+            node.X.Accept(this); code.Append(',');
+            node.Y.Accept(this); code.Append(',');
+            node.List.Accept(this);
+            code.AppendLine(");");
+        }
+
+        public void Visit(VIPLineWidthCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            if (node.Save)
+                code.AppendLine($"{VIPRuntimeInstance}.LineWidthSave();");
+            else if (node.Restore)
+                code.AppendLine($"{VIPRuntimeInstance}.LineWidthRestore();");
+            else
+            {
+                code.Append($"{VIPRuntimeInstance}.LineWidth(");
+                node.Expression.Accept(this);
+                code.AppendLine(");");
+            }
         }
     }
 }
