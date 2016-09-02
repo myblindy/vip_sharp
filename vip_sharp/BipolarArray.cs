@@ -7,13 +7,17 @@ using System.Threading.Tasks;
 
 namespace vip_sharp
 {
-    public class BipolarArray<T> : IEnumerable<T>
+    public abstract class BipolarArrayBase
+    {
+        public int N1 { get; protected set; }
+        public int N2 { get; protected set; }
+        public int N3 { get; protected set; }
+    }
+
+    public class BipolarArray<T> : BipolarArrayBase, IEnumerable<T>
     {
         private T[] Array;
         private bool AutoGrow;
-        public int N1 { get; private set; }
-        public int N2 { get; private set; }
-        public int N3 { get; private set; }
 
         private int InitIdx = 0;
 

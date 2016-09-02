@@ -10,7 +10,7 @@ namespace vip_sharp
 {
     partial class VIPGenerator
     {
-        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, StringRes, DisplayList, BuiltInType, BuiltInFunction, Root }
+        enum SymbolType { Typedef, Struct, Function, Object, Variable, BitmapRes, StringRes, CalRes, DisplayList, BuiltInType, BuiltInFunction, IOVar, Root }
         [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
@@ -96,6 +96,16 @@ namespace vip_sharp
             CurrentSymbolRoot.AddChild(s);
         }
 
+        void AddIOVariableSymbol(string name, string type, int indices)
+        {
+            var s = new SymbolNode { SymbolType = SymbolType.IOVar };
+
+            s.Details.Name = name;
+            s.Details.TypeNode = GetSymbolNode(type);
+            s.Details.TypeIndices = indices;
+            CurrentSymbolRoot.AddChild(s);
+        }
+
         void AddBitmapResSymbol(string name)
         {
             var s = new SymbolNode { SymbolType = SymbolType.BitmapRes };
@@ -106,6 +116,13 @@ namespace vip_sharp
         void AddStringResSymbol(string name)
         {
             var s = new SymbolNode { SymbolType = SymbolType.StringRes };
+            s.Details.Name = name;
+            CurrentSymbolRoot.AddChild(s);
+        }
+
+        void AddCalResSymbol(string name)
+        {
+            var s = new SymbolNode { SymbolType = SymbolType.CalRes };
             s.Details.Name = name;
             CurrentSymbolRoot.AddChild(s);
         }

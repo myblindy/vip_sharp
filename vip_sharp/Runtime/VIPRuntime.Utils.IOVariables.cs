@@ -10,10 +10,8 @@ namespace vip_sharp
     {
         private static void AddIOVariable<T>(string key, T var)
         {
-            var d = ((IDictionary<string, object>)Instance.VIPSystemClass.IOVariables);
-
-            if (!d.ContainsKey(key))
-                d.Add(key, var);
+            if (!Instance.VIPSystemClass.IOVariables.ContainsKey(key))
+                Instance.VIPSystemClass.IOVariables.Add(key, var);
         }
 
         private static void BuildIOVariables(IEnumerable<UnmanagedDefinition> defs)

@@ -36,7 +36,7 @@ namespace vip_sharp
             internal string[] Fields;
         }
         Dictionary<string[], TypedefDataClass> Typedefs = new Dictionary<string[], TypedefDataClass>(new VIPTypeComparer());
-        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "float", "int", "bool", "true", "false", "char" };
+        HashSet<string> ValueTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "double", "float", "int", "bool", "true", "false", "char", "short" };
         Dictionary<string, string> BitmapTypeTranslation = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "RGB","RGB" },
@@ -62,19 +62,55 @@ namespace vip_sharp
             { "DECAL","Decal" },
             { "REPLACE","Replace" },
         };
+        Dictionary<Type, string> TypeNameTranslation = new Dictionary<Type, string>()
+        {
+            { typeof(bool),"bool" },
+            { typeof(float),"float" },
+            { typeof(double),"double" },
+            { typeof(int),"int" },
+            { typeof(short),"short" },
+            { typeof(char),"char" },
+        };
 
         public VIPGenerator()
         {
             CurrentSymbolRoot = SymbolsRoot;
+
+            // built in symbols
             AddBuiltInTypeSymbol("double");
             AddBuiltInTypeSymbol("int");
             AddBuiltInTypeSymbol("float");
             AddBuiltInTypeSymbol("bool");
             AddBuiltInTypeSymbol("char");
+            AddBuiltInTypeSymbol("short");
 
+            // built in functions
             AddBuiltInFunctionSymbol("__abs", "double", Tuple.Create(new[] { "double" }, "arg", false));
             AddBuiltInFunctionSymbol("__sin", "double", Tuple.Create(new[] { "double" }, "arg", false));
             AddBuiltInFunctionSymbol("__cos", "double", Tuple.Create(new[] { "double" }, "arg", false));
+            AddBuiltInFunctionSymbol("__round", "double", Tuple.Create(new[] { "double" }, "arg", false));
+            AddBuiltInFunctionSymbol("__rand", "double");
+
+            // io vars
+            foreach (var iovar in Instance.VIPSystemClass.IOVariables)
+            {
+                var obj = iovar.Value;
+                string type;
+                int indices = 0;
+
+                var arr = obj as BipolarArrayBase;
+                if (arr != null)
+                {
+                    indices = arr.N3 > 1 ? 3 : arr.N2 > 1 ? 2 : 1;
+
+                    var argtype = obj.GetType().GetGenericArguments()[0];
+                    type = TypeNameTranslation[argtype];
+                }
+                else
+                    type = TypeNameTranslation[obj.GetType()];
+
+                AddIOVariableSymbol("__" + iovar.Key, type, indices);
+            }
         }
 
         bool IsValueType(VIPTypeIdentifierNode node) => node.Parts.Length == 1 && ValueTypes.Contains(node.Parts[0]);
@@ -508,7 +544,8 @@ namespace vip_sharp
                 if (first) first = false; else Code.Append(',');
                 arg.Accept(this);
             }
-            AddFunctionSymbol("__" + node.Name, node.Type == null ? null : "__" + node.Type.Parts[0], FunctionArguments);
+            var prefix = node.Type == null ? "" : PrefixForValueType(IsValueType(node.Type));
+            AddFunctionSymbol("__" + node.Name, node.Type == null ? null : prefix + node.Type.Parts[0], FunctionArguments);
             Code.AppendLine(") {");
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
@@ -1162,15 +1199,9 @@ namespace vip_sharp
             var bc = BuildConstructor; BuildConstructor = true;
             var initcode = /*BuildConstructor || InObjectDefinition ?*/ ConstructorCode /*: Code*/;
 
-            Code.Append($"public {VIPRuntimeClass}.StringRes __{node.Handle}");
+            Code.Append($"public {VIPRuntimeClass}.StringRes __{node.Handle};");
 
-            //if (InObjectDefinition)
-            //{
-            Code.AppendLine(";");
-            initcode.Append($"__{node.Handle}");
-            //}
-
-            initcode.Append($"= new {VIPRuntimeClass}.StringRes(");
+            initcode.Append($"__{node.Handle} = new {VIPRuntimeClass}.StringRes(");
             node.BaseList.Accept(this); initcode.Append(',');
             node.ScaleX.Accept(this); initcode.Append(',');
             node.ScaleY.Accept(this); initcode.Append(',');
@@ -1234,32 +1265,49 @@ namespace vip_sharp
             }
         }
 
-        public void Visit(VIPAssignmentCommandAsDefinitionNode vIPAssignmentCommandAsDefinitionNode)
+        public void Visit(VIPAssignmentCommandAsDefinitionNode node)
+        {
+            ConstructorCode.Append($"{node.Name} = ");
+            BuildConstructor = true;
+            node.Value.Accept(this);
+            BuildConstructor = false;
+        }
+
+        public void Visit(VIPCharLiteralNode node)
+        {
+            Code.Append($"'{node.Value}'");
+        }
+
+        public void Visit(VIPCalResDefinitionNode node)
+        {
+            var bc = BuildConstructor; BuildConstructor = true;
+            Code.AppendLine($"public {VIPRuntimeClass}.CalRes __{node.Handle};");
+
+            ConstructorCode.Append($"__{node.Handle} = new {VIPRuntimeClass}.CalRes(");
+            node.ExpressionList.Accept(this);
+            ConstructorCode.AppendLine(");");
+            BuildConstructor = bc;
+
+            AddCalResSymbol("__" + node.Handle);
+        }
+
+        public void Visit(VIPArrListNode node)
         {
             throw new NotImplementedException();
         }
 
-        public void Visit(VIPCharLiteralNode vIPCharLiteralNode)
+        public void Visit(VIPLoopCommandNode node)
         {
-            throw new NotImplementedException();
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            var id = LastObjectID++;
+            code.Append($"for(int idx{id} = 0; idx{id}<");
+            node.Expression.Accept(this);
+            code.AppendLine($"; ++idx{id})");
+            node.Command.Accept(this);
         }
 
-        public void Visit(VIPCalResDefinitionNode vIPCalResDefinitionNode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(VIPArrListNode vIPArrListNode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(VIPLoopCommandNode vIPLoopCommand)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(VIPIncrementOpsNode vIPIncrementOpsNode)
+        public void Visit(VIPIncrementOpsNode node)
         {
             throw new NotImplementedException();
         }
@@ -1301,6 +1349,48 @@ namespace vip_sharp
                 node.Expression.Accept(this);
                 code.AppendLine(");");
             }
+        }
+
+        public void Visit(VIPClipCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            if (node.Off)
+                code.AppendLine($"{VIPRuntimeInstance}.ClipOff();");
+            else
+            {
+                code.Append($"{VIPRuntimeInstance}.Clip(");
+                node.X.Accept(this); code.Append(',');
+                node.Y.Accept(this); code.Append(',');
+                node.List.Accept(this);
+                code.AppendLine(");");
+            }
+        }
+
+        public void Visit(VIPCalCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            node.Output.Accept(this);
+            code.Append($" = {VIPRuntimeInstance}.Cal(");
+            node.CalRes.Accept(this); code.Append(',');
+            node.Input.Accept(this);
+            code.AppendLine(");");
+        }
+
+        public void Visit(VIPArcCommandNode node)
+        {
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            code.Append($"{VIPRuntimeInstance}.Arc(");
+            node.X.Accept(this); code.Append(',');
+            node.Y.Accept(this); code.Append(',');
+            node.InnerRadius.Accept(this); code.Append(',');
+            node.OuterRadius.Accept(this); code.Append(',');
+            node.StartAngle.Accept(this); code.Append(',');
+            node.EndAngle.Accept(this); code.Append(',');
+            node.Steps.Accept(this);
+            code.AppendLine(");");
         }
     }
 }

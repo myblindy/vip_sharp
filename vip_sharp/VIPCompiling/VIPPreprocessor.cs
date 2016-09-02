@@ -67,6 +67,9 @@ namespace vip_sharp
             defines.Add("PINK", "22");
             defines.Add("GOLD", "23");
 
+            defines.Add("ON", "1");
+            defines.Add("OFF", "0");
+
             // various housekeeping
             Objects.Clear();
             ProcessedFiles.Clear();

@@ -33,7 +33,7 @@ namespace vip_sharp
                 VIPOutVariables = new UnmanagedDefinition[0],
                 VHPInVariables = new UnmanagedDefinition[0],
                 VHPOutVariables = new UnmanagedDefinition[0];
-            public dynamic IOVariables = new ExpandoObject();
+            public Dictionary<string, object> IOVariables = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
         public VIPSystemClassType VIPSystemClass = new VIPSystemClassType();
 
