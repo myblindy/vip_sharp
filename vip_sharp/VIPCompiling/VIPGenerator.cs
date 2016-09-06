@@ -310,7 +310,7 @@ namespace vip_sharp
 
                     for (int initvalidx = 0; initvalidx < fields.Length; ++initvalidx)
                     {
-                        if (initvalidx != 0) Code.Append(',');
+                        if (initvalidx != 0) initcode.Append(',');
                         initcode.Append("__" + fields[initvalidx] + " = ");
                         node.InitValues[initvalidx].Accept(this);
                     }
@@ -994,7 +994,8 @@ namespace vip_sharp
 
         public void Visit(VIPStringLiteralNode node)
         {
-            Code.Append($"\"{node.Value}\"");
+            var code = BuildConstructor ? ConstructorCode : Code;
+            code.Append($"\"{node.Value}\"");
         }
 
         public void Visit(VIPMatrixCommandNode node)
@@ -1054,28 +1055,30 @@ namespace vip_sharp
 
         public void Visit(VIPStringCommandNode node)
         {
-            Code.Append($"{VIPRuntimeInstance}.DrawString(");
-            node.X.Accept(this); Code.Append(',');
-            node.Y.Accept(this); Code.Append(',');
-            Code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
-            InStringCall = true; node.StringData.Accept(this); Code.Append(','); InStringCall = false;
-            node.CharCount.Accept(this); Code.Append(',');
+            var code = BuildConstructor ? ConstructorCode : Code;
+
+            code.Append($"{VIPRuntimeInstance}.DrawString(");
+            node.X.Accept(this); code.Append(',');
+            node.Y.Accept(this); code.Append(',');
+            code.Append($"{VIPRuntimeClass}.PositionRef.{node.Ref},");
+            InStringCall = true; node.StringData.Accept(this); code.Append(','); InStringCall = false;
+            node.CharCount.Accept(this); code.Append(',');
 
             if (node.StringRes == null)
             {
-                node.BaseList.Accept(this); Code.Append(',');
-                node.ScaleX.Accept(this); Code.Append(',');
-                node.ScaleY.Accept(this); Code.Append(',');
+                node.BaseList.Accept(this); code.Append(',');
+                node.ScaleX.Accept(this); code.Append(',');
+                node.ScaleY.Accept(this); code.Append(',');
                 node.SpaceX.Accept(this);
                 if (node.SpaceY != null)
                 {
-                    Code.Append(',');
+                    code.Append(',');
                     node.SpaceY.Accept(this);
                 }
             }
             else
                 node.StringRes.Accept(this);
-            Code.AppendLine(");");
+            code.AppendLine(");");
         }
 
         public void Visit(VIPHotSpotCommandNode node)
