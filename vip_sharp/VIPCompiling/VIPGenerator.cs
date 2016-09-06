@@ -22,6 +22,8 @@ namespace vip_sharp
         private uint LastObjectID = 0;
         private List<Tuple<string[], string, bool>> FunctionArguments = new List<Tuple<string[], string, bool>>();
 
+        MyStringBuilder IOVarsCode = new MyStringBuilder();
+
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
         private const string VIPRuntimeInstance = VIPRuntimeClass + ".Instance";
         private const string VIPArrayClass = "vip_sharp.BipolarArray";
@@ -107,7 +109,13 @@ namespace vip_sharp
                     type = TypeNameTranslation[argtype];
                 }
                 else
+                {
                     type = TypeNameTranslation[obj.GetType()];
+
+                    IOVarsCode.AppendLine($"{type} __{iovar.Key} {{");
+                    IOVarsCode.AppendLine($"get {{ return ({type}){VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"]; }}");
+                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"] = value; }} }}");
+                }
 
                 AddIOVariableSymbol("__" + iovar.Key, type, indices);
             }
@@ -458,6 +466,11 @@ namespace vip_sharp
             Code.AppendLine("GlobalState.MainClass = this;");
             ConstructorCode = Code.InsertContinuation();
             Code.AppendLine("}");
+
+            // add the io variables
+            Code.Append(IOVarsCode.ToString());
+
+            // and the code
             foreach (VIPNode entry in node.ChildNodes)
                 entry.Accept(this);
             Code.AppendLine("}");
@@ -1282,7 +1295,9 @@ namespace vip_sharp
 
         public void Visit(VIPAssignmentCommandAsDefinitionNode node)
         {
-            ConstructorCode.Append($"{node.Name} = ");
+            var symbol = GetSymbolNode("__" + node.Name);
+
+            ConstructorCode.Append($"__{node.Name} = ({symbol.Details.TypeNode.Details.Name})");
             BuildConstructor = true;
             node.Value.Accept(this);
             BuildConstructor = false;

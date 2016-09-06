@@ -23,6 +23,12 @@ namespace vip_sharp
             public double __fCursor_XPos { get { return MouseX; } set { MouseX = value; } }
             public double __fCursor_YPos { get { return MouseY; } set { MouseY = value; } }
 
+            public int[] __nTemp { get; private set; } = new int[100];
+            public double[] __dTemp { get; private set; } = new double[100];
+            public float[] __fTemp { get; private set; } = new float[100];
+            public bool[] __bTemp { get; private set; } = new bool[100];
+            public char[] __cTemp { get; private set; } = new char[100];
+
             public bool LeftButtonDown;
             public bool LastLeftButtonDown;
             public double MouseX, MouseY;
