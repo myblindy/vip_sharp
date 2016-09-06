@@ -1286,6 +1286,7 @@ namespace vip_sharp
             BuildConstructor = true;
             node.Value.Accept(this);
             BuildConstructor = false;
+            ConstructorCode.AppendLine(";");
         }
 
         public void Visit(VIPCharLiteralNode node)

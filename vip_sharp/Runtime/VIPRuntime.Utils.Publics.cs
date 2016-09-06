@@ -10,6 +10,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
+using MoreLinq;
 
 namespace vip_sharp
 {
@@ -67,6 +68,36 @@ namespace vip_sharp
             public StringRes(DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
             {
                 BaseList = baselist; ScaleX = scalex; ScaleY = scaley; SpaceX = spacex; SpaceY = spacey;
+            }
+        }
+
+        public class CalRes
+        {
+            public Tuple<double, double>[] Values;
+
+            public CalRes(params double[] vals) { Values = vals.Batch(2).Select(w => Tuple.Create(w.First(), w.Skip(1).First())).ToArray(); }
+
+            private static double LinearInterpolation(double x, double x0, double x1, double y0, double y1)
+            {
+                if ((x1 - x0) == 0)
+                    return (y0 + y1) / 2;
+                return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+            }
+
+            public double Compute(double input)
+            {
+                if (input <= Values[0].Item1)
+                    return Values[0].Item2;
+                else if (input >= Values.Last().Item1)
+                    return Values.Last().Item2;
+                else
+                {
+                    for (int idx = 1; idx < Values.Length; ++idx)
+                        if (Values[idx].Item1 >= input)
+                            return LinearInterpolation(input, Values[idx - 1].Item1, Values[idx].Item1, Values[idx - 1].Item2, Values[idx].Item2);
+                }
+
+                throw new InvalidOperationException();
             }
         }
 
@@ -287,6 +318,18 @@ namespace vip_sharp
                     (float)(x + r * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
                     (float)(y + r * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
 
+            gl.End();
+        }
+
+        public void Box(double x, double y, double w, double h, PositionRef @ref, bool fill)
+        {
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+
+            gl.Begin(fill ? GL.QUADS : GL.LINE_LOOP);
+            gl.Vertex2f((float)x, (float)y);
+            gl.Vertex2f((float)(x + w), (float)y);
+            gl.Vertex2f((float)(x + w), (float)(y + h));
+            gl.Vertex2f((float)x, (float)(y + h));
             gl.End();
         }
 
