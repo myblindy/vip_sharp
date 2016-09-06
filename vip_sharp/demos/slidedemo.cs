@@ -4,16 +4,18 @@ public static class GlobalState { public static MainClass MainClass; }
 public class MainClass : vip_sharp.VIPRuntime.VIPObject {
 public MainClass() {
 GlobalState.MainClass = this;
-__bmpSwitch= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+__bmpSwitch = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+this.__uvDown= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0,__dY = 0},new __TVertex {__dX = 0,__dY = 1},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 0.5,__dY = 0}};
+this.__uvUp= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0.5,__dY = 0},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 1,__dY = 1},new __TVertex {__dX = 1,__dY = 0}};
 __sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 1};
 }
-public vip_sharp.VIPRuntime.BitmapRes __bmpSwitch;
+public vip_sharp.VIPRuntime.BitmapRes __bmpSwitch = null;
 public class __TVertex { 
 public double __dX;
 public double __dY;
 }
-public vip_sharp.BipolarArray<__TVertex> __uvDown= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0,__dY = 0},new __TVertex {__dX = 0,__dY = 1},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 0.5,__dY = 0}};
-public vip_sharp.BipolarArray<__TVertex> __uvUp= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0.5,__dY = 0},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 1,__dY = 1},new __TVertex {__dX = 1,__dY = 0}};
+public vip_sharp.BipolarArray<__TVertex> __uvDown;
+public vip_sharp.BipolarArray<__TVertex> __uvUp;
 public class __TwoPosSwitch : vip_sharp.VIPRuntime.VIPObject {
 public __TwoPosSwitch() {
 }

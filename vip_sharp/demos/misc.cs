@@ -955,9 +955,9 @@ vip_sharp.VIPRuntime.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 __ARIAL_Delete = new vip_sharp.VIPRuntime.DisplayList(() => {
 });
-__STRIPE= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"stripe.bmp");
-__SWITCH= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"sw.png");
-__KNOB= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"knob.png");
+__STRIPE = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"stripe.bmp");
+__SWITCH = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"sw.png");
+__KNOB = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"knob.png");
 __KNOBLIST = new vip_sharp.VIPRuntime.DisplayList(() => {
 vip_sharp.VIPRuntime.Instance.Bitmap(__KNOB, vip_sharp.VIPRuntime.BitmapBlend.Replace, 0,0,4,4,vip_sharp.VIPRuntime.PositionRef.CC);
 });
@@ -967,6 +967,12 @@ vip_sharp.VIPRuntime.Instance.Color(6);
 vip_sharp.VIPRuntime.Instance.Circle(0,0,0.5,10,true);
 vip_sharp.VIPRuntime.Instance.ColorRestore();
 });
+this.__UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0.33,__Y = 0},new __TVector {__X = 0.33,__Y = 1}};
+this.__DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 1,__Y = 0},new __TVector {__X = 1,__Y = 1}};
+this.__swstate = false;
+this.__cnt = 0;
+this.__knobvar = 0;
+this.__slidervar = 0;
 }
 public vip_sharp.VIPRuntime.DisplayList __VIP_Null;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Smiley;
@@ -1224,21 +1230,21 @@ public vip_sharp.VIPRuntime.DisplayList __ARIAL_Vertical_Line;
 public vip_sharp.VIPRuntime.DisplayList __ARIAL_Right_Bracket_2;
 public vip_sharp.VIPRuntime.DisplayList __ARIAL_Tilde;
 public vip_sharp.VIPRuntime.DisplayList __ARIAL_Delete;
-public vip_sharp.VIPRuntime.BitmapRes __STRIPE;
-public vip_sharp.VIPRuntime.BitmapRes __SWITCH;
-public vip_sharp.VIPRuntime.BitmapRes __KNOB;
+public vip_sharp.VIPRuntime.BitmapRes __STRIPE = null;
+public vip_sharp.VIPRuntime.BitmapRes __SWITCH = null;
+public vip_sharp.VIPRuntime.BitmapRes __KNOB = null;
 public vip_sharp.VIPRuntime.DisplayList __KNOBLIST;
 public vip_sharp.VIPRuntime.DisplayList __SLIDERLIST;
 public class __TVector { 
 public double __X;
 public double __Y;
 }
-public vip_sharp.BipolarArray<__TVector> __UpUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0,__Y = 1},new __TVector {__X = 0,__Y = 0},new __TVector {__X = 0.33,__Y = 0},new __TVector {__X = 0.33,__Y = 1}};
-public vip_sharp.BipolarArray<__TVector> __DownUV= new vip_sharp.BipolarArray<__TVector>(4) {new __TVector {__X = 0.66,__Y = 1},new __TVector {__X = 0.66,__Y = 0},new __TVector {__X = 1,__Y = 0},new __TVector {__X = 1,__Y = 1}};
-public bool __swstate = false;
-public double __cnt = 0;
-public double __knobvar = 0;
-public double __slidervar = 0;
+public vip_sharp.BipolarArray<__TVector> __UpUV;
+public vip_sharp.BipolarArray<__TVector> __DownUV;
+public bool __swstate;
+public double __cnt;
+public double __knobvar;
+public double __slidervar;
 public override void Run() {
 vip_sharp.BipolarArray<char> __sData2= new vip_sharp.BipolarArray<char>(15,"Werkt Het ?");
 vip_sharp.BipolarArray<char> __sData= new vip_sharp.BipolarArray<char>("\x1 Ja, het Werkt");

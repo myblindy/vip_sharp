@@ -1,0 +1,20 @@
+Microsoft (R) Visual C# Compiler version 4.6.1055.0
+
+for C# 5
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+
+
+This compiler is provided as part of the Microsoft (R) .NET Framework, but only supports language versions up to C# 5, which is no longer the latest version. For compilers that support newer versions of the C# programming language, see http://go.microsoft.com/fwlink/?LinkID=533240
+
+colortriangle.cs(20,29): error CS1513: } expected
+colortriangle.cs(23,40): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+colortriangle.cs(24,36): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+colortriangle.cs(25,37): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+colortriangle.cs(25,67): error CS1519: Invalid token ')' in class, struct, or interface member declaration
+colortriangle.cs(26,31): error CS1519: Invalid token '=' in class, struct, or interface member declaration
+colortriangle.cs(26,62): error CS1519: Invalid token '+' in class, struct, or interface member declaration
+colortriangle.cs(27,38): error CS1519: Invalid token '(' in class, struct, or interface member declaration
+colortriangle.cs(27,49): error CS1519: Invalid token ',' in class, struct, or interface member declaration
+colortriangle.cs(27,58): error CS1519: Invalid token ')' in class, struct, or interface member declaration
+colortriangle.cs(29,1): error CS1022: Type or namespace definition, or end-of-file expected

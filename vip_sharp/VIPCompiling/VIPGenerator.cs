@@ -14,9 +14,9 @@ namespace vip_sharp
         private Stack<MyStringBuilder> ConstructorCodeStack = new Stack<MyStringBuilder>();
         private MyStringBuilder ConstructorArgsCode = null;
         private Stack<MyStringBuilder> ConstructorArgsCodeStack = new Stack<MyStringBuilder>();
+        private MyStringBuilder FunctionPrologCode = null;
         private bool BuildConstructorArgs = false;
         private bool BuildConstructor = false;
-        private bool InObjectDefinition = false;
         private bool InStringCall = false;
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
@@ -124,13 +124,13 @@ namespace vip_sharp
             var sb = Code;
 
             Code = new ContinuationStringBuilder();
-            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs, iod = InObjectDefinition;
-            BuildConstructor = BuildConstructorArgs = InObjectDefinition = false;
+            bool oldbc = BuildConstructor, oldbca = BuildConstructorArgs;
+            BuildConstructor = BuildConstructorArgs = false;
             node.Accept(this);
             var s = Code.ToString();
 
             Code = sb;
-            BuildConstructor = oldbc; BuildConstructorArgs = oldbca; InObjectDefinition = iod;
+            BuildConstructor = oldbc; BuildConstructorArgs = oldbca;
 
             return s;
         }
@@ -141,7 +141,7 @@ namespace vip_sharp
 
         public void Visit(VIPNumberNode node)
         {
-            var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var code = BuildConstructor ? ConstructorCode : Code;
 
             code.Append(node.Value);
         }
@@ -193,7 +193,7 @@ namespace vip_sharp
 
         public void Visit(VIPQualifiedIdentifierNode node)
         {
-            var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var code = BuildConstructor ? ConstructorCode : Code;
 
             // global?
             bool pointer = false;
@@ -232,18 +232,19 @@ namespace vip_sharp
 
         public void Visit(VIPFullVariableDefinitionCommandNode node)
         {
-            var initcode = InObjectDefinition ? ConstructorCode : Code;
+            var initcode = CurrentSymbolRoot.IsFunctionScope ? Code : ConstructorCode;
             var type = GetValue(node.Type);
-            var specifier = CurrentSymbolRoot.SymbolType != SymbolType.Function ? "public " : "";
+            var specifier = CurrentSymbolRoot.IsFunctionScope ? "" : "public ";
 
             if (node.ArraySize != null || node.ArraySizeAuto)
             {
                 Code.Append($"{specifier}{VIPArrayClass}<{type}> __{node.Name}");
 
-                if (InObjectDefinition)
+                if (!CurrentSymbolRoot.IsFunctionScope)
                 {
                     Code.AppendLine(";");
                     initcode.Append($"this.__{ node.Name}");
+                    BuildConstructor = true;
                 }
 
                 initcode.Append($"= new {VIPArrayClass}<{type}>(");
@@ -287,6 +288,8 @@ namespace vip_sharp
                     initcode.Append(')');
                 initcode.AppendLine(";");
 
+                BuildConstructor = false;
+
                 AddVariableSymbol("__" + node.Name, type, false, 1);
             }
             else if (!IsValueType(node.Type))
@@ -296,10 +299,11 @@ namespace vip_sharp
                     var fields = Typedefs[node.Type.Parts].Fields;
                     Code.Append($"{specifier}{type} __{node.Name}");
 
-                    if (InObjectDefinition)
+                    if (!CurrentSymbolRoot.IsFunctionScope)
                     {
                         Code.AppendLine(";");
                         initcode.Append($"this.__{node.Name}");
+                        BuildConstructor = true;
                     }
 
                     initcode.Append($"= new {type} {{");
@@ -313,13 +317,15 @@ namespace vip_sharp
 
                     initcode.AppendLine("};");
 
+                    BuildConstructor = false;
+
                     AddVariableSymbol("__" + node.Name, type, false, 0);
                 }
                 else
                 {
                     Code.Append($"{specifier}{type} __{node.Name}");
 
-                    if (InObjectDefinition)
+                    if (!CurrentSymbolRoot.IsFunctionScope)
                     {
                         Code.AppendLine(";");
                         initcode.Append($"this.__{node.Name}");
@@ -334,10 +340,11 @@ namespace vip_sharp
             {
                 Code.Append($"{specifier}{type} __{node.Name}");
 
-                if (InObjectDefinition)
+                if (!CurrentSymbolRoot.IsFunctionScope)
                 {
                     Code.AppendLine(";");
                     initcode.Append($"this.__{node.Name}");
+                    BuildConstructor = true;
                 }
 
                 initcode.Append(" = ");
@@ -354,6 +361,8 @@ namespace vip_sharp
                 }
                 initcode.AppendLine(";");
 
+                BuildConstructor = false;
+
                 AddVariableSymbol("__" + node.Name, type, false, 0);
             }
         }
@@ -364,8 +373,6 @@ namespace vip_sharp
 
         public void Visit(VIPTypeDefinitionNode node)
         {
-            var iod = InObjectDefinition; InObjectDefinition = true;
-
             Typedefs.Add(new[] { node.Name }, new TypedefDataClass
             {
                 Fields = node.ChildNodes.Cast<VIPVariableDefinitionNode>().Select(n => n.Identifier).ToArray()
@@ -379,8 +386,6 @@ namespace vip_sharp
             Code.AppendLine("}");
 
             GoUpSymbol();
-
-            InObjectDefinition = iod;
         }
 
         public void Visit(VIPMainNode node)
@@ -484,7 +489,7 @@ namespace vip_sharp
 
         public void Visit(VIPExpressionNode node)
         {
-            var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var code = BuildConstructor ? ConstructorCode : Code;
 
             if (node.ChildNodes.Count == 2 && node.ChildNodes[0] is VIPQualifiedIdentifierNode && node.ChildNodes[1] is VIPExpressionListNode)
             {
@@ -511,7 +516,7 @@ namespace vip_sharp
 
         public void Visit(VIPOperatorNode node)
         {
-            var code = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var code = BuildConstructor ? ConstructorCode : Code;
 
             switch (node.Operator)
             {
@@ -547,8 +552,11 @@ namespace vip_sharp
             var prefix = node.Type == null ? "" : PrefixForValueType(IsValueType(node.Type));
             AddFunctionSymbol("__" + node.Name, node.Type == null ? null : prefix + node.Type.Parts[0], FunctionArguments);
             Code.AppendLine(") {");
+
+            FunctionPrologCode = Code.InsertContinuation();
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
+
             Code.AppendLine("}");
         }
 
@@ -615,20 +623,28 @@ namespace vip_sharp
 
         public void Visit(VIPBitmapResDefinitionNode node)
         {
-            var initcode = ConstructorCode;
             var type = BitmapTypeTranslation[node.Type];
             var filter = BitmapFilterTranslation[node.Filter];
             var clamp = BitmapRepeatTranslation[node.ClampMode];
 
-            Code.Append($"public {VIPRuntimeClass}.BitmapRes __{node.Handle}");
+            var infn = CurrentSymbolRoot.IsFunctionScope;
+            MyStringBuilder defcode, initcode;
+            if (infn)
+            {
+                defcode = FunctionPrologCode;
+                initcode = Code;
+            }
+            else
+            {
+                defcode = Code;
+                initcode = ConstructorCode;
 
-            //if (InObjectDefinition)
-            //{
-            Code.AppendLine(";");
-            initcode.Append($"__{node.Handle}");
-            //}
+                defcode.Append("public ");
+            }
 
-            initcode.AppendLine($"= new {VIPRuntimeClass}.BitmapRes(" +
+            defcode.AppendLine($"{VIPRuntimeClass}.BitmapRes __{node.Handle} = null;");
+
+            initcode.AppendLine($"__{node.Handle} = new {VIPRuntimeClass}.BitmapRes(" +
                 $"{VIPRuntimeClass}.BitmapType.{type}, {VIPRuntimeClass}.BitmapFilter.{filter}, {VIPRuntimeClass}.BitmapClamp.{clamp}, " +
                 "@\"" + node.Path + "\");");
 
@@ -715,10 +731,8 @@ namespace vip_sharp
             ConstructorCodeStack.Push(ConstructorCode); ConstructorCode = Code.InsertContinuation();
             Code.AppendLine("}");
 
-            InObjectDefinition = true;
             foreach (var defnode in node.Definitions)
                 ((VIPNode)defnode.ChildNodes[0].AstNode).Accept(this);
-            InObjectDefinition = false;
 
             Code.AppendLine("}");
 
@@ -887,8 +901,6 @@ namespace vip_sharp
 
         public void Visit(VIPObjectInitDefinition node)
         {
-            InObjectDefinition = false;
-
             bool first = true;
             BuildConstructorArgs = true;
             FunctionArguments.Clear();
@@ -902,25 +914,25 @@ namespace vip_sharp
             AddFunctionSymbol("init", null, FunctionArguments);
 
             BuildConstructor = true;
+            FunctionPrologCode = Code.InsertContinuation();
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             BuildConstructor = false;
 
             GoUpSymbol();
-
-            InObjectDefinition = true;
         }
 
         public void Visit(VIPObjectEntryDefinition node)
         {
-            InObjectDefinition = false;
             AddFunctionSymbol("entry", null, null);
             Code.AppendLine("public override void Run() {");
+
+            FunctionPrologCode = Code.InsertContinuation();
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
+
             Code.AppendLine("}");
             GoUpSymbol();
-            InObjectDefinition = true;
         }
 
         public void Visit(VIPColorCommandNode node)
@@ -1000,7 +1012,7 @@ namespace vip_sharp
         public void Visit(VIPListDefinition node)
         {
             var bc = BuildConstructor; BuildConstructor = true;
-            var initcode = BuildConstructor || InObjectDefinition ? ConstructorCode : Code;
+            var initcode = BuildConstructor ? ConstructorCode : Code;
 
             Code.Append($"public {VIPRuntimeClass}.DisplayList __{node.Name}");
 
@@ -1280,13 +1292,31 @@ namespace vip_sharp
 
         public void Visit(VIPCalResDefinitionNode node)
         {
-            var bc = BuildConstructor; BuildConstructor = true;
-            Code.AppendLine($"public {VIPRuntimeClass}.CalRes __{node.Handle};");
+            var infn = CurrentSymbolRoot.IsFunctionScope;
+            var bc = BuildConstructor;
+            MyStringBuilder defcode, initcode;
+            if (infn)
+            {
+                defcode = FunctionPrologCode;
+                initcode = Code;
+            }
+            else
+            {
+                defcode = Code;
+                initcode = ConstructorCode;
 
-            ConstructorCode.Append($"__{node.Handle} = new {VIPRuntimeClass}.CalRes(");
+                defcode.Append("public ");
+                BuildConstructor = true;
+            }
+
+            defcode.AppendLine($"{VIPRuntimeClass}.CalRes __{node.Handle} = null;");
+
+            initcode.Append($"__{node.Handle} = new {VIPRuntimeClass}.CalRes(");
             node.ExpressionList.Accept(this);
-            ConstructorCode.AppendLine(");");
-            BuildConstructor = bc;
+            initcode.AppendLine(");");
+
+            if (!infn)
+                BuildConstructor = bc;
 
             AddCalResSymbol("__" + node.Handle);
         }

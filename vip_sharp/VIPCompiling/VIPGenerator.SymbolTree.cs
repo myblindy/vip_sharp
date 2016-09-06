@@ -19,6 +19,7 @@ namespace vip_sharp
             public bool TypePointer;
             public int TypeIndices;
         }
+
         [DebuggerDisplay("{SymbolType} {Details.Name}")]
         class SymbolNode
         {
@@ -38,6 +39,8 @@ namespace vip_sharp
             public SymbolDetailsType Details = new SymbolDetailsType();
             public List<SymbolNode> Arguments = new List<SymbolNode>();
             public SymbolNode Return;
+
+            public bool IsFunctionScope => SymbolType == SymbolType.Function || SymbolType == SymbolType.DisplayList;
         }
         SymbolNode SymbolsRoot = new SymbolNode { SymbolType = SymbolType.Root }, CurrentSymbolRoot;
 

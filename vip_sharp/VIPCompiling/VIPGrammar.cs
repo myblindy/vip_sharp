@@ -716,7 +716,9 @@ namespace vip_sharp
             Type = nodes[2].Token.ValueString;
             Filter = nodes[3].Token.ValueString;
             ClampMode = nodes[4].Token.ValueString;
-            if (((VIPExpressionNode)nodes[5].AstNode).ChildNodes[0] is VIPStringLiteralNode)
+            if (nodes[5].AstNode is VIPPathIdentifierNode)
+                Path = ((VIPPathIdentifierNode)nodes[5].AstNode).Path;
+            else if (((VIPExpressionNode)nodes[5].AstNode).ChildNodes[0] is VIPStringLiteralNode)
                 Path = ((VIPStringLiteralNode)((VIPExpressionNode)nodes[5].AstNode).ChildNodes[0]).Value;
             else
                 throw new NotImplementedException();

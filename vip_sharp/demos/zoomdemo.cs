@@ -480,13 +480,18 @@ vip_sharp.VIPRuntime.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 __VIP_Delete = new vip_sharp.VIPRuntime.DisplayList(() => {
 });
-__LFont= new vip_sharp.VIPRuntime.StringRes(__VIP_Null,0.05,0.05,1.2);
-__bmpSwitch= new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+__LFont = new vip_sharp.VIPRuntime.StringRes(__VIP_Null,0.05,0.05,1.2);
+__bmpSwitch = new vip_sharp.VIPRuntime.BitmapRes(vip_sharp.VIPRuntime.BitmapType.RGB, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"Switch.bmp");
+this.__uvDown= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0,__dY = 0},new __TVertex {__dX = 0,__dY = 1},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 0.5,__dY = 0}};
+this.__uvUp= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0.5,__dY = 0},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 1,__dY = 1},new __TVertex {__dX = 1,__dY = 0}};
 __sw1 = new __TwoPosSwitch() { X = 0,Y = 0,s = 0.3};
 __sw2 = new __TwoPosSwitch() { X = 0,Y = 0.3,s = 0.3};
 __sw3 = new __TwoPosSwitch() { X = 0,Y = -0.3,s = 0.3};
 __sw4 = new __TwoPosSwitch() { X = 0.3,Y = 0,s = 0.3};
 __sw5 = new __TwoPosSwitch() { X = -0.3,Y = 0,s = 0.3};
+this.__dZoom = 1;
+this.__dZoomX = 0;
+this.__dZoomY = 0;
 }
 public vip_sharp.VIPRuntime.DisplayList __VIP_Null;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Smiley;
@@ -616,14 +621,13 @@ public vip_sharp.VIPRuntime.DisplayList __VIP_Vertical_Line;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Right_Bracket_2;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Tilde;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Delete;
-public vip_sharp.VIPRuntime.StringRes __LFont;
-public vip_sharp.VIPRuntime.BitmapRes __bmpSwitch;
+public vip_sharp.VIPRuntime.StringRes __LFont;public vip_sharp.VIPRuntime.BitmapRes __bmpSwitch = null;
 public class __TVertex { 
 public double __dX;
 public double __dY;
 }
-public vip_sharp.BipolarArray<__TVertex> __uvDown= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0,__dY = 0},new __TVertex {__dX = 0,__dY = 1},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 0.5,__dY = 0}};
-public vip_sharp.BipolarArray<__TVertex> __uvUp= new vip_sharp.BipolarArray<__TVertex>(4) {new __TVertex {__dX = 0.5,__dY = 0},new __TVertex {__dX = 0.5,__dY = 1},new __TVertex {__dX = 1,__dY = 1},new __TVertex {__dX = 1,__dY = 0}};
+public vip_sharp.BipolarArray<__TVertex> __uvDown;
+public vip_sharp.BipolarArray<__TVertex> __uvUp;
 public class __TwoPosSwitch : vip_sharp.VIPRuntime.VIPObject {
 public __TwoPosSwitch() {
 }
@@ -660,9 +664,9 @@ public __TwoPosSwitch __sw2;
 public __TwoPosSwitch __sw3;
 public __TwoPosSwitch __sw4;
 public __TwoPosSwitch __sw5;
-public double __dZoom = 1;
-public double __dZoomX = 0;
-public double __dZoomY = 0;
+public double __dZoom;
+public double __dZoomX;
+public double __dZoomY;
 public override void Run() {
 double __dNewZoom = 0;
 __dNewZoom = GlobalState.MainClass.__dZoom+(vip_sharp.VIPRuntime.Instance.VIPSystemClass.__fWheel/10);

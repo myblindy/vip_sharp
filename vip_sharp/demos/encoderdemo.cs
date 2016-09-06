@@ -480,7 +480,7 @@ vip_sharp.VIPRuntime.Instance.LineStrip(0.2,0.5,0.4,0.6,0.7,0.4,0.9,0.5);
 });
 __VIP_Delete = new vip_sharp.VIPRuntime.DisplayList(() => {
 });
-__LFont= new vip_sharp.VIPRuntime.StringRes(__VIP_Null,0.05,0.05,1.2);
+__LFont = new vip_sharp.VIPRuntime.StringRes(__VIP_Null,0.05,0.05,1.2);
 __KnobArrow = new vip_sharp.VIPRuntime.DisplayList(() => {
 vip_sharp.VIPRuntime.Instance.Bitmap(vip_sharp.VIPRuntime.BitmapType.HardMask, vip_sharp.VIPRuntime.BitmapFilter.Linear, vip_sharp.VIPRuntime.BitmapClamp.Clamp, @"encoder.bmp" , vip_sharp.VIPRuntime.BitmapBlend.Blend, 0,0,0.5,0.5,vip_sharp.VIPRuntime.PositionRef.CC);
 });
@@ -613,8 +613,7 @@ public vip_sharp.VIPRuntime.DisplayList __VIP_Vertical_Line;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Right_Bracket_2;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Tilde;
 public vip_sharp.VIPRuntime.DisplayList __VIP_Delete;
-public vip_sharp.VIPRuntime.StringRes __LFont;
-public vip_sharp.VIPRuntime.DisplayList __KnobArrow;
+public vip_sharp.VIPRuntime.StringRes __LFont;public vip_sharp.VIPRuntime.DisplayList __KnobArrow;
 public override void Run() {
 double __dKnobValue = 0;
 vip_sharp.VIPRuntime.Instance.RotaryKnob(1, this,0,0,0.25,ref __dKnobValue,-65535,65535,-65535,65535,vip_sharp.VIPRuntime.HoverBox.Never,1,GlobalState.MainClass.__KnobArrow);
