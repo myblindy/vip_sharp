@@ -783,10 +783,12 @@ namespace vip_sharp
         {
             Type = (VIPTypeIdentifierNode)nodes[0].AstNode;
             Identifier = nodes[1].Token.ValueString;
+            ExtractIndices((VIPArrListNode)nodes[2].AstNode, out Index1, out Index2);
         }
 
         public VIPTypeIdentifierNode Type;
         public string Identifier;
+        public VIPExpressionNode Index1, Index2;
     }
 
     public class VIPCommandsNode : VIPNode

@@ -116,10 +116,8 @@ namespace vip_sharp
         {
             TypeName = ((VIPHTypeNode)nodes[0].AstNode).TypeName;
             VariableName = ((VIPHPlainIdentifierNode)nodes[1].AstNode).Name;
-            if (nodes.Count >= 4)
-                ArrayIndex1 = ((VIPHOptArrNode)nodes[2].AstNode).Value;
-            if (nodes.Count >= 5)
-                ArrayIndex2 = ((VIPHOptArrNode)nodes[3].AstNode).Value;
+            ArrayIndex1 = ((VIPHOptArrNode)nodes[2].AstNode).Value;
+            ArrayIndex2 = ((VIPHOptArrNode)nodes[3].AstNode).Value;
         }
 
         public string TypeName, VariableName;

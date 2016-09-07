@@ -18,6 +18,7 @@ namespace vip_sharp
         private bool BuildConstructorArgs = false;
         private bool BuildConstructor = false;
         private bool InStringCall = false;
+        private bool InAssignmentStatement = false;
         private Dictionary<string, ContinuationStringBuilder.Range> ObjectRanges = new Dictionary<string, ContinuationStringBuilder.Range>();
         private uint LastObjectID = 0;
         private List<Tuple<string[], string, bool>> FunctionArguments = new List<Tuple<string[], string, bool>>();
@@ -93,6 +94,14 @@ namespace vip_sharp
             AddBuiltInFunctionSymbol("__round", "double", Tuple.Create(new[] { "double" }, "arg", false));
             AddBuiltInFunctionSymbol("__rand", "double");
 
+            // system class
+            AddStructSymbolAndGoDown("__system");
+            AddVariableSymbol("__nTemp", "int", false, 1);
+            AddVariableSymbol("__dTemp", "double", false, 1);
+            AddVariableSymbol("__fTemp", "float", false, 1);
+            AddVariableSymbol("__cTemp", "char", false, 1);
+            GoUpSymbol();
+
             // io vars
             foreach (var iovar in Instance.VIPSystemClass.IOVariables)
             {
@@ -107,6 +116,10 @@ namespace vip_sharp
 
                     var argtype = obj.GetType().GetGenericArguments()[0];
                     type = TypeNameTranslation[argtype];
+
+                    IOVarsCode.AppendLine($"{VIPArrayClass}<{type}> __{iovar.Key} {{");
+                    IOVarsCode.AppendLine($"get {{ return ({VIPArrayClass}<{type}>){VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"]; }}");
+                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"] = value; }} }}");
                 }
                 else
                 {
@@ -165,9 +178,25 @@ namespace vip_sharp
         public void Visit(VIPVariableDefinitionNode node)
         {
             var type = GetValue(node.Type);
-            Code.AppendLine($"public {type} __{node.Identifier};");
+            if (node.Index1 == null)
+            {
+                Code.AppendLine($"public {type} __{node.Identifier};");
+                AddVariableSymbol("__" + node.Identifier, type, false, 0);
+            }
+            else
+            {
+                // array
+                Code.Append($"public {VIPArrayClass}<{type}> __{node.Identifier} = new {VIPArrayClass}<{type}>(");
+                node.Index1.Accept(this);
+                if (node.Index2 != null)
+                {
+                    Code.Append(',');
+                    node.Index2.Accept(this);
+                }
+                Code.AppendLine(");");
 
-            AddVariableSymbol(node.Identifier, type, false, 0);
+                AddVariableSymbol("__" + node.Identifier, type, false, node.Index2 != null ? 2 : 1);
+            }
         }
 
         public void Visit(VIPPlainIdentifierNode node)
@@ -180,7 +209,11 @@ namespace vip_sharp
             var prefix = ValueTypes.Contains(name) ? "" : "__";
             var n = name.EqualsI("system") ? $"{VIPRuntimeInstance}.VIPSystemClass" : prefix + name;
             code.Append(n);
-            if (idx1 != null && (!InStringCall || (InStringCall && !lastpart)))
+            if (lastpart && InAssignmentStatement)
+            {
+                // don't write the indices here, the assignment handler will take care of it since we need to call .Set()
+            }
+            else if (idx1 != null && (!InStringCall || (InStringCall && !lastpart)))
             {
                 code.Append('[');
                 idx1.Accept(this);
@@ -209,9 +242,11 @@ namespace vip_sharp
             {
                 var symbol = GetSymbolNode("__" + node.Parts[0].Item1);
                 pointer = symbol.Details.TypePointer;
-                if (symbol.Parent == SymbolsRoot && CurrentSymbolRoot != SymbolsRoot && symbol.SymbolType != SymbolType.Object)
+                if (CurrentSymbolRoot.Parent == symbol.Parent && CurrentSymbolRoot.SymbolType == SymbolType.DisplayList)
+                    code.Append("_this.");
+                else if (symbol.Parent == SymbolsRoot && CurrentSymbolRoot != SymbolsRoot && symbol.SymbolType != SymbolType.Object)
                 {
-                    code.Append($"GlobalState.MainClass.");
+                    code.Append("GlobalState.MainClass.");
                     //OutputQualifiedIdentifierPart(code, node.Parts[0].Item1, node.Parts[0].Item2);
                     //return;
                 }
@@ -398,7 +433,7 @@ namespace vip_sharp
 
         public void Visit(VIPMainNode node)
         {
-            AddFunctionSymbol("entry", null, null);
+            AddFunctionSymbolAndGoDown("entry", null, null);
             Code.AppendLine("public override void Run() {");
             foreach (VIPNode command in node.ChildNodes)
                 command.Accept(this);
@@ -494,10 +529,34 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            node.Variable.Accept(this);
-            code.Append(" = ");
-            node.Expression.Accept(this);
-            code.AppendLine(";");
+            InAssignmentStatement = true; node.Variable.Accept(this); InAssignmentStatement = false;
+
+            var symbol = GetSymbolNode(node.Variable);
+            if (symbol.Details.TypeIndices > 0)
+            {
+                // if array, use .Set()
+                code.Append(".Set(");
+                if (node.Variable.Parts.Last().Item2 != null)
+                {
+                    node.Variable.Parts.Last().Item2.Accept(this);
+                    if (node.Variable.Parts.Last().Item3 != null)
+                    {
+                        code.Append(',');
+                        node.Variable.Parts.Last().Item3.Accept(this);
+                    }
+                    code.Append(',');
+                }
+
+                code.Append($"{symbol.Details.TypeNode.ConvertCall}(");
+                node.Expression.Accept(this);
+                code.AppendLine("));");
+            }
+            else
+            {
+                code.Append(" = ");
+                node.Expression.Accept(this);
+                code.AppendLine(";");
+            }
         }
 
         public void Visit(VIPExpressionNode node)
@@ -563,12 +622,13 @@ namespace vip_sharp
                 arg.Accept(this);
             }
             var prefix = node.Type == null ? "" : PrefixForValueType(IsValueType(node.Type));
-            AddFunctionSymbol("__" + node.Name, node.Type == null ? null : prefix + node.Type.Parts[0], FunctionArguments);
             Code.AppendLine(") {");
 
+            AddFunctionSymbolAndGoDown("__" + node.Name, node.Type == null ? null : prefix + node.Type.Parts[0], FunctionArguments);
             FunctionPrologCode = Code.InsertContinuation();
             foreach (VIPNode cmd in node.ChildNodes)
                 cmd.Accept(this);
+            GoUpSymbol();
 
             Code.AppendLine("}");
         }
@@ -598,9 +658,9 @@ namespace vip_sharp
         {
             var code = BuildConstructor ? ConstructorCode : Code;
 
-            code.Append("return ");
+            code.Append($"return {CurrentSymbolRoot.Return.ConvertCall}(");
             node.Expression.Accept(this);
-            code.AppendLine(";");
+            code.AppendLine(");");
         }
 
         public void Visit(VIPIdentifierNode node)
@@ -924,7 +984,7 @@ namespace vip_sharp
             }
             BuildConstructorArgs = false;
 
-            AddFunctionSymbol("init", null, FunctionArguments);
+            AddFunctionSymbolAndGoDown("init", null, FunctionArguments);
 
             BuildConstructor = true;
             FunctionPrologCode = Code.InsertContinuation();
@@ -937,7 +997,7 @@ namespace vip_sharp
 
         public void Visit(VIPObjectEntryDefinition node)
         {
-            AddFunctionSymbol("entry", null, null);
+            AddFunctionSymbolAndGoDown("entry", null, null);
             Code.AppendLine("public override void Run() {");
 
             FunctionPrologCode = Code.InsertContinuation();
@@ -1036,13 +1096,15 @@ namespace vip_sharp
             initcode.Append($"__{node.Name}");
             //}
 
-            initcode.AppendLine($" = new { VIPRuntimeClass }.DisplayList(() => {{");
+            AddDisplayListSymbolAndGoDown("__" + node.Name);
+
+            initcode.AppendLine($" = new { VIPRuntimeClass }.DisplayList(this, _this => {{");
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
             initcode.AppendLine("});");
             BuildConstructor = bc;
 
-            AddDisplayListSymbol("__" + node.Name);
+            GoUpSymbol();
         }
 
         private static readonly Dictionary<string, string> ShapeFunctionMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -1096,6 +1158,8 @@ namespace vip_sharp
 
         public void Visit(VIPHotSpotCommandNode node)
         {
+            var varsymbol = GetSymbolNode(node.Var);
+
             Code.Append($"{VIPRuntimeInstance}.HotSpot({++LastObjectID}, this,");
             node.X.Accept(this); Code.Append(',');
             node.Y.Accept(this); Code.Append(',');
@@ -1105,8 +1169,8 @@ namespace vip_sharp
             Code.Append("ref "); node.Var.Accept(this); Code.Append(',');
             Code.Append($"{VIPRuntimeClass}.HotSpotTrigger.{Enum.GetName(typeof(HotSpotTrigger), node.Trigger)},");
             Code.Append($"{VIPRuntimeClass}.HotSpotType.{Enum.GetName(typeof(HotSpotType), node.Type)},");
-            node.TrueValue.Accept(this); Code.Append(',');
-            node.FalseValue.Accept(this); Code.Append(',');
+            Code.Append($"{varsymbol.Details.TypeNode.ConvertCall}("); node.TrueValue.Accept(this); Code.Append("),");
+            Code.Append($"{varsymbol.Details.TypeNode.ConvertCall}("); node.FalseValue.Accept(this); Code.Append("),");
             Code.Append($"{VIPRuntimeClass}.HoverBox.{Enum.GetName(typeof(HoverBox), node.HoverBox)}");
             if (node.DisplayObject != null)
             {
@@ -1297,11 +1361,34 @@ namespace vip_sharp
         {
             var symbol = GetSymbolNode("__" + node.Name);
 
-            ConstructorCode.Append($"__{node.Name} = ({symbol.Details.TypeNode.Details.Name})");
             BuildConstructor = true;
-            node.Value.Accept(this);
+            ConstructorCode.Append($"__{node.Name}");
+            if (symbol.Details.TypeIndices > 0)
+            {
+                // array set
+                ConstructorCode.Append(".Set(");
+                if (node.Index1 != null)
+                {
+                    node.Index1.Accept(this);
+                    if (node.Index2 != null)
+                    {
+                        ConstructorCode.Append(',');
+                        node.Index2.Accept(this);
+                    }
+                    ConstructorCode.Append(',');
+                }
+                ConstructorCode.Append($"{symbol.Details.TypeNode.ConvertCall}(");
+                node.Value.Accept(this);
+                ConstructorCode.Append("));");
+            }
+            else
+            {
+                // var set
+                ConstructorCode.Append($" = {symbol.Details.TypeNode.ConvertCall}(");
+                node.Value.Accept(this);
+                ConstructorCode.AppendLine(");");
+            }
             BuildConstructor = false;
-            ConstructorCode.AppendLine(";");
         }
 
         public void Visit(VIPCharLiteralNode node)
@@ -1438,7 +1525,8 @@ namespace vip_sharp
             node.OuterRadius.Accept(this); code.Append(',');
             node.StartAngle.Accept(this); code.Append(',');
             node.EndAngle.Accept(this); code.Append(',');
-            node.Steps.Accept(this);
+            node.Steps.Accept(this); code.Append(',');
+            code.Append($"{node.Filled.ToString().ToLower()}");
             code.AppendLine(");");
         }
     }

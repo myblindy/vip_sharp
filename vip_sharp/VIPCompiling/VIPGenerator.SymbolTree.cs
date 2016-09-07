@@ -40,6 +40,35 @@ namespace vip_sharp
             public List<SymbolNode> Arguments = new List<SymbolNode>();
             public SymbolNode Return;
 
+            public string FullName
+            {
+                get
+                {
+                    string name = Details.Name;
+                    var n = this;
+                    while ((n = n.Parent) != null)
+                        name = n.Details.Name + "." + name;
+                    return name;
+                }
+            }
+
+            public string ConvertCall
+            {
+                get
+                {
+                    switch (Details.Name)
+                    {
+                        case "bool": return "Convert.ToBoolean";
+                        case "int": return "Convert.ToInt32";
+                        case "short": return "Convert.ToInt16";
+                        case "double": return "Convert.ToDouble";
+                        case "float": return "Convert.ToSingle";
+                        case "char": return "Convert.ToChar";
+                        default: return "(" + FullName + ")";
+                    }
+                }
+            }
+
             public bool IsFunctionScope => SymbolType == SymbolType.Function || SymbolType == SymbolType.DisplayList;
         }
         SymbolNode SymbolsRoot = new SymbolNode { SymbolType = SymbolType.Root }, CurrentSymbolRoot;
@@ -53,6 +82,7 @@ namespace vip_sharp
             return symbol;
         }
 
+        SymbolNode GetSymbolNode(VIPQualifiedIdentifierNode qnode) => GetSymbolNode(qnode.Parts.Select(w => "__" + w.Item1).ToArray());
         SymbolNode GetSymbolNode(string path) => GetSymbolNode(path.Split('.').Select(w => w.Trim()).ToArray());
         SymbolNode GetSymbolNode(string[] path)
         {
@@ -78,10 +108,13 @@ namespace vip_sharp
 
             // everything else only bubbles down
             for (int idx = startidx + 1; idx < path.Length; ++idx)
+            {
+                n = n.Details.TypeNode;
                 if (!n.Contains(path[idx]))
                     throw new InvalidOperationException();
                 else
                     n = n[path[idx]];
+            }
 
             // and done
             return n;
@@ -130,11 +163,12 @@ namespace vip_sharp
             CurrentSymbolRoot.AddChild(s);
         }
 
-        void AddDisplayListSymbol(string name)
+        void AddDisplayListSymbolAndGoDown(string name)
         {
             var s = new SymbolNode { SymbolType = SymbolType.DisplayList };
             s.Details.Name = name;
             CurrentSymbolRoot.AddChild(s);
+            CurrentSymbolRoot = s;
         }
 
         void AddTypeDefSymbolAndGoDown(string name)
@@ -158,7 +192,7 @@ namespace vip_sharp
             CurrentSymbolRoot = s;
         }
 
-        void AddFunctionSymbol(string name, string returntype, IEnumerable<Tuple<string[], string, bool>> @params)
+        void AddFunctionSymbolAndGoDown(string name, string returntype, IEnumerable<Tuple<string[], string, bool>> @params)
         {
             var s = AddTypeSymbol(name);
             s.SymbolType = SymbolType.Function;

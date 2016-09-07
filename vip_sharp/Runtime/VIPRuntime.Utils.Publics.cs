@@ -23,11 +23,11 @@ namespace vip_sharp
             public double __fCursor_XPos { get { return MouseX; } set { MouseX = value; } }
             public double __fCursor_YPos { get { return MouseY; } set { MouseY = value; } }
 
-            public int[] __nTemp { get; private set; } = new int[100];
-            public double[] __dTemp { get; private set; } = new double[100];
-            public float[] __fTemp { get; private set; } = new float[100];
-            public bool[] __bTemp { get; private set; } = new bool[100];
-            public char[] __cTemp { get; private set; } = new char[100];
+            public BipolarArray<int> __nTemp { get; private set; } = new BipolarArray<int>(100);
+            public BipolarArray<double> __dTemp { get; private set; } = new BipolarArray<double>(100);
+            public BipolarArray<float> __fTemp { get; private set; } = new BipolarArray<float>(100);
+            public BipolarArray<bool> __bTemp { get; private set; } = new BipolarArray<bool>(100);
+            public BipolarArray<char> __cTemp { get; private set; } = new BipolarArray<char>(100);
 
             public bool LeftButtonDown;
             public bool LastLeftButtonDown;
@@ -111,11 +111,11 @@ namespace vip_sharp
         {
             public uint ListID;
 
-            public DisplayList(Action init)
+            public DisplayList(object obj, Action<dynamic> init)
             {
                 ListID = gl.GenLists(1);
                 gl.NewList(ListID, GL.COMPILE);
-                init();
+                init(obj);
                 gl.EndList();
             }
         }
@@ -327,6 +327,23 @@ namespace vip_sharp
             gl.End();
         }
 
+        public void Arc(double x, double y, double r1, double r2, double start, double end, double steps, bool fill)
+        {
+            gl.Begin(GL.LINE_LOOP);
+
+            var inc = (end - start) / steps;
+            for (int idx = 0; idx <= steps; ++idx)
+                gl.Vertex2f(
+                    (float)(x + r1 * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
+                    (float)(y + r1 * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
+            for (int idx = (int)steps; idx >= 0; --idx)
+                gl.Vertex2f(
+                    (float)(x + r1 * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
+                    (float)(y + r1 * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
+
+            gl.End();
+        }
+
         public void Box(double x, double y, double w, double h, PositionRef @ref, bool fill)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
@@ -414,6 +431,14 @@ namespace vip_sharp
         {
             gl.Disable(GL.LIGHTING);
             gl.Disable(GL.COLOR_MATERIAL);
+        }
+
+        public void Display(double x, double y, DisplayList list)
+        {
+            MatrixSave();
+            Translate(x, y);
+            gl.CallList(list.ListID);
+            MatrixRestore();
         }
 
         public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, StringRes res) =>

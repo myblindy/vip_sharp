@@ -50,6 +50,8 @@ namespace vip_sharp
             }
         }
 
+        public static implicit operator T(BipolarArray<T> arr) => arr[0];
+
         public T this[int n]
         {
             get { return Array[n]; }
@@ -91,6 +93,11 @@ namespace vip_sharp
                 arr[i] = s[i];
             arr[s.Length] = (char)0;
         }
+
+        public void Set(T val) => Array[0] = val;
+        public void Set(int i0, T val) => Array[i0] = val;
+        public void Set(int i0, int i1, T val) => this[i0, i1] = val;
+        public void Set(int i0, int i1, int i2, T val) => this[i0, i1, i2] = val;
 
         public override bool Equals(object obj)
         {
