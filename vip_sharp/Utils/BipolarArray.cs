@@ -94,10 +94,52 @@ namespace vip_sharp
             arr[s.Length] = (char)0;
         }
 
+        public static implicit operator BipolarArray<T>(string s) => new BipolarArray<T>(s);
+
         public void Set(T val) => Array[0] = val;
         public void Set(int i0, T val) => Array[i0] = val;
         public void Set(int i0, int i1, T val) => this[i0, i1] = val;
         public void Set(int i0, int i1, int i2, T val) => this[i0, i1, i2] = val;
+
+        public T PreIncrement(int i0 = -1, int i1 = -1, int i2 = -1)
+        {
+            dynamic darr = Array;
+
+            if (i0 == -1) return ++darr[0];
+            else if (i1 == -1) return ++darr[i0];
+            else if (i2 == -1) return ++darr[i0, i1];
+            else return ++darr[i0, i1, i2];
+        }
+
+        public T PreDecrement(int i0 = -1, int i1 = -1, int i2 = -1)
+        {
+            dynamic darr = Array;
+
+            if (i0 == -1) return --darr[0];
+            else if (i1 == -1) return --darr[i0];
+            else if (i2 == -1) return --darr[i0, i1];
+            else return --darr[i0, i1, i2];
+        }
+
+        public T PostIncrement(int i0 = -1, int i1 = -1, int i2 = -1)
+        {
+            dynamic darr = Array;
+
+            if (i0 == -1) return darr[0]++;
+            else if (i1 == -1) return darr[i0]++;
+            else if (i2 == -1) return darr[i0, i1]++;
+            else return darr[i0, i1, i2]++;
+        }
+
+        public T PostDecrement(int i0 = -1, int i1 = -1, int i2 = -1)
+        {
+            dynamic darr = Array;
+
+            if (i0 == -1) return darr[0]--;
+            else if (i1 == -1) return darr[i0]--;
+            else if (i2 == -1) return darr[i0, i1]--;
+            else return darr[i0, i1, i2]--;
+        }
 
         public override bool Equals(object obj)
         {

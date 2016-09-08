@@ -198,7 +198,7 @@ namespace vip_sharp
                 | ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
                     expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")";
             forcommand.Rule = ToTerm("for") + "(" + nakedcommand + ";" + expr + ";" + nakedcommand + ")" + command;
-            unaryassignmentcommand.Rule = incrementops + expr | expr + incrementops;
+            unaryassignmentcommand.Rule = incrementops + qualifiedidentifier | qualifiedidentifier + incrementops;
             loopcommand.Rule = ToTerm("loop") + "(" + expr + ")" + command;
             displaycommand.Rule = ToTerm("display") + "(" + expr + "," + expr + "," + qualifiedidentifier + ")";
             linewidthcommand.Rule =
@@ -258,7 +258,7 @@ namespace vip_sharp
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
                 | stringliteral | charliteral | numberliteral | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")"
-                | "{" + expr + "}" + "mod" + "{" + expr + "}";
+                | "{" + expr + "}" + binop + "{" + expr + "}";
             binop.Rule = ToTerm("-") | "+" | "*" | "/" | "^" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
                 | "<=" | ">=" | "!=" | "==" | "<" | ">" | "mod";
             unop.Rule = ToTerm("-") | "+" | "!" | "~";
@@ -1324,23 +1324,23 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            if (nodes[0].AstNode is VIPExpressionNode)
+            if (nodes[0].AstNode is VIPQualifiedIdentifierNode)
             {
                 Prefix = false;
-                Expression = (VIPExpressionNode)nodes[0].AstNode;
+                Identifier = (VIPQualifiedIdentifierNode)nodes[0].AstNode;
                 Operation = ((VIPIncrementOpsNode)nodes[1].AstNode).Operator;
             }
             else
             {
                 Prefix = true;
-                Expression = (VIPExpressionNode)nodes[1].AstNode;
+                Identifier = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
                 Operation = ((VIPIncrementOpsNode)nodes[0].AstNode).Operator;
             }
         }
 
         public string Operation;
         public bool Prefix;
-        public VIPExpressionNode Expression;
+        public VIPQualifiedIdentifierNode Identifier;
     }
 
     public class VIPDrawCommandNode : VIPNode

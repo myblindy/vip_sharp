@@ -22,6 +22,10 @@ namespace vip_sharp
             public double __fWheel { get; set; }
             public double __fCursor_XPos { get { return MouseX; } set { MouseX = value; } }
             public double __fCursor_YPos { get { return MouseY; } set { MouseY = value; } }
+            public bool __bLButton { get { return LeftButtonDown; } set { LeftButtonDown = value; } }
+            public bool __bRButton { get { return RightButtonDown; } set { RightButtonDown = value; } }
+            public bool __bKBHit { get { return KBHit; } set { KBHit = value; } }
+            public char __cKeyCode { get { return KeyCode; } set { KeyCode = value; } }
 
             public BipolarArray<int> __nTemp { get; private set; } = new BipolarArray<int>(100);
             public BipolarArray<double> __dTemp { get; private set; } = new BipolarArray<double>(100);
@@ -29,8 +33,10 @@ namespace vip_sharp
             public BipolarArray<bool> __bTemp { get; private set; } = new BipolarArray<bool>(100);
             public BipolarArray<char> __cTemp { get; private set; } = new BipolarArray<char>(100);
 
-            public bool LeftButtonDown;
-            public bool LastLeftButtonDown;
+            public bool LeftButtonDown, RightButtonDown;
+            public bool LastLeftButtonDown, LastRightButtonDown;
+            public bool KBHit;
+            public char KeyCode;
             public double MouseX, MouseY;
             public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
@@ -106,6 +112,13 @@ namespace vip_sharp
                 throw new InvalidOperationException();
             }
         }
+
+        public double Sin(double val) => Math.Sin(val);
+        public double Cos(double val) => Math.Cos(val);
+        public double Round(double val) => Math.Round(val);
+        public double Abs(double val) => Math.Abs(val);
+        public double Mod(double a, double b) => Math.IEEERemainder(a, b);
+        public int Mod(int a, int b) => a % b;
 
         public class DisplayList
         {
@@ -441,8 +454,11 @@ namespace vip_sharp
             MatrixRestore();
         }
 
+        public void LineWidthSave() => gl.PushAttrib(GL.LINE_BIT);
+        public void LineWidthRestore() => gl.PopAttrib();
+
         public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, StringRes res) =>
-            DrawString(x, y, @ref, s, cnt, res.BaseList, res.ScaleX, res.ScaleY, res.SpaceX, res.SpaceY);
+             DrawString(x, y, @ref, s, cnt, res.BaseList, res.ScaleX, res.ScaleY, res.SpaceX, res.SpaceY);
         public void DrawString(double x, double y, PositionRef @ref, IEnumerable<char> s, int cnt, DisplayList baselist, double scalex, double scaley, double spacex, double spacey = 1.5)
         {
             if (cnt == 0)

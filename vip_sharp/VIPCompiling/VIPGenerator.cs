@@ -88,11 +88,11 @@ namespace vip_sharp
             AddBuiltInTypeSymbol("short");
 
             // built in functions
-            AddBuiltInFunctionSymbol("__abs", "double", Tuple.Create(new[] { "double" }, "arg", false));
-            AddBuiltInFunctionSymbol("__sin", "double", Tuple.Create(new[] { "double" }, "arg", false));
-            AddBuiltInFunctionSymbol("__cos", "double", Tuple.Create(new[] { "double" }, "arg", false));
-            AddBuiltInFunctionSymbol("__round", "double", Tuple.Create(new[] { "double" }, "arg", false));
-            AddBuiltInFunctionSymbol("__rand", "double");
+            AddBuiltInFunctionSymbol("__abs", "Abs", "double", Tuple.Create("double", false));
+            AddBuiltInFunctionSymbol("__sin", "Sin", "double", Tuple.Create("double", false));
+            AddBuiltInFunctionSymbol("__cos", "Cos", "double", Tuple.Create("double", false));
+            AddBuiltInFunctionSymbol("__round", "Round", "double", Tuple.Create("double", false));
+            AddBuiltInFunctionSymbol("__rand", "Rand", "double");
 
             // system class
             AddStructSymbolAndGoDown("__system");
@@ -553,9 +553,9 @@ namespace vip_sharp
             }
             else
             {
-                code.Append(" = ");
+                code.Append($" = {symbol.Details.TypeNode.ConvertCall}(");
                 node.Expression.Accept(this);
-                code.AppendLine(";");
+                code.AppendLine(");");
             }
         }
 
@@ -565,8 +565,13 @@ namespace vip_sharp
 
             if (node.ChildNodes.Count == 2 && node.ChildNodes[0] is VIPQualifiedIdentifierNode && node.ChildNodes[1] is VIPExpressionListNode)
             {
+                var symbol = GetSymbolNode((VIPQualifiedIdentifierNode)node.ChildNodes[0]);
+
                 // special case for functions
-                ((VIPNode)node.ChildNodes[0]).Accept(this);
+                if (symbol.Details.RuntimeName != null)
+                    code.Append($"{VIPRuntimeInstance}.{symbol.Details.RuntimeName}");
+                else
+                    ((VIPNode)node.ChildNodes[0]).Accept(this);
                 code.Append('(');
 
                 var first = true;
@@ -575,6 +580,41 @@ namespace vip_sharp
                     if (first) first = false; else code.Append(',');
                     argnode.Accept(this);
                 }
+                code.Append(')');
+            }
+            else if (node.ChildNodes.Count == 3 && (node.ChildNodes[1] as VIPOperatorNode)?.Operator == "^")
+            {
+                code.Append("Math.Pow(");
+                ((VIPNode)node.ChildNodes[0]).Accept(this);
+                code.Append(',');
+                ((VIPNode)node.ChildNodes[2]).Accept(this);
+                code.Append(')');
+            }
+            else if (node.ChildNodes.Count == 3 &&
+                ((node.ChildNodes[1] as VIPOperatorNode)?.Operator == "&" || (node.ChildNodes[1] as VIPOperatorNode)?.Operator == "|"))
+            {
+                code.Append("(Convert.ToBoolean(");
+                ((VIPNode)node.ChildNodes[0]).Accept(this);
+                code.Append(")");
+                code.Append((node.ChildNodes[1] as VIPOperatorNode).Operator);
+                code.Append("Convert.ToBoolean(");
+                ((VIPNode)node.ChildNodes[2]).Accept(this);
+                code.Append("))");
+            }
+            else if (node.ChildNodes.Count == 3 &&
+                (((node.ChildNodes[1] as VIPOperatorNode)?.Operator.EqualsI("mod") ?? false) || node.ChildNodes[1].AsString == "mod"))
+            {
+                code.Append($"{VIPRuntimeInstance}.Mod(");
+                ((VIPNode)node.ChildNodes[0]).Accept(this);
+                code.Append(",");
+                ((VIPNode)node.ChildNodes[2]).Accept(this);
+                code.Append(")");
+            }
+            else if (node.ChildNodes.Count == 2 && (node.ChildNodes[0] as VIPOperatorNode)?.Operator == "!")
+            {
+                code.Append((node.ChildNodes[0] as VIPOperatorNode).Operator);
+                code.Append("Convert.ToBoolean(");
+                ((VIPNode)node.ChildNodes[1]).Accept(this);
                 code.Append(')');
             }
             else
@@ -820,16 +860,26 @@ namespace vip_sharp
         public void Visit(VIPInstanceDefinitionNode node)
         {
             var type = GetValue(node.Object);
+            var symbol = GetSymbolNode(node.Object);
+            if (symbol.Contains("init"))
+                symbol = symbol["init"];
+            else
+                symbol = null;
+
             Code.AppendLine($"public {type} __{node.Name};");
             ConstructorCode.Append($"__{node.Name} = new {type}(");
 
             bool first = true;
             var bc = BuildConstructor; BuildConstructor = true;
+            int idx = 0;
             if (node.ConstructorArguments != null)
                 foreach (var constrarg in node.ConstructorArguments)
                 {
                     if (first) first = false; else ConstructorCode.Append(',');
+
+                    ConstructorCode.Append(symbol.Arguments[idx++].Details.TypeNode.ConvertCall + "(");
                     ((VIPNode)constrarg.AstNode).Accept(this);
+                    ConstructorCode.Append(')');
                 }
 
             ConstructorCode.Append(") { ");
@@ -1345,14 +1395,32 @@ namespace vip_sharp
 
         public void Visit(VIPUnaryAssignmentCommandNode node)
         {
-            if (node.Prefix)
+            var symbol = GetSymbolNode(node.Identifier);
+
+            if (symbol.Details.TypeIndices > 0)
+            {
+                // array case, have to use the array operations
+                InAssignmentStatement = true; node.Identifier.Accept(this); InAssignmentStatement = false;
+                Code.Append("." + (node.Prefix ? "Pre" : "Post") + (node.Operation == "--" ? "Decrement" : "Increment") + "(");
+                if (node.Identifier.Parts.Last().Item2 != null)                         // index1
+                {
+                    node.Identifier.Parts.Last().Item2.Accept(this);
+                    if (node.Identifier.Parts.Last().Item3 != null)                     // index2
+                    {
+                        Code.Append(',');
+                        node.Identifier.Parts.Last().Item3.Accept(this);
+                    }
+                }
+                Code.Append(')');
+            }
+            else if (node.Prefix)
             {
                 Code.Append(node.Operation);
-                node.Expression.Accept(this);
+                node.Identifier.Accept(this);
             }
             else
             {
-                node.Expression.Accept(this);
+                node.Identifier.Accept(this);
                 Code.Append(node.Operation);
             }
         }

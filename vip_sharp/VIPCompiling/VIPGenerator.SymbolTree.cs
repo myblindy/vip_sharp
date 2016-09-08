@@ -14,7 +14,7 @@ namespace vip_sharp
         [DebuggerDisplay("{Name}")]
         class SymbolDetailsType
         {
-            public string Name;
+            public string Name, RuntimeName;
             public SymbolNode TypeNode;
             public bool TypePointer;
             public int TypeIndices;
@@ -220,9 +220,10 @@ namespace vip_sharp
             CurrentSymbolRoot.AddChild(s);
         }
 
-        void AddBuiltInFunctionSymbol(string name, string returntype, params Tuple<string[], string, bool>[] @params)
+        void AddBuiltInFunctionSymbol(string name, string runtimename, string returntype, params Tuple<string, bool>[] @params)
         {
             var s = AddTypeSymbol(name);
+            s.Details.RuntimeName = runtimename;
             s.SymbolType = SymbolType.BuiltInFunction;
             if (!string.IsNullOrWhiteSpace(returntype))
                 s.Return = GetSymbolNode(returntype);
@@ -230,9 +231,8 @@ namespace vip_sharp
             foreach (var param in @params)
             {
                 var argnode = new SymbolNode { SymbolType = SymbolType.Variable };
-                argnode.Details.Name = param.Item2;
                 argnode.Details.TypeNode = GetSymbolNode(param.Item1);
-                argnode.Details.TypePointer = param.Item3;
+                argnode.Details.TypePointer = param.Item2;
                 s.Arguments.Add(argnode);
             };
         }
