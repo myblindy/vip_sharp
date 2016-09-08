@@ -450,7 +450,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             AddChild(nodes[2].ChildNodes);
         }
 
@@ -463,7 +463,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             AddChild(nodes[2].ChildNodes.Select(n => n.ChildNodes[0]));
         }
 
@@ -488,13 +488,13 @@ namespace vip_sharp
         {
             if (nodes[0].Token?.ValueString == "w")
             {
-                Name = ((VIPPlainIdentifierNode)nodes[1].AstNode).Name;
+                Name = ((VIPPlainIdentifierNode)nodes[1].AstNode).Name.ToLower();
                 ExtractIndices((VIPArrListNode)nodes[2].AstNode, out Index1, out Index2);
                 Value = (VIPExpressionNode)nodes[3].AstNode;
             }
             else
             {
-                Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name;
+                Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name.ToLower();
                 ExtractIndices((VIPArrListNode)nodes[1].AstNode, out Index1, out Index2);
                 Value = (VIPExpressionNode)nodes[3].AstNode;
             }
@@ -511,7 +511,7 @@ namespace vip_sharp
         public override void InitChildren(ParseTreeNodeList nodes)
         {
             Type = (VIPTypeIdentifierNode)nodes[0].AstNode;
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             if (nodes.Count > 2 && nodes[2].Token.ValueString == "[")
             {
                 ArraySize = (VIPExpressionNode)nodes[3].AstNode;
@@ -584,7 +584,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name;
+            Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name.ToLower();
             Expression = (VIPExpressionNode)nodes[2].AstNode;
         }
 
@@ -602,14 +602,14 @@ namespace vip_sharp
             {
                 // return type
                 Type = (VIPTypeIdentifierNode)nodes[1].AstNode;
-                Name = nodes[2].Token.ValueString;
+                Name = nodes[2].Token.ValueString.ToLower();
                 Arguments = nodes[3].ChildNodes.Select(n => (VIPFunctionDefinitionArgument)n.AstNode).ToArray();
                 AddChild(nodes[4].ChildNodes.Select(n => n.ChildNodes[0]));
             }
             else
             {
                 // no return type
-                Name = nodes[1].Token.ValueString;
+                Name = nodes[1].Token.ValueString.ToLower();
                 Arguments = nodes[2].ChildNodes.Select(n => (VIPFunctionDefinitionArgument)n.AstNode).ToArray();
                 AddChild(nodes[3].ChildNodes.Select(n => n.ChildNodes[0]));
             }
@@ -626,7 +626,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             Definitions = nodes[2].ChildNodes;
         }
 
@@ -641,7 +641,7 @@ namespace vip_sharp
         public override void InitChildren(ParseTreeNodeList nodes)
         {
             Object = (VIPQualifiedIdentifierNode)nodes[1].AstNode;
-            Name = nodes[2].Token.ValueString;
+            Name = nodes[2].Token.ValueString.ToLower();
             SpecialArguments = nodes[3].ChildNodes;
             if (nodes.Count >= 5)
                 ConstructorArguments = nodes[4].ChildNodes;
@@ -659,7 +659,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             Arguments = nodes[2].ChildNodes;
             AddChild(nodes[3].ChildNodes.Select(n => n.ChildNodes[0]));
         }
@@ -699,7 +699,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = nodes[1].Token.ValueString;
+            Name = nodes[1].Token.ValueString.ToLower();
             AddChild(nodes[2].ChildNodes);
         }
 
@@ -712,7 +712,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Handle = nodes[1].Token.ValueString;
+            Handle = nodes[1].Token.ValueString.ToLower();
             Type = nodes[2].Token.ValueString;
             Filter = nodes[3].Token.ValueString;
             ClampMode = nodes[4].Token.ValueString;
@@ -733,7 +733,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Handle = ((VIPPlainIdentifierNode)nodes[1].AstNode).Name;
+            Handle = ((VIPPlainIdentifierNode)nodes[1].AstNode).Name.ToLower();
             ExpressionList = (VIPExpressionListNode)nodes[2].AstNode;
         }
 
@@ -747,7 +747,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Handle = nodes[1].Token.ValueString;
+            Handle = nodes[1].Token.ValueString.ToLower();
             BaseList = (VIPQualifiedIdentifierNode)nodes[2].AstNode;
             ScaleX = (VIPExpressionNode)nodes[3].AstNode;
             ScaleY = (VIPExpressionNode)nodes[4].AstNode;
@@ -782,7 +782,7 @@ namespace vip_sharp
         public override void InitChildren(ParseTreeNodeList nodes)
         {
             Type = (VIPTypeIdentifierNode)nodes[0].AstNode;
-            Identifier = nodes[1].Token.ValueString;
+            Identifier = nodes[1].Token.ValueString.ToLower();
             ExtractIndices((VIPArrListNode)nodes[2].AstNode, out Index1, out Index2);
         }
 
@@ -839,7 +839,7 @@ namespace vip_sharp
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            Value = Convert.ToDouble(treeNode.Token.ValueString);
+            Value = Convert.ToDouble(treeNode.Token.Value);
         }
 
         public double Value { get; set; }
@@ -915,7 +915,7 @@ namespace vip_sharp
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            Name = treeNode.Token.ValueString;
+            Name = treeNode.Token.ValueString.ToLower();
         }
 
         public string Name;
@@ -966,7 +966,7 @@ namespace vip_sharp
 
         public override void InitChildren(ParseTreeNodeList nodes)
         {
-            Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name;
+            Name = ((VIPPlainIdentifierNode)nodes[0].AstNode).Name.ToLower();
             ExtractIndices((VIPArrListNode)nodes[1].AstNode, out Index1, out Index2);
         }
 
@@ -979,7 +979,7 @@ namespace vip_sharp
         public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
 
         public override void InitChildren(ParseTreeNodeList nodes) =>
-            Parts = nodes.Select(n => Tuple.Create(((VIPIdentifierNode)n.AstNode).Name, ((VIPIdentifierNode)n.AstNode).Index1, ((VIPIdentifierNode)n.AstNode).Index2)).ToArray();
+            Parts = nodes.Select(n => Tuple.Create(((VIPIdentifierNode)n.AstNode).Name.ToLower(), ((VIPIdentifierNode)n.AstNode).Index1, ((VIPIdentifierNode)n.AstNode).Index2)).ToArray();
 
         // tuple of name and index
         public Tuple<string, VIPExpressionNode, VIPExpressionNode>[] Parts;
@@ -992,7 +992,7 @@ namespace vip_sharp
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            Parts = treeNode.ChildNodes.Select(n => ((VIPPlainIdentifierNode)n.AstNode).Name).ToArray();
+            Parts = treeNode.ChildNodes.Select(n => ((VIPPlainIdentifierNode)n.AstNode).Name.ToLower()).ToArray();
         }
 
         // tuple of name and index
@@ -1111,7 +1111,7 @@ namespace vip_sharp
             Y = (VIPExpressionNode)nodes[2].AstNode;
             W = (VIPExpressionNode)nodes[3].AstNode;
             H = (VIPExpressionNode)nodes[4].AstNode;
-            Ref = nodes[5].Token.ValueString;
+            Ref = nodes[5].Token.ValueString.ToLower();
             Var = (VIPQualifiedIdentifierNode)nodes[6].AstNode;
             Trigger = nodes[7].Token.ValueString.EqualsI("selected") ? HotSpotTrigger.Selected
                   : nodes[7].Token.ValueString.EqualsI("select_edge") ? HotSpotTrigger.SelectEdge
@@ -1173,7 +1173,7 @@ namespace vip_sharp
             Y = (VIPExpressionNode)nodes[2].AstNode;
             W = (VIPExpressionNode)nodes[3].AstNode;
             H = (VIPExpressionNode)nodes[4].AstNode;
-            Ref = nodes[5].Token.ValueString;
+            Ref = nodes[5].Token.ValueString.ToLower();
             Angle = (VIPExpressionNode)nodes[6].AstNode;
             Var = (VIPQualifiedIdentifierNode)nodes[7].AstNode;
             MinValue = (VIPExpressionNode)nodes[8].AstNode;
@@ -1200,7 +1200,7 @@ namespace vip_sharp
         {
             X = (VIPExpressionNode)nodes[1].AstNode;
             Y = (VIPExpressionNode)nodes[2].AstNode;
-            Ref = nodes[3].Token.ValueString;
+            Ref = nodes[3].Token.ValueString.ToLower();
             StringData = (VIPNode)nodes[5].AstNode;
             CharCount = (VIPExpressionNode)nodes[6].AstNode;
 
@@ -1246,7 +1246,7 @@ namespace vip_sharp
                 Y = (VIPExpressionNode)nodes[6].AstNode;
                 W = (VIPExpressionNode)nodes[7].AstNode;
                 H = (VIPExpressionNode)nodes[8].AstNode;
-                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[9].AstNode).ChildNodes[0]).Parts[0].Item1;
+                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[9].AstNode).ChildNodes[0]).Parts[0].Item1.ToLower();
                 if (nodes.Count >= 11)
                     UVCoords = (VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[10].AstNode).ChildNodes[0];
             }
@@ -1258,7 +1258,7 @@ namespace vip_sharp
                 Y = (VIPExpressionNode)nodes[3].AstNode;
                 W = (VIPExpressionNode)nodes[4].AstNode;
                 H = (VIPExpressionNode)nodes[5].AstNode;
-                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[6].AstNode).ChildNodes[0]).Parts[0].Item1;
+                Ref = ((VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[6].AstNode).ChildNodes[0]).Parts[0].Item1.ToLower();
                 if (nodes.Count >= 8)
                     UVCoords = (VIPQualifiedIdentifierNode)((VIPExpressionNode)nodes[7].AstNode).ChildNodes[0];
             }
@@ -1552,7 +1552,7 @@ namespace vip_sharp
             Y = (VIPExpressionNode)nodes[2].AstNode;
             W = (VIPExpressionNode)nodes[3].AstNode;
             H = (VIPExpressionNode)nodes[4].AstNode;
-            Ref = ((VIPPlainIdentifierNode)nodes[5].AstNode).Name;
+            Ref = ((VIPPlainIdentifierNode)nodes[5].AstNode).Name.ToLower();
             if (nodes.Count >= 7)
                 Filled = true;
         }

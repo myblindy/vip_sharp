@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace vip_sharp
 {
@@ -14,12 +15,16 @@ namespace vip_sharp
         public int N3 { get; protected set; }
     }
 
-    public class BipolarArray<T> : BipolarArrayBase, IEnumerable<T>
+    public class BipolarArray<T> : BipolarArrayBase, IEnumerable<T>, IList<T>
     {
         private T[] Array;
         private bool AutoGrow;
 
         private int InitIdx = 0;
+
+        int ICollection<T>.Count => Array.Length;
+
+        bool ICollection<T>.IsReadOnly => false;
 
         public BipolarArray()
         {
@@ -153,6 +158,20 @@ namespace vip_sharp
         }
 
         public override int GetHashCode() => Array.GetHashCode();
+
+        int IList<T>.IndexOf(T item) { throw new NotImplementedException(); }
+
+        void IList<T>.Insert(int index, T item) { throw new NotImplementedException(); }
+
+        void IList<T>.RemoveAt(int index) { throw new NotImplementedException(); }
+
+        void ICollection<T>.Clear() { throw new NotImplementedException(); }
+
+        bool ICollection<T>.Contains(T item) => Array.Contains(item);
+
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Array.CopyTo(array, arrayIndex);
+
+        bool ICollection<T>.Remove(T item) { throw new NotImplementedException(); }
 
         public static bool operator ==(BipolarArray<T> _ba, string s)
         {

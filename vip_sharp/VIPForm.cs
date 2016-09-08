@@ -34,7 +34,7 @@ namespace vip_sharp
             MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };
             MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false; };
             MouseMove += (s, e) => { VIPRuntime.Instance.VIPSystemClass.MouseX = ToX(e.X); VIPRuntime.Instance.VIPSystemClass.MouseY = ToY(e.Y); };
-            MouseWheel += (s, e) => { VIPRuntime.Instance.VIPSystemClass.__fWheel = Math.Sign(e.Delta); };
+            MouseWheel += (s, e) => { VIPRuntime.Instance.VIPSystemClass.__fwheel = Math.Sign(e.Delta); };
 
             // ready
             Initialized = true;
@@ -104,9 +104,9 @@ namespace vip_sharp
             gl.LoadIdentity();
 
             var now = DateTime.Now;
-            VIPRuntime.Instance.VIPSystemClass.__dDT = (now - LastRenderedAt).TotalSeconds;
+            VIPRuntime.Instance.VIPSystemClass.__ddt = (now - LastRenderedAt).TotalSeconds;
             LibMainClass.Run();
-            VIPRuntime.Instance.VIPSystemClass.__fWheel = 0;
+            VIPRuntime.Instance.VIPSystemClass.__fwheel = 0;
             LastRenderedAt = now;
 
             VIPRuntime.rc.SwapBuffers();

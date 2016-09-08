@@ -178,30 +178,30 @@ namespace vip_sharp
         {
             switch (@ref)
             {
-                case PositionRef.CC:
+                case PositionRef.cc:
                     x -= w / 2; y -= h / 2;
                     break;
-                case PositionRef.CL:
+                case PositionRef.cl:
                     x -= w / 2;
                     break;
-                case PositionRef.CU:
+                case PositionRef.cu:
                     x -= w / 2; y -= h;
                     break;
-                case PositionRef.LC:
+                case PositionRef.lc:
                     y -= h / 2;
                     break;
-                case PositionRef.LL:
+                case PositionRef.ll:
                     break;
-                case PositionRef.LU:
+                case PositionRef.lu:
                     y -= h;
                     break;
-                case PositionRef.RC:
+                case PositionRef.rc:
                     x -= w; y -= h / 2;
                     break;
-                case PositionRef.RL:
+                case PositionRef.rl:
                     x -= w;
                     break;
-                case PositionRef.RU:
+                case PositionRef.ru:
                     x -= w; y -= h;
                     break;
             }

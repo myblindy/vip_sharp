@@ -46,7 +46,7 @@ namespace vip_sharp
                 {
                     string name = Details.Name;
                     var n = this;
-                    while ((n = n.Parent) != null)
+                    while (n != null && (n = n.Parent).Parent != null)
                         name = n.Details.Name + "." + name;
                     return name;
                 }

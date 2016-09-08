@@ -18,28 +18,31 @@ namespace vip_sharp
     {
         public class VIPSystemClassType
         {
-            public double __dDT { get; set; }
-            public double __fWheel { get; set; }
-            public double __fCursor_XPos { get { return MouseX; } set { MouseX = value; } }
-            public double __fCursor_YPos { get { return MouseY; } set { MouseY = value; } }
-            public bool __bLButton { get { return LeftButtonDown; } set { LeftButtonDown = value; } }
-            public bool __bRButton { get { return RightButtonDown; } set { RightButtonDown = value; } }
-            public bool __bKBHit { get { return KBHit; } set { KBHit = value; } }
-            public char __cKeyCode { get { return KeyCode; } set { KeyCode = value; } }
+            public double __ddt { get; set; }
+            public double __fwheel { get; set; }
+            public double __fcursor_xpos { get { return MouseX; } set { MouseX = value; } }
+            public double __fcursor_ypos { get { return MouseY; } set { MouseY = value; } }
+            public bool __blbutton { get { return LeftButtonDown; } set { LeftButtonDown = value; } }
+            public bool __brbutton { get { return RightButtonDown; } set { RightButtonDown = value; } }
+            public bool __bkbhit { get { return KBHit; } set { KBHit = value; } }
+            public char __ckeycode { get { return KeyCode; } set { KeyCode = value; } }
+            public bool __bfirstpass { get { return FirstPass; } set { FirstPass = value; } }
 
-            public BipolarArray<int> __nTemp { get; private set; } = new BipolarArray<int>(100);
-            public BipolarArray<double> __dTemp { get; private set; } = new BipolarArray<double>(100);
-            public BipolarArray<float> __fTemp { get; private set; } = new BipolarArray<float>(100);
-            public BipolarArray<bool> __bTemp { get; private set; } = new BipolarArray<bool>(100);
-            public BipolarArray<char> __cTemp { get; private set; } = new BipolarArray<char>(100);
+            public BipolarArray<int> __ntemp { get; private set; } = new BipolarArray<int>(100);
+            public BipolarArray<double> __dtemp { get; private set; } = new BipolarArray<double>(100);
+            public BipolarArray<float> __ftemp { get; private set; } = new BipolarArray<float>(100);
+            public BipolarArray<bool> __btemp { get; private set; } = new BipolarArray<bool>(100);
+            public BipolarArray<char> __ctemp { get; private set; } = new BipolarArray<char>(100);
 
             public bool LeftButtonDown, RightButtonDown;
             public bool LastLeftButtonDown, LastRightButtonDown;
-            public bool KBHit;
+            public bool KBHit, FirstPass;
             public char KeyCode;
             public double MouseX, MouseY;
             public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
+
+            // TODO: right button, last right button, kbhit, keycode, first pass
 
             public UnmanagedDefinition[]
                 VIPInVariables = new UnmanagedDefinition[0],
@@ -54,7 +57,7 @@ namespace vip_sharp
         public enum BitmapFilter { Linear, Nearest, MipMap }
         public enum BitmapClamp { Clamp, Repeat }
         public enum BitmapBlend { Blend, Modulate, Decal, Replace }
-        public enum PositionRef { CTR, CC = CTR, CU, CL, LL, LC, LU, RU, RL, RC }
+        public enum PositionRef { ctr, cc = ctr, cu, cl, ll, lc, lu, ru, rl, rc }
         public enum HotSpotTrigger { SelectEdge, Selected, ReleaseEdge, Hover, DoubleClicked }
         public enum HotSpotType { Momentary, Alternate }
         public enum HoverBox { Never, Always, Hover }
@@ -506,6 +509,18 @@ namespace vip_sharp
             MatrixRestore();
         }
 
+        public void ClipOff()
+        {
+            // TODO implement clipping
+        }
+
+        public void Clip(double x, double y, DisplayList list)
+        {
+            // TODO implement clipping
+        }
+
+        public double Cal<T>(CalRes res, T input) => res.Compute(Convert.ToDouble(input));
+
         /// <summary>
         /// Represents a VIP hotspot. 
         /// </summary>
@@ -514,7 +529,7 @@ namespace vip_sharp
         ///  - Selected means it triggers as long as the mouse is held down inside the hotspot
         ///  - SelectEdge means it triggers once when held down. Moving the mouse outside and back in re-triggers it.
         /// </remarks>
-        public void HotSpot<T>(uint objid, object _this, double x, double y, double w, double h, PositionRef @ref, ref T var, HotSpotTrigger trigger,
+        public T HotSpot<T>(uint objid, object _this, double x, double y, double w, double h, PositionRef @ref, T var, HotSpotTrigger trigger,
             HotSpotType type, T trueval, T falseval, HoverBox hoverbox, BitmapRes bmp = null)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
@@ -555,10 +570,10 @@ namespace vip_sharp
 
             if (bmp != null)
                 if (sel)
-                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL,
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.ll,
                         new BipolarArray<VertexType>(4) { new VertexType(0, 1), new VertexType(0, 0), new VertexType(.5f, 0), new VertexType(.5f, 1) });
                 else
-                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.LL,
+                    Bitmap(bmp, BitmapBlend.Replace, x, y, w, h, PositionRef.ll,
                         new BipolarArray<VertexType>(4) { new VertexType(.5f, 1), new VertexType(.5f, 0), new VertexType(1, 0), new VertexType(1, 1) });
 
             if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
@@ -568,9 +583,11 @@ namespace vip_sharp
                 ClosedLine(x, y, x + w, y, x + w, y + h, x, y + h);
                 ColorRestore();
             }
+
+            return var;
         }
 
-        public void RotaryKnob<T>(uint objid, object _this, double x, double y, double r, ref T var,
+        public T RotaryKnob<T>(uint objid, object _this, double x, double y, double r, T var,
             double anglemin, double anglemax, double valuemin, double valuemax,
             HoverBox hoverbox, double wheeldelta, DisplayList list = null)
         {
@@ -633,10 +650,12 @@ namespace vip_sharp
                 Circle(x, y, r, 12, false);
                 ColorRestore();
             }
+
+            return var;
         }
 
-        public void Slider<T>(uint objid, object _this, double x, double y, double w, double h,
-            PositionRef @ref, double angle, ref T var, double valuemin, double valuemax,
+        public T Slider<T>(uint objid, object _this, double x, double y, double w, double h,
+            PositionRef @ref, double angle, T var, double valuemin, double valuemax,
             HoverBox hoverbox, double wheeldelta, DisplayList list = null)
         {
             UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
@@ -687,6 +706,8 @@ namespace vip_sharp
 
             // restore the angle rotation
             MatrixRestore();
+
+            return var;
         }
     }
 }
