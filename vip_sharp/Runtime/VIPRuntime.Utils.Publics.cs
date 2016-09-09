@@ -372,28 +372,31 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Color(int c) => gl.Color3f(StandardColors.ElementAt(c).Value.Item1, StandardColors.ElementAt(c).Value.Item2, StandardColors.ElementAt(c).Value.Item3);
-        public void Color(int c, double a) => gl.Color4f(StandardColors.ElementAt(c).Value.Item1, StandardColors.ElementAt(c).Value.Item2, StandardColors.ElementAt(c).Value.Item3, (float)(a / 100));
+        private void Color(Tuple<float, float, float> t) => gl.Color3f((float)t.Item1, (float)t.Item2, (float)t.Item3);
+        private void Color(Tuple<float, float, float> t, double a) => gl.Color4f((float)t.Item1, (float)t.Item2, (float)t.Item3, (float)(a / 100));
+
+        public void Color(int c) => Color(StandardColorsArray[c]);
+        public void Color(int c, double a) => Color(StandardColorsArray[c], a);
         public void Color(double r, double g, double b) => gl.Color3f((float)(r / 100), (float)(g / 100), (float)(b / 100));
         public void Color(double r, double g, double b, double a) => gl.Color4f((float)(r / 100), (float)(g / 100), (float)(b / 100), (float)(a / 100));
-        public void Color(string c) => gl.Color3f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
-        public void Color(string c, double a) => gl.Color4f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, (float)(a / 100));
+        public void Color(string c) => Color(StandardColors[c]);
+        public void Color(string c, double a) => Color(StandardColors[c], a);
 
         public void LightColor(int c)
         {
             var ld = LightStack.Peek();
-            ld.LightValues[0] = StandardColors.ElementAt(c).Value.Item1;
-            ld.LightValues[1] = StandardColors.ElementAt(c).Value.Item2;
-            ld.LightValues[2] = StandardColors.ElementAt(c).Value.Item3;
+            ld.LightValues[0] = StandardColorsArray[c].Item1;
+            ld.LightValues[1] = StandardColorsArray[c].Item2;
+            ld.LightValues[2] = StandardColorsArray[c].Item3;
             ld.LightValues[3] = 1;
             UpdateAmbientColor();
         }
         public void LightColor(int c, double a)
         {
             var ld = LightStack.Peek();
-            ld.LightValues[0] = StandardColors.ElementAt(c).Value.Item1;
-            ld.LightValues[1] = StandardColors.ElementAt(c).Value.Item2;
-            ld.LightValues[2] = StandardColors.ElementAt(c).Value.Item3;
+            ld.LightValues[0] = StandardColorsArray[c].Item1;
+            ld.LightValues[1] = StandardColorsArray[c].Item2;
+            ld.LightValues[2] = StandardColorsArray[c].Item3;
             ld.LightValues[3] = a;
             UpdateAmbientColor();
         }
@@ -511,14 +514,43 @@ namespace vip_sharp
             MatrixRestore();
         }
 
+        private int ClipLayer = 0;
         public void ClipOff()
         {
-            // TODO implement clipping
+            MatrixRestore();
+
+            if (--ClipLayer == 0)
+            {
+                gl.Disable(GL.DEPTH_TEST);
+                gl.DepthMask(true);
+                gl.Clear(GL.DEPTH_BUFFER_BIT);
+                gl.DepthMask(false);
+            }
         }
 
         public void Clip(double x, double y, DisplayList list)
         {
-            // TODO implement clipping
+            ++ClipLayer;
+
+            gl.PushAttrib(GL.DEPTH_BUFFER_BIT);
+            gl.ColorMask(false, false, false, false);
+            gl.Enable(GL.DEPTH_TEST);
+            gl.DepthFunc(GL.ALWAYS);
+            gl.DepthMask(true);
+
+            Display(x, y, list);
+
+            // Go back to normal mode.
+            gl.PopAttrib();
+            gl.DepthMask(false);
+            gl.ColorMask(true, true, true, true);
+
+            // Then enable the just stored info, and move to the next level.
+            gl.Enable(GL.DEPTH_TEST);
+            gl.DepthFunc(GL.GEQUAL);
+
+            MatrixSave();
+            gl.Translatef(0, 0, 1);
         }
 
         public double Cal<T>(CalRes res, T input) => res.Compute(Convert.ToDouble(input));

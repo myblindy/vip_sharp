@@ -17,6 +17,11 @@ namespace vip_sharp
     public partial class VIPRuntime
     {
         public static VIPRuntime Instance { get; } = new VIPRuntime();
+        static VIPRuntime()
+        {
+            // folor color lookup optimizations
+            StandardColorsArray = StandardColors.Values.ToArray();
+        }
         private VIPRuntime() { }
 
         public static RenderingContext rc;
@@ -134,7 +139,7 @@ namespace vip_sharp
             public VertexType(double x, double y) { X = x; Y = y; }
         }
 
-        private Dictionary<string, Tuple<float, float, float>> StandardColors = new Dictionary<string, Tuple<float, float, float>>(StringComparer.OrdinalIgnoreCase)
+        private static Dictionary<string, Tuple<float, float, float>> StandardColors = new Dictionary<string, Tuple<float, float, float>>(StringComparer.OrdinalIgnoreCase)
         {
             { "BLACK", Tuple.Create(0.000f, 0.000f, 0.000f) },
             { "DARK_GREY", Tuple.Create(0.250f, 0.250f, 0.250f) },
@@ -164,6 +169,7 @@ namespace vip_sharp
             { "PINK", Tuple.Create(1.000f, 0.078f, 0.576f) },
             { "GOLD", Tuple.Create(1.000f, 0.843f, 0.000f) },
         };
+        private static Tuple<float, float, float>[] StandardColorsArray;
 
         private static IList<double> DoublesFromStructure<T>(T o)
         {
