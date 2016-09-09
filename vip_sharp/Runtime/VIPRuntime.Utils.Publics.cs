@@ -42,7 +42,7 @@ namespace vip_sharp
             public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
 
-            // TODO: right button, last right button, kbhit, keycode, first pass
+            // TODO: last left button, last right button, kbhit, keycode, first pass
 
             public UnmanagedDefinition[]
                 VIPInVariables = new UnmanagedDefinition[0],
@@ -372,26 +372,28 @@ namespace vip_sharp
             gl.End();
         }
 
-        public void Color(int c) => gl.Color3f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
-        public void Color(int c, double a) => gl.Color4f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, (float)(a / 100));
+        public void Color(int c) => gl.Color3f(StandardColors.ElementAt(c).Value.Item1, StandardColors.ElementAt(c).Value.Item2, StandardColors.ElementAt(c).Value.Item3);
+        public void Color(int c, double a) => gl.Color4f(StandardColors.ElementAt(c).Value.Item1, StandardColors.ElementAt(c).Value.Item2, StandardColors.ElementAt(c).Value.Item3, (float)(a / 100));
         public void Color(double r, double g, double b) => gl.Color3f((float)(r / 100), (float)(g / 100), (float)(b / 100));
         public void Color(double r, double g, double b, double a) => gl.Color4f((float)(r / 100), (float)(g / 100), (float)(b / 100), (float)(a / 100));
+        public void Color(string c) => gl.Color3f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3);
+        public void Color(string c, double a) => gl.Color4f(StandardColors[c].Item1, StandardColors[c].Item2, StandardColors[c].Item3, (float)(a / 100));
 
         public void LightColor(int c)
         {
             var ld = LightStack.Peek();
-            ld.LightValues[0] = StandardColors[c].Item1;
-            ld.LightValues[1] = StandardColors[c].Item2;
-            ld.LightValues[2] = StandardColors[c].Item3;
+            ld.LightValues[0] = StandardColors.ElementAt(c).Value.Item1;
+            ld.LightValues[1] = StandardColors.ElementAt(c).Value.Item2;
+            ld.LightValues[2] = StandardColors.ElementAt(c).Value.Item3;
             ld.LightValues[3] = 1;
             UpdateAmbientColor();
         }
         public void LightColor(int c, double a)
         {
             var ld = LightStack.Peek();
-            ld.LightValues[0] = StandardColors[c].Item1;
-            ld.LightValues[1] = StandardColors[c].Item2;
-            ld.LightValues[2] = StandardColors[c].Item3;
+            ld.LightValues[0] = StandardColors.ElementAt(c).Value.Item1;
+            ld.LightValues[1] = StandardColors.ElementAt(c).Value.Item2;
+            ld.LightValues[2] = StandardColors.ElementAt(c).Value.Item3;
             ld.LightValues[3] = a;
             UpdateAmbientColor();
         }
@@ -579,8 +581,11 @@ namespace vip_sharp
             if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
             {
                 ColorSave();
-                Color(100, 100, 0);
+                Color("yellow");
+                LineWidthSave();
+                LineWidth(1);
                 ClosedLine(x, y, x + w, y, x + w, y + h, x, y + h);
+                LineWidthRestore();
                 ColorRestore();
             }
 
@@ -646,8 +651,11 @@ namespace vip_sharp
             if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
             {
                 ColorSave();
-                Color(100, 100, 0);
+                Color("yellow");
+                LineWidthSave();
+                LineWidth(1);
                 Circle(x, y, r, 12, false);
+                LineWidthRestore();
                 ColorRestore();
             }
 
@@ -699,8 +707,11 @@ namespace vip_sharp
             if (hoverbox == HoverBox.Always || (hoverbox == HoverBox.Hover && hover))
             {
                 ColorSave();
-                Color(100, 100, 0);
+                Color("yellow");
+                LineWidthSave();
+                LineWidth(1);
                 ClosedLine(x, y, x + w, y, x + w, y + h, x, y + h);
+                LineWidthRestore();
                 ColorRestore();
             }
 

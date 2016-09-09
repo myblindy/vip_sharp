@@ -10,6 +10,7 @@ using System.IO;
 using System.Drawing;
 using IniParser;
 using System.Text.RegularExpressions;
+using System.Drawing.Imaging;
 
 namespace vip_sharp
 {
@@ -133,35 +134,35 @@ namespace vip_sharp
             public VertexType(double x, double y) { X = x; Y = y; }
         }
 
-        private Tuple<float, float, float>[] StandardColors = new[]
+        private Dictionary<string, Tuple<float, float, float>> StandardColors = new Dictionary<string, Tuple<float, float, float>>(StringComparer.OrdinalIgnoreCase)
         {
-            Tuple.Create(0.000f, 0.000f, 0.000f),          //BLACK
-            Tuple.Create(0.250f, 0.250f, 0.250f),          //DARK_GREY
-            Tuple.Create(0.500f, 0.500f, 0.500f),          //GREY
-            Tuple.Create(0.750f, 0.750f, 0.750f),          //LIGHT_GREY
-            Tuple.Create(1.000f, 1.000f, 1.000f),          //WHITE
+            { "BLACK", Tuple.Create(0.000f, 0.000f, 0.000f) },
+            { "DARK_GREY", Tuple.Create(0.250f, 0.250f, 0.250f) },
+            { "GREY", Tuple.Create(0.500f, 0.500f, 0.500f) },
+            { "LIGHT_GREY", Tuple.Create(0.750f, 0.750f, 0.750f) },
+            { "WHITE", Tuple.Create(1.000f, 1.000f, 1.000f) },
 
-            Tuple.Create(1.000f, 0.000f, 0.000f),          //RED
-            Tuple.Create(0.000f, 1.000f, 0.000f),          //GREEN
-            Tuple.Create(0.000f, 0.000f, 1.000f),          //BLUE
+            { "RED", Tuple.Create(1.000f, 0.000f, 0.000f) },
+            { "GREEN", Tuple.Create(0.000f, 1.000f, 0.000f) },
+            { "BLUE", Tuple.Create(0.000f, 0.000f, 1.000f) },
 
-            Tuple.Create(0.000f, 1.000f, 1.000f),          //CYAN
-            Tuple.Create(1.000f, 0.000f, 1.000f),          //MAGENTA
-            Tuple.Create(1.000f, 1.000f, 0.000f),          //YELLOW
+            { "CYAN", Tuple.Create(0.000f, 1.000f, 1.000f) },
+            { "MAGENTA", Tuple.Create(1.000f, 0.000f, 1.000f) },
+            { "YELLOW", Tuple.Create(1.000f, 1.000f, 0.000f) },
 
-            Tuple.Create(0.980f, 0.666f, 0.235f),          //AMBER
-            Tuple.Create(1.000f, 0.647f, 0.000f),          //ORANGE
-            Tuple.Create(0.541f, 0.169f, 0.886f),          //VIOLET
-            Tuple.Create(0.647f, 0.168f, 0.168f),          //BROWN
-            Tuple.Create(0.824f, 0.412f, 0.118f),          //LIGHT_BROWN
-            Tuple.Create(0.000f, 0.500f, 0.000f),          //DARK_GREEN
-            Tuple.Create(0.157f, 1.000f, 0.157f),          //LIGHT_GREEN
-            Tuple.Create(1.000f, 0.216f, 0.216f),          //LIGHT_RED
-            Tuple.Create(0.500f, 0.000f, 0.000f),          //DARK_RED
-            Tuple.Create(0.000f, 0.545f, 0.545f),          //DARK_CYAN
-            Tuple.Create(0.392f, 0.584f, 0.929f),          //SOFT_BLUE
-            Tuple.Create(1.000f, 0.078f, 0.576f),          //PINK
-            Tuple.Create(1.000f, 0.843f, 0.000f),          //GOLD
+            { "AMBER", Tuple.Create(0.980f, 0.666f, 0.235f) },
+            { "ORANGE", Tuple.Create(1.000f, 0.647f, 0.000f) },
+            { "VIOLET", Tuple.Create(0.541f, 0.169f, 0.886f) },
+            { "BROWN", Tuple.Create(0.647f, 0.168f, 0.168f) },
+            { "LIGHT_BROWN", Tuple.Create(0.824f, 0.412f, 0.118f) },
+            { "DARK_GREEN", Tuple.Create(0.000f, 0.500f, 0.000f) },
+            { "LIGHT_GREEN", Tuple.Create(0.157f, 1.000f, 0.157f) },
+            { "LIGHT_RED", Tuple.Create(1.000f, 0.216f, 0.216f) },
+            { "DARK_RED", Tuple.Create(0.500f, 0.000f, 0.000f) },
+            { "DARK_CYAN", Tuple.Create(0.000f, 0.545f, 0.545f) },
+            { "SOFT_BLUE", Tuple.Create(0.392f, 0.584f, 0.929f) },
+            { "PINK", Tuple.Create(1.000f, 0.078f, 0.576f) },
+            { "GOLD", Tuple.Create(1.000f, 0.843f, 0.000f) },
         };
 
         private static IList<double> DoublesFromStructure<T>(T o)
@@ -259,7 +260,7 @@ namespace vip_sharp
         }
         static Dictionary<BitmapData, uint> LoadedBitmaps = new Dictionary<BitmapData, uint>();
 
-        private static uint LoadBitmap(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
+        private unsafe static uint LoadBitmap(BitmapType type, BitmapFilter filter, BitmapClamp clamp, string path)
         {
             var bmpkey = new BitmapData(type, filter, clamp, path);
             uint texid;
@@ -270,11 +271,59 @@ namespace vip_sharp
             texid = gl.GenTexture();
             gl.BindTexture(GL.TEXTURE_2D, texid);
 
-            var bmp = new Bitmap(path);
-            if (type == BitmapType.RGB)
-                bmp.MakeTransparent(System.Drawing.Color.Black);
+            Bitmap bmp = null;
+            try
+            {
+                bmp = new Bitmap(path);
+                if (type == BitmapType.RGB || type == BitmapType.HardMask)
+                    bmp.MakeTransparent(System.Drawing.Color.Black);
+                else if (type == BitmapType.SoftMask)
+                {
+                    // we do this the hard way
 
-            gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
+                    // make it a 32bpp image
+                    if (bmp.PixelFormat != PixelFormat.Format32bppArgb)
+                    {
+                        var newbmp = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format32bppArgb);
+                        using (var g = Graphics.FromImage(newbmp))
+                            g.DrawImageUnscaled(bmp, 0, 0);
+                        bmp.Dispose();
+                        bmp = newbmp;
+                    }
+
+                    // update the alpha channel
+                    System.Drawing.Imaging.BitmapData bmpdata = null;
+                    try
+                    {
+                        var w = bmp.Width;
+                        var h = bmp.Height;
+
+                        bmpdata = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                        var stride = bmpdata.Stride;
+
+                        var scan0 = (byte*)bmpdata.Scan0.ToPointer();
+
+                        for (int i = 0; i < h; ++i)
+                            for (int j = 0; j < w; ++j)
+                            {
+                                var data = scan0 + i * stride + j * 4;
+
+                                data[3] = (byte)((data[0] + data[1] + data[2]) / 3);
+                            }
+                    }
+                    finally
+                    {
+                        bmp.UnlockBits(bmpdata);
+                    }
+                }
+
+                gl.TexImage2D(GL.TEXTURE_2D, 0, bmp);
+            }
+            finally
+            {
+                bmp.Dispose();
+            }
+
             if (filter == BitmapFilter.MipMap)
                 gl.GenerateMipmap(GL.TEXTURE_2D);
 

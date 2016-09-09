@@ -106,6 +106,22 @@ namespace vip_sharp
         public void Set(int i0, int i1, T val) => this[i0, i1] = val;
         public void Set(int i0, int i1, int i2, T val) => this[i0, i1, i2] = val;
 
+        private void EnumerableCopy(int pos, IEnumerable<T> seq)
+        {
+            foreach (var item in seq)
+                Array[pos++] = item;
+        }
+
+        public void Set(IEnumerable<T> seq) => EnumerableCopy(0, seq);
+        public void Set(int i0, IEnumerable<T> seq) => EnumerableCopy(i0, seq);
+        public void Set(int i0, int i1, IEnumerable<T> seq) => EnumerableCopy(i0 * N1 + i1, seq);
+        public void Set(int i0, int i1, int i2, IEnumerable<T> seq) => EnumerableCopy(i0 * N1 + i1 * N2 + i2, seq);
+
+        public void Set(int val) => Array[0] = (T)Convert.ChangeType(val, typeof(T));
+        public void Set(int i0, int val) => Array[i0] = (T)Convert.ChangeType(val, typeof(T));
+        public void Set(int i0, int i1, int val) => this[i0, i1] = (T)Convert.ChangeType(val, typeof(T));
+        public void Set(int i0, int i1, int i2, int val) => this[i0, i1, i2] = (T)Convert.ChangeType(val, typeof(T));
+
         public T PreIncrement(int i0 = -1, int i1 = -1, int i2 = -1)
         {
             dynamic darr = Array;

@@ -70,6 +70,9 @@ namespace vip_sharp
             defines.Add("ON", "1");
             defines.Add("OFF", "0");
 
+            defines.Add("TRUE", "1");
+            defines.Add("FALSE", "0");
+
             // various housekeeping
             Objects.Clear();
             ProcessedFiles.Clear();

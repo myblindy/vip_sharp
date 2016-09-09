@@ -31,8 +31,8 @@ namespace vip_sharp
             ClientSize = new Size((int)VIPRuntime.Instance.VIPSystemClass.WindowWidth, (int)VIPRuntime.Instance.VIPSystemClass.WindowHeight);
 
             // events
-            MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; };
-            MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false; };
+            MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true; else if (e.Button == MouseButtons.Right) VIPRuntime.Instance.VIPSystemClass.RightButtonDown = true; };
+            MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = false; else if (e.Button == MouseButtons.Right) VIPRuntime.Instance.VIPSystemClass.RightButtonDown = false; };
             MouseMove += (s, e) => { VIPRuntime.Instance.VIPSystemClass.MouseX = ToX(e.X); VIPRuntime.Instance.VIPSystemClass.MouseY = ToY(e.Y); };
             MouseWheel += (s, e) => { VIPRuntime.Instance.VIPSystemClass.__fwheel = Math.Sign(e.Delta); };
 

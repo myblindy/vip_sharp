@@ -59,6 +59,7 @@ namespace vip_sharp
             var clipcommand = new NonTerminal("clipcommand", typeof(VIPClipCommandNode));
             var calcommand = new NonTerminal("calcommand", typeof(VIPCalCommandNode));
             var arccommand = new NonTerminal("arccommand", typeof(VIPArcCommandNode));
+            var arclinecommand = new NonTerminal("arccommand", typeof(VIPArcLineCommandNode));
 
             var variabledefinitions = new NonTerminal("variabledefinitions", typeof(VIPVariableDefinitionsNode));
             var variabledefinition = new NonTerminal("variabledefinition", typeof(VIPVariableDefinitionNode));
@@ -123,7 +124,7 @@ namespace vip_sharp
             nakedcommand.Rule = rotaryknobcommand | formatcommand | hotspotcommand | stringcommand | shapecommand | circlecommand | matrixcommand
                 | drawcommand | colorcommand | translatecommand | scalecommand | assignmentcommand | fullvariabledefinitioncommand | lightcommand
                 | rotatecommand | returncommand | bitmapcommand | functioncallcommand | slidercommand | unaryassignmentcommand | boxcommand | displaycommand
-                | linewidthcommand | clipcommand | calcommand | arccommand;
+                | linewidthcommand | clipcommand | calcommand | arccommand | arclinecommand;
             command.Rule = nakedcommand + ";" | ToTerm("{") + commands + "}" | ifcommand | forcommand | calresdefinition | loopcommand | bitmapresdefinition;
             translatecommand.Rule = ToTerm("translate") + "(" + expr + "," + expr + ")";
             scalecommand.Rule = ToTerm("scale") + "(" + expr + ")" | ToTerm("scale") + "(" + expr + "," + expr + ")";
@@ -209,6 +210,7 @@ namespace vip_sharp
                 ToTerm("clip") + "(" + expr + ")"                // off is defined as 0
                 | ToTerm("clip") + "(" + expr + "," + expr + "," + qualifiedidentifier + ")";
             calcommand.Rule = ToTerm("cal") + "(" + qualifiedidentifier + "," + expr + "," + qualifiedidentifier + ")";
+            arclinecommand.Rule = ToTerm("arc_line") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + expr + "," + expr + ")";
 
 
             variabledefinitions.Rule = MakeStarRule(variabledefinitions, null, variabledefinition);
@@ -379,6 +381,7 @@ namespace vip_sharp
         void Visit(VIPClipCommandNode vIPClipCommandNode);
         void Visit(VIPCalCommandNode vIPCalCommandNode);
         void Visit(VIPArcCommandNode vIPArcCommandNode);
+        void Visit(VIPArcLineCommandNode vIPArcLineCommandNode);
     }
 
     public abstract class VIPNode : AstNode
@@ -1646,5 +1649,22 @@ namespace vip_sharp
 
         public VIPExpressionNode X, Y, InnerRadius, OuterRadius, StartAngle, EndAngle, Steps;
         public bool Filled;
+    }
+
+    public class VIPArcLineCommandNode : VIPNode
+    {
+        public override void Accept(IVIPNodeVisitor visitor) => visitor.Visit(this);
+
+        public override void InitChildren(ParseTreeNodeList nodes)
+        {
+            X = (VIPExpressionNode)nodes[1].AstNode;
+            Y = (VIPExpressionNode)nodes[2].AstNode;
+            R = (VIPExpressionNode)nodes[3].AstNode;
+            StartAngle = (VIPExpressionNode)nodes[4].AstNode;
+            EndAngle = (VIPExpressionNode)nodes[5].AstNode;
+            Steps = (VIPExpressionNode)nodes[6].AstNode;
+        }
+
+        public VIPExpressionNode X, Y, R, StartAngle, EndAngle, Steps;
     }
 }
