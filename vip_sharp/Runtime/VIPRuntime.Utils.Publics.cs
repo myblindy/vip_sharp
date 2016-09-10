@@ -126,13 +126,34 @@ namespace vip_sharp
         public class DisplayList
         {
             public uint ListID;
+            private object Object;
+            private Action<dynamic> Function;
+            private bool FakeList;
 
-            public DisplayList(object obj, Action<dynamic> init)
+            public DisplayList(object obj, Action<dynamic> fn, bool fakelist)
             {
+                // real list
                 ListID = gl.GenLists(1);
                 gl.NewList(ListID, GL.COMPILE);
-                init(obj);
+                fn(obj);
                 gl.EndList();
+
+                // fake list
+                Object = obj;
+                Function = fn;
+                FakeList = fakelist;
+            }
+
+            public void Call()
+            {
+                if (FakeList)
+                {
+                    Instance.MatrixSave();
+                    Function(Object);
+                    Instance.MatrixRestore();
+                }
+                else
+                    gl.CallList(ListID);
             }
         }
 
@@ -458,7 +479,7 @@ namespace vip_sharp
         {
             MatrixSave();
             Translate(x, y);
-            gl.CallList(list.ListID);
+            list.Call();
             MatrixRestore();
         }
 
@@ -676,7 +697,8 @@ namespace vip_sharp
                 MatrixSave();
                 Translate(x, y);
                 Rotate(180 + (Math.Max(Convert.ToDouble(var), valuemin) - valuemin) / (valuemax - valuemin) * (anglemax - anglemin) + anglemin);
-                gl.CallList(list.ListID);
+                //gl.CallList(list.ListID);
+                list.Call();
                 MatrixRestore();
             }
 
@@ -732,7 +754,8 @@ namespace vip_sharp
             {
                 MatrixSave();
                 Translate(x + w / 2, y + (Convert.ToDouble(var) - valuemin) / (valuemax - valuemin) * h);
-                gl.CallList(list.ListID);
+                //gl.CallList(list.ListID);
+                list.Call();
                 MatrixRestore();
             }
 

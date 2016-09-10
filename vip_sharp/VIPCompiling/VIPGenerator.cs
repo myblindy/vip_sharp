@@ -23,6 +23,8 @@ namespace vip_sharp
         private uint LastObjectID = 0;
         private List<Tuple<string[], string, bool>> FunctionArguments = new List<Tuple<string[], string, bool>>();
 
+        private bool BitmapStatementFound = false;
+
         MyStringBuilder IOVarsCode = new MyStringBuilder();
 
         private const string VIPRuntimeClass = "vip_sharp.VIPRuntime";
@@ -823,6 +825,8 @@ namespace vip_sharp
                 }
                 code.AppendLine(");");
             }
+
+            BitmapStatementFound = true;
         }
 
         public void Visit(VIPIfCommandNode node)
@@ -1146,9 +1150,12 @@ namespace vip_sharp
             AddDisplayListSymbolAndGoDown("__" + node.Name);
 
             initcode.AppendLine($" = new { VIPRuntimeClass }.DisplayList(this, _this => {{");
+
+            BitmapStatementFound = false;
             foreach (VIPNode cmdnode in node.ChildNodes)
                 cmdnode.Accept(this);
-            initcode.AppendLine("});");
+            initcode.AppendLine($"}}, {BitmapStatementFound.ToString().ToLower()});");
+
             BuildConstructor = bc;
 
             GoUpSymbol();
