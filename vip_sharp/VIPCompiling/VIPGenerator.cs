@@ -606,14 +606,20 @@ namespace vip_sharp
                 ((VIPNode)node.ChildNodes[2]).Accept(this);
                 code.Append(')');
             }
-            else if (node.ChildNodes.Count == 3 &&
-                ((node.ChildNodes[1] as VIPOperatorNode)?.Operator == "&" || (node.ChildNodes[1] as VIPOperatorNode)?.Operator == "|"))
+            else if (node.ChildNodes.Count == 3 && node.ChildNodes[1] is VIPOperatorNode &&
+                (((VIPOperatorNode)node.ChildNodes[1]).Operator == "&" || ((VIPOperatorNode)node.ChildNodes[1]).Operator == "|"
+                || ((VIPOperatorNode)node.ChildNodes[1]).Operator == "&&" || ((VIPOperatorNode)node.ChildNodes[1]).Operator == "||"
+                || ((VIPOperatorNode)node.ChildNodes[1]).Operator.EqualsI(".and.") || ((VIPOperatorNode)node.ChildNodes[1]).Operator.EqualsI(".or.")))
             {
+                var op = ((VIPOperatorNode)node.ChildNodes[1]).Operator;
+                if (op.EqualsI(".and."))
+                    op = "&&";
+                else if (op.EqualsI(".or."))
+                    op = "||";
+
                 code.Append("(Convert.ToBoolean(");
                 ((VIPNode)node.ChildNodes[0]).Accept(this);
-                code.Append(")");
-                code.Append((node.ChildNodes[1] as VIPOperatorNode).Operator);
-                code.Append("Convert.ToBoolean(");
+                code.Append($"){op}Convert.ToBoolean(");
                 ((VIPNode)node.ChildNodes[2]).Accept(this);
                 code.Append("))");
             }

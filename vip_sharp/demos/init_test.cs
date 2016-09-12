@@ -34,7 +34,7 @@ public int __bstat;
 }
 public __struct_cin __cin=new __struct_cin();
 public override void Run() {
-if(Convert.ToBoolean((__cin.__bstat&&(__m_dcurrtime<__m_dblinktime))))
+if(Convert.ToBoolean(((Convert.ToBoolean(__cin.__bstat)&&Convert.ToBoolean((__m_dcurrtime<__m_dblinktime))))))
 {
 vip_sharp.VIPRuntime.Instance.Color(__m_color);
 vip_sharp.VIPRuntime.Instance.Circle(0,0,2,40,true);
