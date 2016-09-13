@@ -220,14 +220,14 @@ namespace vip_sharp
             float[] mat = new float[16];
             gl.GetFloatv(GL.MODELVIEW_MATRIX, mat);
 
-            // use it to convert the mouse position to transformed space
+            // convert it to an usable matrix object
             return new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
         }
 
         private class LightDescription
         {
             internal double LightIntensity = 1;
-            internal double[] LightValues = new double[4];
+            internal double[] LightValues = new double[4] { 1, 1, 1, 1 };
         }
         Stack<LightDescription> LightStack = new Stack<LightDescription>(Enumerable.Repeat(new LightDescription(), 1));
 
@@ -343,5 +343,7 @@ namespace vip_sharp
             LoadedBitmaps.Add(bmpkey, texid);
             return texid;
         }
+
+        internal Dictionary<uint, DisplayList> DisplayLists = new Dictionary<uint, DisplayList>();
     }
 }

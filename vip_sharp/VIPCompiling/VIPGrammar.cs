@@ -193,7 +193,9 @@ namespace vip_sharp
                     + expr + "," + expr + "," + plainidentifier + "," + expr + ")"
                 | ToTerm("rotary_knob") + "(" + expr + "," + expr + "," + expr + "," + qualifiedidentifier + "," + expr + "," + expr + ","
                     + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + ")";
-            lightcommand.Rule = ToTerm("light") + "(" + expr + ")";
+            lightcommand.Rule = ToTerm("light") + "(" + expr + ")"
+                | ToTerm("light") + "(" + "on" + ")"
+                | ToTerm("light") + "(" + "off" + ")";
             slidercommand.Rule = ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +
                     expr + "," + expr + "," + plainidentifier + "," + expr + ")"
                 | ToTerm("slider") + "(" + expr + "," + expr + "," + expr + "," + expr + "," + plainidentifier + "," + expr + "," + qualifiedidentifier + "," +

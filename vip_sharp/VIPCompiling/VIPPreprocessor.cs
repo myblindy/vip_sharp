@@ -161,7 +161,7 @@ namespace vip_sharp
             return sb;
         }
 
-        private bool IsSeparator(char c) => char.IsSeparator(c) || char.IsWhiteSpace(c);
+        private bool IsSeparator(char c) => char.IsSeparator(c) || char.IsWhiteSpace(c) || c == '(' || c == ')';
 
         private ContinuationStringBuilder _Preprocess(string sourcecode, Dictionary<string, string> defines)
         {
@@ -341,6 +341,27 @@ namespace vip_sharp
                                 --idx;
 
                                 continue;
+                            }
+                            else if (string.Compare(line, idx, "light", 0, 5, true) == 0 && IsSeparator(line[idx + 5]))
+                            {
+                                // special case, don't translate ON and OFF here
+                                var oldidx = idx;               // revert to this if we're not in the on/off case
+                                idx = oldidx + 5;
+
+                                if (GetCharacterToken(line, ref idx, '('))
+                                {
+                                    var token = GetNextToken(line, ref idx);
+                                    if ((token.EqualsI("on") || token.EqualsI("off")) && GetCharacterToken(line, ref idx, ')') && GetCharacterToken(line, ref idx, ';'))
+                                    {
+                                        // this is the right case
+                                        sb.Append($"light({token});");
+                                        --idx;
+                                        continue;
+                                    }
+                                }
+
+                                // wrong case, just fall through
+                                idx = oldidx;
                             }
 
                             if (objlvl >= 0 && line[idx] == '{')

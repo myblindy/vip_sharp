@@ -67,7 +67,7 @@ namespace vip_sharp
             }
         }
 
-        public static string Compile(string filename, bool debug = false)
+        public static string Compile(string filename, bool debug = true)
         {
             var vipcompilerpath = System.Reflection.Assembly.GetExecutingAssembly().GetLocalPath();
 

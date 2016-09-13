@@ -125,23 +125,32 @@ namespace vip_sharp
 
         public class DisplayList
         {
-            public uint ListID;
+            internal uint ListID;
             private object Object;
             private Action<dynamic> Function;
             private bool FakeList;
 
             public DisplayList(object obj, Action<dynamic> fn, bool fakelist)
             {
-                // real list
-                ListID = gl.GenLists(1);
-                gl.NewList(ListID, GL.COMPILE);
-                fn(obj);
-                gl.EndList();
+                if (!fakelist)
+                {
+                    // real list
+                    ListID = gl.GenLists(1);
+                    gl.NewList(ListID, GL.COMPILE);
+                    fn(obj);
+                    gl.EndList();
+                }
+                else
+                {
+                    // fake list
+                    Object = obj;
+                    Function = fn;
+                    FakeList = fakelist;
 
-                // fake list
-                Object = obj;
-                Function = fn;
-                FakeList = fakelist;
+                    ListID = gl.GenLists(1);            // still build a list id to use in the global dictionary
+                }
+
+                Instance.DisplayLists.Add(ListID, this);
             }
 
             public void Call()
@@ -205,16 +214,16 @@ namespace vip_sharp
 
             gl.Begin(GL.QUADS);
 
-            gl.TexCoord2f(0, 0);
+            gl.TexCoord2f(0, 1);
             gl.Vertex2f((float)x, (float)y);
 
-            gl.TexCoord2f(0, 1);
+            gl.TexCoord2f(0, 0);
             gl.Vertex2f((float)x, (float)(y + h));
 
-            gl.TexCoord2f(1, 1);
+            gl.TexCoord2f(1, 0);
             gl.Vertex2f((float)(x + w), (float)(y + h));
 
-            gl.TexCoord2f(1, 0);
+            gl.TexCoord2f(1, 1);
             gl.Vertex2f((float)(x + w), (float)y);
 
             gl.End();
@@ -527,7 +536,8 @@ namespace vip_sharp
                 }
                 else
                 {
-                    gl.CallList(baselist.ListID + c);
+                    //gl.CallList(baselist.ListID + c);
+                    DisplayLists[baselist.ListID + c].Call();
                     Translate(spacex, 0);
                 }
 
@@ -649,13 +659,6 @@ namespace vip_sharp
             double anglemin, double anglemax, double valuemin, double valuemax,
             HoverBox hoverbox, double wheeldelta, DisplayList list = null)
         {
-            Func<double, double> normangle = a =>
-              {
-                  while (a < 0) a += 360;
-                  while (a >= 360) a -= 360;
-                  return a;
-              };
-
             var info = GetObjectInformation(objid, _this);
 
             // get the model view matrix and use it to convert the mouse position to transformed space
@@ -664,18 +667,12 @@ namespace vip_sharp
             var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
             pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
 
-            anglemin = normangle(anglemin);
-            anglemax = normangle(anglemax);
-            var revangle = anglemin > anglemax;
-            if (revangle)
-                anglemax += 360;
-
             var hover = (pt.X - x) * (pt.X - x) + (pt.Y - y) * (pt.Y - y) <= r * r;
             if (hover && VIPSystemClass.LeftButtonDown)
                 info.LastPressed = true;
             if (info.LastPressed && VIPSystemClass.LeftButtonDown)
             {
-                var angle = normangle(Math.Atan2(pt.X - x, pt.Y - y) / 2 / Math.PI * 360);
+                var angle = Math.Atan2(pt.X - x, pt.Y - y) / 2 / Math.PI * 360;
                 if (!double.IsNaN(info.LastAngle))
                 {
                     var delta = angle - info.LastAngle;
@@ -696,7 +693,7 @@ namespace vip_sharp
             {
                 MatrixSave();
                 Translate(x, y);
-                Rotate(180 + (Math.Max(Convert.ToDouble(var), valuemin) - valuemin) / (valuemax - valuemin) * (anglemax - anglemin) + anglemin);
+                Rotate((Math.Max(Convert.ToDouble(var), valuemin) - valuemin) / (valuemax - valuemin) * (anglemax - anglemin) + anglemin);
                 //gl.CallList(list.ListID);
                 list.Call();
                 MatrixRestore();

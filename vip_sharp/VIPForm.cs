@@ -50,6 +50,9 @@ namespace vip_sharp
             gl.ClearColor(0, 0, 0, 0);
             gl.AlphaFunc(GL.GREATER, 0.0f);
             gl.Enable(GL.ALPHA_TEST);
+            gl.ShadeModel(GL.SMOOTH);
+            gl.Enable(GL.POINT_SMOOTH);
+            gl.Hint(GL.POINT_SMOOTH_HINT, GL.NICEST);
             gl.Enable(GL.LINE_SMOOTH);
             gl.Hint(GL.LINE_SMOOTH_HINT, GL.NICEST);
             gl.ColorMaterial(GL.FRONT, GL.AMBIENT);
