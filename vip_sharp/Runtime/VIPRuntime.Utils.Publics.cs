@@ -34,6 +34,7 @@ namespace vip_sharp
             public BipolarArray<bool> __btemp { get; private set; } = new BipolarArray<bool>(100);
             public BipolarArray<char> __ctemp { get; private set; } = new BipolarArray<char>(100);
 
+            public int Frames;
             public bool LeftButtonDown, RightButtonDown;
             public bool LastLeftButtonDown, LastRightButtonDown;
             public bool KBHit, FirstPass;
@@ -41,6 +42,7 @@ namespace vip_sharp
             public double MouseX, MouseY;
             public double ModelMinX = -15, ModelMaxX = 15, ModelMinY = -15, ModelMaxY = 15;
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
+            public Tuple<uint, object> HoveredObjectID;
 
             // TODO: last left button, last right button, kbhit, keycode, first pass
 
@@ -667,7 +669,8 @@ namespace vip_sharp
             var pt = matrix.Transform(new System.Windows.Vector(VIPSystemClass.MouseX, VIPSystemClass.MouseY));
             pt.X += matrix.OffsetX; pt.Y += matrix.OffsetY;
 
-            var hover = (pt.X - x) * (pt.X - x) + (pt.Y - y) * (pt.Y - y) <= r * r;
+            var hover = HoverAllowed(objid, _this) ? (pt.X - x) * (pt.X - x) + (pt.Y - y) * (pt.Y - y) <= r * r : false;
+
             if (hover && VIPSystemClass.LeftButtonDown)
                 info.LastPressed = true;
             if (info.LastPressed && VIPSystemClass.LeftButtonDown)
@@ -682,11 +685,13 @@ namespace vip_sharp
                     var = (T)Convert.ChangeType(newvar, typeof(T));
                 }
                 info.LastAngle = angle;
+                HoverSet(objid, _this);
             }
             else if (!VIPSystemClass.LeftButtonDown)
             {
                 info.LastAngle = double.NaN;
                 info.LastPressed = false;
+                HoverClear();
             }
 
             if (list != null)
@@ -751,7 +756,6 @@ namespace vip_sharp
             {
                 MatrixSave();
                 Translate(x + w / 2, y + (Convert.ToDouble(var) - valuemin) / (valuemax - valuemin) * h);
-                //gl.CallList(list.ListID);
                 list.Call();
                 MatrixRestore();
             }

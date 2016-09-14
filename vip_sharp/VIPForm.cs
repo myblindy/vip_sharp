@@ -14,11 +14,8 @@ namespace vip_sharp
 {
     public partial class VIPForm : Form
     {
-        public VIPRuntime.VIPObject LibMainClass;
         bool Initialized = false;
-        int Frames = 0;
         DateTime LastFPSCountedAt = DateTime.Now;
-        DateTime LastRenderedAt = DateTime.Now;
         bool AutoRender;
 
         public VIPForm(bool autorender = true)
@@ -100,31 +97,16 @@ namespace vip_sharp
                 -10, 10);
         }
 
-        protected void Render()
-        {
-            gl.Clear(GL.COLOR_BUFFER_BIT);
-            gl.MatrixMode(GL.MODELVIEW);
-            gl.LoadIdentity();
-
-            var now = DateTime.Now;
-            VIPRuntime.Instance.VIPSystemClass.__ddt = (now - LastRenderedAt).TotalSeconds;
-            LibMainClass.Run();
-            VIPRuntime.Instance.VIPSystemClass.__fwheel = 0;
-            LastRenderedAt = now;
-
-            VIPRuntime.rc.SwapBuffers();
-
-            ++Frames;
-        }
+        protected void Render() => VIPRuntime.Instance.FrameStep();
 
         private void VIPForm_Load(object sender, EventArgs e) => OnSizeChanged(EventArgs.Empty);
 
         private void UIUpdate_Tick(object sender, EventArgs e)
         {
             var now = DateTime.Now;
-            Text = "VIP - " + Math.Round(Frames / (now - LastFPSCountedAt).TotalSeconds).ToString("0") + " fps";
+            Text = "VIP - " + Math.Round(VIPRuntime.Instance.VIPSystemClass.Frames / (now - LastFPSCountedAt).TotalSeconds).ToString("0") + " fps";
             LastFPSCountedAt = now;
-            Frames = 0;
+            VIPRuntime.Instance.VIPSystemClass.Frames = 0;
         }
     }
 }

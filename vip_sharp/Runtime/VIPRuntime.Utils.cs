@@ -24,7 +24,9 @@ namespace vip_sharp
         }
         private VIPRuntime() { }
 
-        public static RenderingContext rc;
+        private static RenderingContext rc;
+        private static VIPObject LibMainClass;
+        private static DateTime LastFrameRenderedAt = DateTime.Now;
         internal static void RunGL(string libpath)
         {
             if (!Path.IsPathRooted(libpath))
@@ -36,10 +38,26 @@ namespace vip_sharp
             frm.InitGL();
 
             var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
-            VIPObject libmainclass = (VIPObject)libassembly.CreateInstance("MainClass");
-            frm.LibMainClass = libmainclass;
+            LibMainClass = (VIPObject)libassembly.CreateInstance("MainClass");
 
             Application.Run(frm);
+        }
+
+        internal void FrameStep()
+        {
+            gl.Clear(GL.COLOR_BUFFER_BIT);
+            gl.MatrixMode(GL.MODELVIEW);
+            gl.LoadIdentity();
+
+            var now = DateTime.Now;
+            VIPSystemClass.__ddt = (now - LastFrameRenderedAt).TotalSeconds;            // time delta
+            LibMainClass.Run();
+            VIPSystemClass.__fwheel = 0;                                                // reset the wheel to 0 after it's processed
+            LastFrameRenderedAt = now;
+
+            rc.SwapBuffers();
+
+            ++VIPSystemClass.Frames;
         }
 
         private static double INIValueToDouble(string val, double def = 0)
@@ -345,5 +363,9 @@ namespace vip_sharp
         }
 
         internal Dictionary<uint, DisplayList> DisplayLists = new Dictionary<uint, DisplayList>();
+
+        private bool HoverAllowed(uint id, object obj) => VIPSystemClass.HoveredObjectID == null || VIPSystemClass.HoveredObjectID == Tuple.Create(id, obj);
+        private void HoverSet(uint id, object obj) => VIPSystemClass.HoveredObjectID = Tuple.Create(id, obj);
+        private void HoverClear() => VIPSystemClass.HoveredObjectID = null;
     }
 }
