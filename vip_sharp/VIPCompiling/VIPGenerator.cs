@@ -612,9 +612,9 @@ namespace vip_sharp
                 || ((VIPOperatorNode)node.ChildNodes[1]).Operator.EqualsI(".and.") || ((VIPOperatorNode)node.ChildNodes[1]).Operator.EqualsI(".or.")))
             {
                 var op = ((VIPOperatorNode)node.ChildNodes[1]).Operator;
-                if (op.EqualsI(".and."))
+                if (op.EqualsI(".and.") || op == "&")
                     op = "&&";
-                else if (op.EqualsI(".or."))
+                else if (op.EqualsI(".or.") || op == "|")
                     op = "||";
 
                 code.Append("(Convert.ToBoolean(");
@@ -636,9 +636,9 @@ namespace vip_sharp
             {
                 //code.Append((node.ChildNodes[0] as VIPOperatorNode).Operator);
                 //code.Append("Convert.ToBoolean(");
-                code.Append("~Convert.ToInt64(");
+                code.Append("Convert.ToInt32(!Convert.ToBoolean(");
                 ((VIPNode)node.ChildNodes[1]).Accept(this);
-                code.Append(')');
+                code.Append("))");
             }
             else
                 foreach (VIPNode subnode in node.ChildNodes)

@@ -11,6 +11,7 @@ public double __x;
 public double __y;
 }
 public override void Run() {
+int __t2 = (Convert.ToBoolean(Convert.ToInt32(!Convert.ToBoolean(2)))&&Convert.ToBoolean(3));
 vip_sharp.BipolarArray<double> __a= new vip_sharp.BipolarArray<double>(5) {100,101};
 vip_sharp.BipolarArray<char> __b= new vip_sharp.BipolarArray<char>(5,"meep");
 vip_sharp.BipolarArray<int> __c= new vip_sharp.BipolarArray<int>(5);
@@ -24,5 +25,6 @@ vip_sharp.BipolarArray<__t1> __j= new vip_sharp.BipolarArray<__t1>(3) {new __t1 
 double __tmp = __a[0]-0.05;
 double __tmp2 = __a[0]-0.05;
 double __tmp3 = __a[2]+2;
+int __t1 = (Convert.ToBoolean(__tmp)&&Convert.ToBoolean(Convert.ToInt32(!Convert.ToBoolean(__tmp2))));
 }
 }

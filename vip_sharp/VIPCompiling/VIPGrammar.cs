@@ -261,11 +261,12 @@ namespace vip_sharp
             arr.Rule = "[" + expr + "]";
 
             expr.Rule = (qualifiedidentifier + "(" + expressionlist + ")")
-                | stringliteral | charliteral | numberliteral | qualifiedidentifier | expr + binop + expr | unop + expr | "(" + expr + ")"
+                | stringliteral | charliteral | numberliteral | qualifiedidentifier | expr + binop + expr 
+                | ImplyPrecedenceHere(30) + unop + expr | "(" + expr + ")"
                 | "{" + expr + "}" + binop + "{" + expr + "}";
-            binop.Rule = ToTerm("-") | "+" | "*" | "/" | "^" | "|" | "&" | "||" | "&&" | ".AND." | ".OR."
+            binop.Rule = ToTerm("&") | "&&" | ".AND." | "||" | "|" | ".OR." | "+" | "*" | "/" | "^" | "-"
                 | "<=" | ">=" | "!=" | "==" | "<" | ">" | "mod";
-            unop.Rule = ToTerm("-") | "+" | "!" | "~";
+            unop.Rule = ToTerm("!") | "+" | "-";
 
             incrementops.Rule = ToTerm("--") | "++";
 
@@ -286,17 +287,16 @@ namespace vip_sharp
             LanguageFlags |= LanguageFlags.CreateAst;
 
             // operator precedence
-            RegisterOperators(1, "||");
-            RegisterOperators(2, "&&");
-            RegisterOperators(3, "|");
-            RegisterOperators(4, "^");
-            RegisterOperators(5, "&");
-            RegisterOperators(6, "==", "!=");
-            RegisterOperators(7, "<", ">", "<=", ">=");
-            RegisterOperators(9, "+", "-");
-            RegisterOperators(10, "*", "/", "mod");
-            RegisterOperators(11, "^");
-            RegisterOperators(-3, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
+            RegisterOperators(1, Associativity.Right, "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=");
+            RegisterOperators(2, Associativity.Left, "|", "||", ".OR.");
+            RegisterOperators(3, Associativity.Left, "&", "&&", ".AND.");
+            RegisterOperators(4, Associativity.Left, "==", "!=");
+            RegisterOperators(5, Associativity.Left, "<", ">", "<=", ">=");
+            RegisterOperators(6, Associativity.Left, "+", "-");
+            RegisterOperators(7, Associativity.Left, "*", "/", "mod");
+            RegisterOperators(8, Associativity.Left, "^");
+            RegisterOperators(9, Associativity.Right, "++", "--", "!");
+            RegisterOperators(10, Associativity.Left, ".");
 
             RegisterBracePair("(", ")");
             MarkMemberSelect(".");

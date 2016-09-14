@@ -204,6 +204,10 @@ namespace vip_sharp
 
         public void Bitmap(uint texid, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref)
         {
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+            if (!RectangleVisible(x, y, w, h))
+                return;
+
             gl.Enable(GL.TEXTURE_2D);
             gl.BindTexture(GL.TEXTURE_2D, texid);
             gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
@@ -211,8 +215,6 @@ namespace vip_sharp
                 blend == BitmapBlend.Decal ? GL.DECAL :
                 blend == BitmapBlend.Blend ? GL.BLEND :
                 GL.REPLACE);
-
-            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
 
             gl.Begin(GL.QUADS);
 
@@ -240,6 +242,10 @@ namespace vip_sharp
 
         public void Bitmap<TVertex>(uint texid, BitmapBlend blend, double x, double y, double w, double h, PositionRef @ref, BipolarArray<TVertex> uv)
         {
+            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
+            if (!RectangleVisible(x, y, w, h))
+                return;
+
             gl.Enable(GL.TEXTURE_2D);
             gl.BindTexture(GL.TEXTURE_2D, texid);
             gl.TexEnvi(GL.TEXTURE_ENV, GL.TEXTURE_ENV_MODE,
@@ -247,8 +253,6 @@ namespace vip_sharp
                 blend == BitmapBlend.Decal ? GL.DECAL :
                 blend == BitmapBlend.Blend ? GL.BLEND :
                 GL.REPLACE);
-
-            UpdateCoordsWithBoxInfo(ref x, ref y, w, h, @ref);
 
             gl.Begin(GL.QUADS);
 

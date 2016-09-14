@@ -35,7 +35,7 @@ namespace vip_sharp
 
         private Regex InstructionRegex = new Regex(@"^\s*(use|define)\s+(.*?)\s*;?\s*(?://.*)?$", RegexOptions.IgnoreCase);
         private Dictionary<string, ObjectPayload> Objects = new Dictionary<string, ObjectPayload>(StringComparer.OrdinalIgnoreCase);
-        private HashSet<string> ProcessedFiles = new HashSet<string>();
+        private HashSet<string> ProcessedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int MaxAutogenID;
 
         public string Preprocess(string filename)

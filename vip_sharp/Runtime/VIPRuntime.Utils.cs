@@ -242,6 +242,26 @@ namespace vip_sharp
             return new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
         }
 
+        private double IsLeft(double x0, double y0, double x1, double y1, double x2, double y2) =>
+            (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
+        private bool PointInRectangle(double x, double y, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3) =>
+            IsLeft(x0, y0, x1, y1, x, y) > 0 && IsLeft(x1, y1, x2, y2, x, y) > 0 && IsLeft(x2, y2, x3, y3, x, y) > 0 && IsLeft(x3, y3, x0, y0, x, y) > 0;
+
+        private bool RectangleVisible(double x, double y, double w, double h)
+        {
+            var mat = GetModelViewMatrix();
+            mat.Invert();
+
+            Func<double, double, bool> test = (xp, yp) =>
+              {
+                  var pt = mat.Transform(new System.Windows.Vector(xp, yp));
+                  pt.X += mat.OffsetX; pt.Y += mat.OffsetY;
+                  return PointInRectangle(pt.X, pt.Y, x, y, x + w, y, x + w, y + h, x, y + h);
+              };
+
+            return test(0, 0) || test(0, VIPSystemClass.ModelMaxY) || test(VIPSystemClass.ModelMaxX, VIPSystemClass.ModelMaxY) || test(VIPSystemClass.ModelMaxX, 0);
+        }
+
         private class LightDescription
         {
             internal double LightIntensity = 1;
@@ -300,7 +320,20 @@ namespace vip_sharp
             {
                 bmp = new Bitmap(path);
                 if (type == BitmapType.RGB || type == BitmapType.HardMask)
+                {
                     bmp.MakeTransparent(System.Drawing.Color.Black);
+
+                    //System.Drawing.Imaging.BitmapData bmpdata = null;
+                    //try
+                    //{
+                    //    var w = bmp.Width;
+                    //    var h = bmp.Height;
+
+                    //    bmpdata = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                    //    gl.TexImage2D(GL.TEXTURE_2D, 0, GL.COMPRESSED_RGBA_S3TC_DXT1_EXT, w, h, 0, GL.BGRA, GL.UNSIGNED_BYTE, bmpdata.Scan0);
+                    //}
+                    //finally { bmp.UnlockBits(bmpdata); }
+                }
                 else if (type == BitmapType.SoftMask)
                 {
                     // we do this the hard way
@@ -334,6 +367,8 @@ namespace vip_sharp
 
                                 data[3] = (byte)((data[0] + data[1] + data[2]) / 3);
                             }
+
+                        //gl.TexImage2D(GL.TEXTURE_2D, 0, GL.COMPRESSED_RGBA_S3TC_DXT1_EXT, w, h, 0, GL.BGRA, GL.UNSIGNED_BYTE, bmpdata.Scan0);
                     }
                     finally
                     {
@@ -348,13 +383,14 @@ namespace vip_sharp
                 bmp.Dispose();
             }
 
-            if (filter == BitmapFilter.MipMap)
-                gl.GenerateMipmap(GL.TEXTURE_2D);
+            //if (filter == BitmapFilter.MipMap)
+            gl.GenerateMipmap(GL.TEXTURE_2D);
 
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, clamp == BitmapClamp.Clamp ? GL.CLAMP_TO_EDGE : GL.REPEAT);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, filter == BitmapFilter.MipMap || filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_LINEAR : filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_NEAREST);
+            //gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, filter == BitmapFilter.MipMap ? GL.LINEAR_MIPMAP_NEAREST : filter == BitmapFilter.Linear ? GL.LINEAR : GL.NEAREST);
 
             gl.BindTexture(GL.TEXTURE_2D, 0);
 
