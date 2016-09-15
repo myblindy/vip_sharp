@@ -92,7 +92,7 @@
   <ItemGroup>
     <Compile Include="Utils\BipolarArray.cs" />
     <Compile Include="Utils\ContinuationStringBuilder.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\GrammarUtils.cs" />

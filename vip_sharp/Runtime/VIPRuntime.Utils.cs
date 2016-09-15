@@ -245,21 +245,35 @@ namespace vip_sharp
         private double IsLeft(double x0, double y0, double x1, double y1, double x2, double y2) =>
             (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
         private bool PointInRectangle(double x, double y, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3) =>
-            IsLeft(x0, y0, x1, y1, x, y) > 0 && IsLeft(x1, y1, x2, y2, x, y) > 0 && IsLeft(x2, y2, x3, y3, x, y) > 0 && IsLeft(x3, y3, x0, y0, x, y) > 0;
+            IsLeft(x0, y0, x1, y1, x, y) < 0 && IsLeft(x1, y1, x2, y2, x, y) < 0 && IsLeft(x2, y2, x3, y3, x, y) < 0 && IsLeft(x3, y3, x0, y0, x, y) < 0;
 
         private bool RectangleVisible(double x, double y, double w, double h)
         {
+            return true;
+
             var mat = GetModelViewMatrix();
-            mat.Invert();
+
+            Func<double, double, System.Windows.Vector> transform = (xp, yp) =>
+            {
+                var pt = mat.Transform(new System.Windows.Vector(xp, yp));
+                pt.X += mat.OffsetX; pt.Y += mat.OffsetY;
+                return pt;
+            };
+
+            Func<double, double, System.Windows.Vector> copy = (xp, yp) =>
+                new System.Windows.Vector(xp, yp);
+
+            var rpt1 = transform(x, y);
+            var rpt2 = transform(x + w, y);
+            var rpt3 = transform(x + w, y + h);
+            var rpt4 = transform(x, y + h);
 
             Func<double, double, bool> test = (xp, yp) =>
-              {
-                  var pt = mat.Transform(new System.Windows.Vector(xp, yp));
-                  pt.X += mat.OffsetX; pt.Y += mat.OffsetY;
-                  return PointInRectangle(pt.X, pt.Y, x, y, x + w, y, x + w, y + h, x, y + h);
-              };
+                PointInRectangle(xp, yp, VIPSystemClass.ModelMinX, VIPSystemClass.ModelMinY, VIPSystemClass.ModelMinX, VIPSystemClass.ModelMaxY,
+                    VIPSystemClass.ModelMaxX, VIPSystemClass.ModelMaxY, VIPSystemClass.ModelMaxX, VIPSystemClass.ModelMinY);
 
-            return test(0, 0) || test(0, VIPSystemClass.ModelMaxY) || test(VIPSystemClass.ModelMaxX, VIPSystemClass.ModelMaxY) || test(VIPSystemClass.ModelMaxX, 0);
+            return //test(0, 0) || test(0, VIPSystemClass.WindowHeight) || test(VIPSystemClass.WindowWidth, VIPSystemClass.WindowHeight) || test(VIPSystemClass.WindowWidth, 0);
+                test(rpt1.X, rpt1.Y) || test(rpt2.X, rpt2.Y) || test(rpt3.X, rpt3.Y) || test(rpt4.X, rpt4.Y);
         }
 
         private class LightDescription

@@ -168,12 +168,12 @@ namespace vip_sharp
             }
         }
 
-        public void Scale(double s) => Scale(s, s);
-        public void Scale(double x, double y) => gl.Scalef((float)x, (float)y, 1);
+        public void Scale(double s) { if (s != 1) Scale(s, s); }
+        public void Scale(double x, double y) { if (x != 1 || y != 1) gl.Scalef((float)x, (float)y, 1); }
 
-        public void Translate(double x, double y) => gl.Translatef((float)x, (float)y, 0);
+        public void Translate(double x, double y) { if (x != 0 || y != 0) gl.Translatef((float)x, (float)y, 0); }
 
-        public void Rotate(double angle) => gl.Rotatef((float)angle, 0, 0, -1);
+        public void Rotate(double angle) { if (angle != 0) gl.Rotatef((float)angle, 0, 0, -1); }
 
         public void Color<TColor>(TColor color)
         {
@@ -285,9 +285,9 @@ namespace vip_sharp
         public void Draw(VIPObject obj)
         {
             MatrixSave();
-            if (obj.X != 0 || obj.Y != 0) Translate(obj.X, obj.Y);
-            if (obj.R != 0) Rotate(obj.R);
-            if (obj.S != 1) Scale(obj.S);
+            Translate(obj.X, obj.Y);
+            Rotate(obj.R);
+            Scale(obj.S);
             obj.Run();
             MatrixRestore();
         }
@@ -554,40 +554,39 @@ namespace vip_sharp
         private int ClipLayer = 0;
         public void ClipOff()
         {
-            MatrixRestore();
-
             if (--ClipLayer == 0)
             {
-                gl.Disable(GL.DEPTH_TEST);
-                gl.DepthMask(true);
-                gl.Clear(GL.DEPTH_BUFFER_BIT);
-                gl.DepthMask(false);
+                gl.Clear(GL.STENCIL_BUFFER_BIT);                        // set stencil buffer to 0
+                gl.Disable(GL.STENCIL_TEST);
             }
+            else
+                gl.PopAttrib();
         }
 
         public void Clip(double x, double y, DisplayList list)
         {
-            ++ClipLayer;
+            if (++ClipLayer > 1)
+            {
+                // not the first layer, push the stencil settings
+                gl.PushAttrib(GL.STENCIL_BUFFER_BIT);
+            }
 
-            gl.PushAttrib(GL.DEPTH_BUFFER_BIT);
-            gl.ColorMask(false, false, false, false);
-            gl.Enable(GL.DEPTH_TEST);
-            gl.DepthFunc(GL.ALWAYS);
-            gl.DepthMask(true);
+            // first layer
+            gl.Enable(GL.STENCIL_TEST);
 
+            // set the stencil to REPLACE the clip layer value in the buffer
+            gl.StencilFunc(GL.ALWAYS, ClipLayer, 0xFF);             // always pass, set to cliplayer
+            gl.StencilOp(GL.KEEP, GL.KEEP, GL.REPLACE);             // replace if Z pass, keep if stencil fail or Z fail (won't happen)
+            gl.StencilMask(0xFF);                                   // write to the stencil buffer
+            gl.ColorMask(false, false, false, false);               // don't draw
+
+            // draw the mask
             Display(x, y, list);
 
-            // Go back to normal mode.
-            gl.PopAttrib();
-            gl.DepthMask(false);
-            gl.ColorMask(true, true, true, true);
-
-            // Then enable the just stored info, and move to the next level.
-            gl.Enable(GL.DEPTH_TEST);
-            gl.DepthFunc(GL.GEQUAL);
-
-            MatrixSave();
-            gl.Translatef(0, 0, 1);
+            // go back to normal mode
+            gl.StencilFunc(GL.EQUAL, ClipLayer, 0xFF);             // pass if = cliplayer
+            gl.StencilMask(0);                                      // don't write anything to the stencil buffer
+            gl.ColorMask(true, true, true, true);                   // draw
         }
 
         public double Cal<T>(CalRes res, T input) => res.Compute(Convert.ToDouble(input));
