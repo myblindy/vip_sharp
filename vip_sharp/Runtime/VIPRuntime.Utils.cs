@@ -16,13 +16,15 @@ namespace vip_sharp
 {
     public partial class VIPRuntime
     {
-        public static VIPRuntime Instance { get; } = new VIPRuntime();
+        public static VIPRuntime Instance { get; private set; } = new VIPRuntime();
         static VIPRuntime()
         {
             // folor color lookup optimizations
             StandardColorsArray = StandardColors.Values.ToArray();
         }
         private VIPRuntime() { }
+
+        public static void ReinitializeInstance() => Instance = new VIPRuntime();                   // for testing, we need to clear the runtime objects
 
         private static RenderingContext rc;
         private static VIPObject LibMainClass;
@@ -45,7 +47,11 @@ namespace vip_sharp
 
         internal void FrameStep()
         {
-            gl.Clear(GL.COLOR_BUFFER_BIT);
+            gl.StencilMask(uint.MaxValue);
+            gl.Clear(GL.COLOR_BUFFER_BIT | GL.STENCIL_BUFFER_BIT);
+            ClipLayer = MaxClipLayer = StartClipLayer = 0;
+            gl.StencilMask(0);
+
             gl.MatrixMode(GL.MODELVIEW);
             gl.LoadIdentity();
 

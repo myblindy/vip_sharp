@@ -17,6 +17,8 @@ namespace tests
             var tmpcs = Path.ChangeExtension(Path.GetTempFileName(), "cs");
             VIPRuntime.VIPObject libmainclass;
 
+            VIPRuntime.ReinitializeInstance();
+
             try
             {
                 var tmplib = VIPCompiler.Compile(path);

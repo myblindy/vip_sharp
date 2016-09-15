@@ -101,13 +101,13 @@ Main {
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 10;
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true;
             Step(vip);
-            Assert.IsTrue(vip.__swstate);
+            Assert.IsTrue(vip.__swstate != 0);
 
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseX = 9;
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = 8;
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.LeftButtonDown = true;
             Step(vip);
-            Assert.IsFalse(vip.__swstate);
+            Assert.IsFalse(vip.__swstate != 0);
 
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseX = 0;
             vip_sharp.VIPRuntime.Instance.VIPSystemClass.MouseY = -3;

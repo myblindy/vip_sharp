@@ -6,8 +6,6 @@ typedef t1
 
 main
 {
-	bool t2 = !2 & 3;
-	
 	double a[5] = { 100.0, 101.0 };
 	char b[5] = "meep";
 	int c[5];
@@ -22,6 +20,4 @@ main
 	double tmp = a[0] - 0.050;
 	double tmp2 = a[0] -0.050;
 	double tmp3 = a[2] + 2.f;
-	
-	bool t1 = tmp & !tmp2;
 }

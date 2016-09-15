@@ -551,13 +551,22 @@ namespace vip_sharp
             MatrixRestore();
         }
 
-        private int ClipLayer = 0;
+        private int ClipLayer = 0, MaxClipLayer = 0, StartClipLayer = 0;
         public void ClipOff()
         {
-            if (--ClipLayer == 0)
+            if (--ClipLayer == StartClipLayer)
             {
-                gl.Clear(GL.STENCIL_BUFFER_BIT);                        // set stencil buffer to 0
                 gl.Disable(GL.STENCIL_TEST);
+                ClipLayer = StartClipLayer = MaxClipLayer + 1;
+                if (ClipLayer > 255)
+                {
+                    // we only get 8 bits of stencil
+
+                    gl.StencilMask(uint.MaxValue);
+                    gl.Clear(GL.STENCIL_BUFFER_BIT);                        // set stencil buffer to 0
+                    gl.StencilMask(0);
+                    StartClipLayer = ClipLayer = MaxClipLayer = 0;
+                }
             }
             else
                 gl.PopAttrib();
@@ -565,26 +574,28 @@ namespace vip_sharp
 
         public void Clip(double x, double y, DisplayList list)
         {
-            if (++ClipLayer > 1)
+            if (++ClipLayer > StartClipLayer + 1)
             {
                 // not the first layer, push the stencil settings
                 gl.PushAttrib(GL.STENCIL_BUFFER_BIT);
             }
 
+            if (MaxClipLayer < ClipLayer) MaxClipLayer = ClipLayer;
+
             // first layer
             gl.Enable(GL.STENCIL_TEST);
 
             // set the stencil to REPLACE the clip layer value in the buffer
-            gl.StencilFunc(GL.ALWAYS, ClipLayer, 0xFF);             // always pass, set to cliplayer
-            gl.StencilOp(GL.KEEP, GL.KEEP, GL.REPLACE);             // replace if Z pass, keep if stencil fail or Z fail (won't happen)
-            gl.StencilMask(0xFF);                                   // write to the stencil buffer
+            gl.StencilFunc(GL.NEVER, ClipLayer, uint.MaxValue);     // never pass, set to cliplayer
+            gl.StencilOp(GL.REPLACE, GL.KEEP, GL.KEEP);             // replace if stencil fail (always)
+            gl.StencilMask(uint.MaxValue);                          // write to the stencil buffer
             gl.ColorMask(false, false, false, false);               // don't draw
 
             // draw the mask
             Display(x, y, list);
 
             // go back to normal mode
-            gl.StencilFunc(GL.EQUAL, ClipLayer, 0xFF);             // pass if = cliplayer
+            gl.StencilFunc(GL.LEQUAL, ClipLayer, uint.MaxValue);    // pass if stencil buffer >= clip layer
             gl.StencilMask(0);                                      // don't write anything to the stencil buffer
             gl.ColorMask(true, true, true, true);                   // draw
         }
