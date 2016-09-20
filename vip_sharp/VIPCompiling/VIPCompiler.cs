@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Irony.Parsing;
 using System.Threading;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
 
 namespace vip_sharp
 {
@@ -26,8 +24,53 @@ namespace vip_sharp
             return abspath.Replace('/', '\\');
         }
 
+        private static int StartProcessAndReadOutput(Process process, StringBuilder stdout, StringBuilder stderr)
+        {
+            var timeout = 10000; // 10s
+
+            using (var outputWaitHandle = new AutoResetEvent(false))
+            using (var errorWaitHandle = new AutoResetEvent(false))
+            {
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (e.Data == null)
+                        outputWaitHandle.Set();
+                    else
+                        stdout.AppendLine(e.Data);
+                };
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (e.Data == null)
+                        errorWaitHandle.Set();
+                    else
+                        stderr.AppendLine(e.Data);
+                };
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                if (process.WaitForExit(timeout) &&
+                    outputWaitHandle.WaitOne(timeout) &&
+                    errorWaitHandle.WaitOne(timeout))
+                {
+                    var exitcode = process.ExitCode;
+                    process.Close();
+                    return exitcode;
+                }
+                else
+                {
+                    // Timed out.
+                    return -1;
+                }
+            }
+        }
+
         public static string Compile(string filename, bool debug = false)
         {
+            var vipcompilerpath = System.Reflection.Assembly.GetExecutingAssembly().GetLocalPath();
+
             // compile the grammar to C# code
             var grammar = new VIPGrammar();
             var parser = new Parser(grammar);
@@ -41,34 +84,20 @@ namespace vip_sharp
             var cspath = Path.ChangeExtension(filename, "cs");
             var cslibpath = Path.ChangeExtension(cspath, "dll");
 
-            var code = generator.Code.ToString();
-            File.WriteAllText(cspath, code);
+            File.WriteAllText(cspath, generator.Code.ToString());
 
-            var csst = CSharpSyntaxTree.ParseText(code);
-            var references = new[]
+            var csc = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "csc.exe");
+            var cscargs = debug
+                ? $"/out:\"{cslibpath}\" /reference:\"{vipcompilerpath}\" /target:library /platform:x86 /warn:0 /nologo /debug \"{cspath}\""
+                : $"/out:\"{cslibpath}\" /reference:\"{vipcompilerpath}\" /target:library /platform:x86 /warn:0 /nologo /optimize \"{cspath}\"";
+            var p = new Process { StartInfo = new ProcessStartInfo(csc, cscargs) { RedirectStandardError = true, RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true } };
+
+            StringBuilder stdout = new StringBuilder(), stderr = new StringBuilder();
+            if (StartProcessAndReadOutput(p, stdout, stderr) != 0)
             {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),                                                     // mscorlib.dll
-                MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly.Location),      // Microsoft.CSharp.dll
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),                                                 // System.dll
-                MetadataReference.CreateFromFile(typeof(VIPRuntime).Assembly.Location),                                                 // this
-            };
-
-            var csc = CSharpCompilation.Create(Path.GetFileNameWithoutExtension(cslibpath), new[] { csst }, references, new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                platform: Platform.X86,
-                optimizationLevel: debug ? OptimizationLevel.Debug : OptimizationLevel.Release,
-                warningLevel: 0));
-
-            using (var s = File.Create(cslibpath))
-            {
-                var result = csc.Emit(s);
-
-                if (!result.Success)
-                {
-                    var failures = result.Diagnostics.Where(w => w.IsWarningAsError || w.Severity == DiagnosticSeverity.Error);
-                    File.WriteAllLines(Path.ChangeExtension(filename, ".errorlog.txt"), failures.Select(w => w.Id + ": " + w.GetMessage()));
-                    return null;
-                }
+                // error
+                File.WriteAllText(Path.ChangeExtension(filename, ".errorlog.txt"), stdout.ToString());
+                return null;
             }
 
             return cslibpath;
