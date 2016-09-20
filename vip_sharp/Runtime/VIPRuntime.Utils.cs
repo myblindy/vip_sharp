@@ -29,17 +29,17 @@ namespace vip_sharp
         private static RenderingContext rc;
         private static VIPObject LibMainClass;
         private static DateTime LastFrameRenderedAt = DateTime.Now;
-        internal static void RunGL(Tuple<byte[], byte[]> assembly)
+        internal static void RunGL(string libpath)
         {
-            //if (!Path.IsPathRooted(libpath))
-            //    libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
+            if (!Path.IsPathRooted(libpath))
+                libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
             var frm = new VIPForm();
             var s = new RenderingContextSetting();
             rc = RenderingContext.CreateContext(frm, s);
             frm.InitGL();
 
-            var libassembly = AppDomain.CurrentDomain.Load(assembly.Item1, assembly.Item2); //AssemblyName.GetAssemblyName(libpath));
+            var libassembly = AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(libpath));
             LibMainClass = (VIPObject)libassembly.CreateInstance("MainClass");
 
             Application.Run(frm);

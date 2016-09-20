@@ -26,7 +26,7 @@ namespace vip_sharp
             return abspath.Replace('/', '\\');
         }
 
-        public static Tuple<byte[], byte[]> Compile(string filename, bool debug = true)
+        public static string Compile(string filename, bool debug = false)
         {
             // compile the grammar to C# code
             var grammar = new VIPGrammar();
@@ -38,11 +38,11 @@ namespace vip_sharp
             ((VIPProgramNode)ast.Root.AstNode).Accept(generator);
 
             // compile the C# code
-            //var cspath = Path.ChangeExtension(filename, "cs");
-            //var cslibpath = Path.ChangeExtension(cspath, "dll");
+            var cspath = Path.ChangeExtension(filename, "cs");
+            var cslibpath = Path.ChangeExtension(cspath, "dll");
 
             var code = generator.Code.ToString();
-            //File.WriteAllText(cspath, code);
+            File.WriteAllText(cspath, code);
 
             var csst = CSharpSyntaxTree.ParseText(code);
             var references = new[]
@@ -53,16 +53,15 @@ namespace vip_sharp
                 MetadataReference.CreateFromFile(typeof(VIPRuntime).Assembly.Location),                                                 // this
             };
 
-            var csc = CSharpCompilation.Create("vip_compiled_assembly", new[] { csst }, references, new CSharpCompilationOptions(
+            var csc = CSharpCompilation.Create(Path.GetFileNameWithoutExtension(cslibpath), new[] { csst }, references, new CSharpCompilationOptions(
                 OutputKind.DynamicallyLinkedLibrary,
                 platform: Platform.X86,
                 optimizationLevel: debug ? OptimizationLevel.Debug : OptimizationLevel.Release,
                 warningLevel: 0));
 
-            using (var msobj = new MemoryStream())
-            using (var mspdb = debug ? new MemoryStream() : null)
+            using (var s = File.Create(cslibpath))
             {
-                var result = csc.Emit(msobj, mspdb);
+                var result = csc.Emit(s);
 
                 if (!result.Success)
                 {
@@ -70,9 +69,9 @@ namespace vip_sharp
                     File.WriteAllLines(Path.ChangeExtension(filename, ".errorlog.txt"), failures.Select(w => w.Id + ": " + w.GetMessage()));
                     return null;
                 }
-
-                return Tuple.Create(msobj.ToArray(), mspdb?.ToArray());
             }
+
+            return cslibpath;
         }
     }
 }
