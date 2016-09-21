@@ -105,9 +105,9 @@ namespace vip_sharp
             GoUpSymbol();
 
             // io vars
-            foreach (var iovar in Instance.VIPSystemClass.IOVariables)
+            foreach (var iovar in Instance.VIPSystemClass.IOVariablesInternalMapping)
             {
-                var obj = iovar.Value;
+                var obj = Instance.VIPSystemClass.IOVariables[iovar.Value];
                 string type;
                 int indices = 0;
 
@@ -120,16 +120,16 @@ namespace vip_sharp
                     type = TypeNameTranslation[argtype];
 
                     IOVarsCode.AppendLine($"{VIPArrayClass}<{type}> __{iovar.Key.ToLower()} {{");
-                    IOVarsCode.AppendLine($"get {{ return ({VIPArrayClass}<{type}>){VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"]; }}");
-                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"] = value; }} }}");
+                    IOVarsCode.AppendLine($"get {{ return ({VIPArrayClass}<{type}>){VIPRuntimeInstance}.VIPSystemClass.IOVariables[{iovar.Value}]; }}");
+                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[{iovar.Value}] = value; }} }}");
                 }
                 else
                 {
                     type = TypeNameTranslation[obj.GetType()];
 
                     IOVarsCode.AppendLine($"{type} __{iovar.Key.ToLower()} {{");
-                    IOVarsCode.AppendLine($"get {{ return ({type}){VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"]; }}");
-                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[\"{iovar.Key}\"] = value; }} }}");
+                    IOVarsCode.AppendLine($"get {{ return ({type}){VIPRuntimeInstance}.VIPSystemClass.IOVariables[{iovar.Value}]; }}");
+                    IOVarsCode.AppendLine($"set {{ {VIPRuntimeInstance}.VIPSystemClass.IOVariables[{iovar.Value}] = value; }} }}");
                 }
 
                 AddIOVariableSymbol("__" + iovar.Key, type, indices);

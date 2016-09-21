@@ -10,8 +10,11 @@ namespace vip_sharp
     {
         private static void AddIOVariable<T>(string key, T var)
         {
-            if (!Instance.VIPSystemClass.IOVariables.ContainsKey(key))
-                Instance.VIPSystemClass.IOVariables.Add(key, var);
+            if (!Instance.VIPSystemClass.IOVariablesInternalMapping.ContainsKey(key))
+            {
+                Instance.VIPSystemClass.IOVariablesInternalMapping.Add(key, Instance.VIPSystemClass.IOVariables.Count);
+                Instance.VIPSystemClass.IOVariables.Add(var);
+            }
         }
 
         private static void BuildIOVariables(IEnumerable<UnmanagedDefinition> defs)

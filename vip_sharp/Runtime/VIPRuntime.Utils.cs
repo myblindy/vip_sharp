@@ -163,7 +163,7 @@ namespace vip_sharp
             public VertexType(double x, double y) { X = x; Y = y; }
         }
 
-        private static Dictionary<string, Tuple<float, float, float>> StandardColors = new Dictionary<string, Tuple<float, float, float>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, Tuple<float, float, float>> StandardColors = new Dictionary<string, Tuple<float, float, float>>(StringComparer.OrdinalIgnoreCase)
         {
             { "BLACK", Tuple.Create(0.000f, 0.000f, 0.000f) },
             { "DARK_GREY", Tuple.Create(0.250f, 0.250f, 0.250f) },
@@ -193,7 +193,7 @@ namespace vip_sharp
             { "PINK", Tuple.Create(1.000f, 0.078f, 0.576f) },
             { "GOLD", Tuple.Create(1.000f, 0.843f, 0.000f) },
         };
-        private static Tuple<float, float, float>[] StandardColorsArray;
+        private static readonly Tuple<float, float, float>[] StandardColorsArray;
 
         private static IList<double> DoublesFromStructure<T>(T o)
         {
@@ -205,7 +205,7 @@ namespace vip_sharp
             return lst;
         }
 
-        private void UpdateCoordsWithBoxInfo(ref double x, ref double y, double w, double h, PositionRef @ref)
+        private static void UpdateCoordsWithBoxInfo(ref double x, ref double y, double w, double h, PositionRef @ref)
         {
             switch (@ref)
             {
@@ -238,7 +238,7 @@ namespace vip_sharp
             }
         }
 
-        private System.Windows.Media.Matrix GetModelViewMatrix()
+        private static System.Windows.Media.Matrix GetModelViewMatrix()
         {
             // get the model view matrix 
             float[] mat = new float[16];
@@ -248,9 +248,9 @@ namespace vip_sharp
             return new System.Windows.Media.Matrix(mat[0], mat[1], mat[4], mat[5], mat[12], mat[13]);
         }
 
-        private double IsLeft(double x0, double y0, double x1, double y1, double x2, double y2) =>
+        private static double IsLeft(double x0, double y0, double x1, double y1, double x2, double y2) =>
             (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
-        private bool PointInRectangle(double x, double y, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3) =>
+        private static bool PointInRectangle(double x, double y, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3) =>
             IsLeft(x0, y0, x1, y1, x, y) < 0 && IsLeft(x1, y1, x2, y2, x, y) < 0 && IsLeft(x2, y2, x3, y3, x, y) < 0 && IsLeft(x3, y3, x0, y0, x, y) < 0;
 
         private bool RectangleVisible(double x, double y, double w, double h)
