@@ -327,6 +327,14 @@ namespace vip_sharp
             gl.End();
         }
 
+        public void Point(params double[] vals)
+        {
+            gl.Begin(GL.POINTS);
+            for (int i = 0; i < vals.Length; i += 2)
+                gl.Vertex2f((float)vals[i], (float)vals[i + 1]);
+            gl.End();
+        }
+
         public void Polygon(params double[] vals)
         {
             gl.Begin(GL.POLYGON);
@@ -382,17 +390,19 @@ namespace vip_sharp
 
         public void Arc(double x, double y, double r1, double r2, double start, double end, double steps, bool fill)
         {
-            gl.Begin(GL.LINE_LOOP);
-
             var inc = (end - start) / steps;
+            gl.Begin(r1 == r2 ? GL.LINE_STRIP : GL.LINE_LOOP);
+
             for (int idx = 0; idx <= steps; ++idx)
                 gl.Vertex2f(
-                    (float)(x + r1 * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
-                    (float)(y + r1 * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
-            for (int idx = (int)steps; idx >= 0; --idx)
-                gl.Vertex2f(
-                    (float)(x + r1 * Math.Cos((start + idx * inc + 90) * Math.PI * 2 / 360)),
-                    (float)(y + r1 * Math.Sin((start + idx * inc + 90) * Math.PI * 2 / 360)));
+                    (float)(x + r1 * Math.Cos((90 - start - idx * inc) * Math.PI * 2 / 360)),
+                    (float)(y + r1 * Math.Sin((90 - start - idx * inc) * Math.PI * 2 / 360)));
+
+            if (r2 != r1)
+                for (int idx = (int)steps; idx >= 0; --idx)
+                    gl.Vertex2f(
+                        (float)(x + r1 * Math.Cos((90 - start - idx * inc) * Math.PI * 2 / 360)),
+                        (float)(y + r1 * Math.Sin((90 - start - idx * inc) * Math.PI * 2 / 360)));
 
             gl.End();
         }

@@ -67,7 +67,7 @@ namespace vip_sharp
             }
         }
 
-        public static string Compile(string filename, bool debug = false)
+        public static string Compile(string filename, bool debug = true)
         {
             var vipcompilerpath = System.Reflection.Assembly.GetExecutingAssembly().GetLocalPath();
 
@@ -79,6 +79,9 @@ namespace vip_sharp
 
             var generator = new VIPGenerator();
             ((VIPProgramNode)ast.Root.AstNode).Accept(generator);
+
+            // work around for Irony holding a reference to our (large) grammar too long
+            new Grammar();
 
             // compile the C# code
             var cspath = Path.ChangeExtension(filename, "cs");

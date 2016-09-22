@@ -1,0 +1,9 @@
+use "libraries\cdu.fnt"
+
+main
+{
+	color(gold);
+	String(0, 0, CC, NONE, "MEEP SST 1 2 3", 0, CDU_Null, 5, 5, 0.4);
+	
+	arc(-2,-10,4,4,0,45,10);
+}

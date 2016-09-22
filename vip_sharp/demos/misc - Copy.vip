@@ -1,0 +1,7 @@
+use "libraries\cdu.fnt"
+
+main
+{
+	color(gold);
+	String(0, 0, CC, NONE, "MEEP SST 1 2 3", 0, CDU_Null, 1000, 1000, 1.2);
+}

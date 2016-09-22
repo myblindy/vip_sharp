@@ -1176,6 +1176,7 @@ namespace vip_sharp
             { "line", "Line" },
             { "closed_line", "ClosedLine" },
             { "rotate", "Rotate" },
+            { "point", "Point" }
         };
 
         public void Visit(VIPShapeCommandNode node)

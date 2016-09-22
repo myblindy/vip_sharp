@@ -143,6 +143,7 @@ namespace vip_sharp
                 | ToTerm("line_strip") + "{" + expressionlist + "}"
                 | ToTerm("closed_line") + "{" + expressionlist + "}"
                 | ToTerm("polygon") + "{" + expressionlist + "}"
+                | ToTerm("point") + "{" + expressionlist + "}"
                 | ToTerm("triangle") + "{" + expressionlist + "}";
             rotatecommand.Rule = ToTerm("rotate") + "(" + expr + ")";
             boxcommand.Rule =
