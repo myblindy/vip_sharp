@@ -34,6 +34,8 @@ namespace vip_sharp
             if (!Path.IsPathRooted(libpath))
                 libpath = Path.Combine(Directory.GetCurrentDirectory(), libpath);
 
+            Instance.InitCommunications();
+
             var frm = new VIPForm();
             var s = new RenderingContextSetting();
             rc = RenderingContext.CreateContext(frm, s);
@@ -68,6 +70,7 @@ namespace vip_sharp
 
         private static double INIValueToDouble(string val, double def = 0)
         {
+            if (val == null) return def;
             try
             {
                 return Convert.ToDouble(Regex.Match(val, @"^((?:-\s*)?\d+(?:\.\d+)?)").Value);
@@ -77,8 +80,16 @@ namespace vip_sharp
 
         private static string INIValueToString(string val, string def = null)
         {
+            if (val == null) return def;
             var m = Regex.Match(val, @"^([^;]+)");
             return m.Success ? m.Value.Trim() : def;
+        }
+
+        private static bool INIValueToBool(string val, bool def = false)
+        {
+            if (val == null) return def;
+            var m = Regex.Match(val, @"^([^;]+)");
+            return m.Success ? val.EqualsI("y") || val.EqualsI("true") || val.EqualsI("on") || val.EqualsI("t") || val.EqualsI("yes") : def;
         }
 
         internal static void LoadINIFile(string inipath)
@@ -121,6 +132,10 @@ namespace vip_sharp
                     Instance.VIPSystemClass.VHPOutVariables = LoadHeaderFile(VHPOutFile);
                     BuildIOVariables(Instance.VIPSystemClass.VHPOutVariables);
                 }
+
+                Instance.VIPSystemClass.CommunicationEnabled = INIValueToBool(data["COMMUNICATION"]["Comm"]);
+                Instance.VIPSystemClass.CommunicationPort = (int)INIValueToDouble(data["COMMUNICATION"]["Port"], 7020);
+                Instance.VIPSystemClass.HostName = INIValueToString(data["COMMUNICATION"]["HostName"], "localhost");
             }
         }
 

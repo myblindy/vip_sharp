@@ -118,6 +118,7 @@
     <None Include="packages.config" />
     <Compile Include="Runtime\VIPRuntime.Utils.Publics.PrintF.cs" />
     <Compile Include="Runtime\VIPRuntime.Utils.IOVariables.cs" />
+    <Compile Include="Runtime\VIPRuntime.Utils.Communication.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VIPForm.resx">

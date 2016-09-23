@@ -44,6 +44,10 @@ namespace vip_sharp
             public double WindowWidth = 400, WindowHeight = 400, WindowX = 200, WindowY = 200;
             public Tuple<uint, object> HoveredObjectID;
 
+            public string HostName = "localhost";
+            public int CommunicationPort = 7020;
+            public bool CommunicationEnabled = false;
+
             // TODO: last left button, last right button, kbhit, keycode, first pass
 
             public UnmanagedDefinition[]
