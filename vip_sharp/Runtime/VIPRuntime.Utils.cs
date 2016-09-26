@@ -89,6 +89,8 @@ namespace vip_sharp
         {
             if (val == null) return def;
             var m = Regex.Match(val, @"^([^;]+)");
+            val = m.Value.Trim();
+
             return m.Success ? val.EqualsI("y") || val.EqualsI("true") || val.EqualsI("on") || val.EqualsI("t") || val.EqualsI("yes") : def;
         }
 
